@@ -91,7 +91,7 @@ CusFluentUI3/
 - **Qt 5.15.2**：基本兼容，但ComboBox下拉框存在Bug，后续将修复
 
 ## 示例效果
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/eb428fc568d34a7db998468e9b893a7e.png#pic_center)
+<img width="1538" height="975" alt="screenshot-20260304-101705" src="https://github.com/user-attachments/assets/2cdc3f2d-d1a2-4c1b-87f3-156bfe3fe0ca" />
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bf5de52834d44ce78ac72f9f60d29879.png#pic_center)
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d0f0f4f8a9b342c5a12aefca6d2aeca7.png#pic_center)
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0192be36e529490495f88a5309c16efa.png#pic_center)
