@@ -886,7 +886,7 @@
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>日志</string>
+    <string>日志 And 提示</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>

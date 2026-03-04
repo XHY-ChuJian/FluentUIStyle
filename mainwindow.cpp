@@ -47,18 +47,25 @@ MainWindow::MainWindow( QWidget* parent )
 
     //ui->log 添加日志规范
     //更新5.15.2 下图形字体错误的Bug，QComboBox下拉ItemBug，右键菜单menu.popup()仍有Bug
-    ui->log->append("【2026-03-03 更新内容】");
+    ui->log->append("【更新内容】");
     ui->log->append("1. 修复 Qt 5.15.2 下图形字体渲染错误的问题");
     ui->log->append("2. 修复 QComboBox 下拉项显示异常的 Bug");
     ui->log->append("3. 调整 Demo 布局，优化界面展示");
     ui->log->append("4. 右键菜单 menu.popup() 仍存在显示问题（待修复）");
     ui->log->append("");
-    ui->log->append("【2026-03-03 待解决】");
-    ui->log->append("1. QDockWidget 按钮图标在高 DPI 下存在清晰度问题（图标缩放导致）");
-    ui->log->append("2. MDI 标题栏样式与图标仍需统一（待进一步处理）");
-    ui->log->append("3. 待测其他问题");
 
+    ui->log->append("【Qt5 版本说明】");
+    ui->log->append("1. 右键菜单阴影问题为 Qt 5.15.2 已知缺陷");
+    ui->log->append("   main.cpp 中已提供可选修复方案，Qt5 用户可自行启用。");
 
+    ui->log->append("2. QDockWidget 标题栏按钮图标在高 DPI 下存在缩放失真问题");
+    ui->log->append("   当前建议通过自定义 TitleBarWidget 方式规避。");
+
+    ui->log->append("3. Qt5 存在若干样式兼容问题：");
+    ui->log->append("   - QComboBox 需手动 setView() 才能完全应用样式");
+    ui->log->append("   - 部分控件在高 DPI 下表现不一致");
+    ui->log->append("   - Qt 5.15 后续不再进行兼容性修复");
+    ui->log->append("");
 }
 
 MainWindow::~MainWindow()
