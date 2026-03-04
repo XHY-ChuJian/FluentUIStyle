@@ -13,7 +13,7 @@ QApplication app(argc, argv);
 app.setStyle(new CusProxyStyle);
 ```
 
-[git地址](https://github.com/XuHongYun-ChuJian/Window11Style.git)
+[git地址](https://github.com/XHY-ChuJian/Window11Style.git)
 
 ## 提示
 实测Qt5(5.15.2) 在控件右键菜单存在阴影Bug和QDockWidget按钮图标显示不清。
@@ -96,8 +96,8 @@ CusFluentUI3/
 
 ## 兼容性
 
-- **Qt 6.6.3**：完全兼容，运行正常
-- **Qt 5.15.2**：基本兼容，但ComboBox下拉框存在Bug，后续将修复
+- **Qt 6.6.3**：运行正常
+- **Qt 5.15.2**：基本兼容
 
 ## 示例效果
 <img width="1538" height="975" alt="screenshot-20260304-101705" src="https://github.com/user-attachments/assets/2cdc3f2d-d1a2-4c1b-87f3-156bfe3fe0ca" />
@@ -111,7 +111,3 @@ CusFluentUI3/
 CusProxyStyle是一个基于Qt 6.10 Windows 11样式代码移植并优化的FluentUI3风格实现。它不仅保留了原生样式的美观性，还通过修复问题和调整控件大小等方式，提供了更加完善和一致的用户体验。
 
 通过使用CusProxyStyle，开发者可以轻松为Qt应用程序添加Windows 11风格的现代化界面，提升用户体验，同时享受跨版本兼容的便利。
-
----
-
-**注意**：目前在Qt 5.15.2环境下，ComboBox下拉框存在Bug，后续修复。建议在Qt 6.6.3环境下使用以获得最佳效果。
