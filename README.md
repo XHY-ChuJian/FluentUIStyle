@@ -15,12 +15,6 @@ app.setStyle(new FluentUI3Style);
 
 [git地址](https://github.com/XHY-ChuJian/Window11Style.git)
 
-## 提示
-实测Qt5(5.15.2) 在控件右键菜单存在阴影Bug。
-- 右键菜单阴影Bug，main.cpp中有解决办法，使用Qt5的可以自行修改
-- Qt5还存在其他问题，比如QComboBox必须setView,样式才生效等
-- TODO
-
 ## 核心特性
 
 - **完整的FluentUI3风格实现**：包括按钮、滑块、复选框、单选按钮、组合框等控件的样式
