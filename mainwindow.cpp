@@ -127,11 +127,10 @@ MainWindow::MainWindow( QWidget* parent )
 
 void MainWindow::loadChangelog()
 {
-    QFile file("qrc:/changelog.txt");
+    QFile file(":/changelog.txt");
     
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
-        in.setCodec("UTF-8");
         QString content = in.readAll();
         file.close();
         
