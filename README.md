@@ -1,8 +1,8 @@
 
 # FluentUI3Style：基于Qt的FluentUI3风格实现
 ## 预览
+<img width="1554" height="1100" alt="QQ20260306-152039" src="https://github.com/user-attachments/assets/0c6309a2-2b15-4253-9612-a95cc162ae5f" />
 <img width="1538" height="975" alt="screenshot-20260304-101705" src="https://github.com/user-attachments/assets/bd4cbee8-e3f1-4972-b1d7-9fc178a13c8f" />
-
 ## 项目简介
 
 FluentUI3Style是一个基于Qt的自定义样式类，旨在模仿Windows 11的FluentUI3设计风格，为Qt应用程序提供现代化的界面外观。
