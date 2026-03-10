@@ -3950,6 +3950,17 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type,
          }
         case CT_ItemViewItem :
         {
+             if (auto view = qobject_cast<const QListView*>(widget))
+             {
+                 if (view->parentWidget() &&
+                     view->parentWidget()->parentWidget() &&
+                     qobject_cast<const QComboBox*>(view->parentWidget()->parentWidget()))
+                 {
+                     contentSize.setHeight(32);   // ComboBox dropdown item
+                     break;
+                 }
+             }
+
             // FluentUI 3 列表项标准常量
             const int FLUENT_H_MARGIN            = 12;  // 水平边距（左右各12px）
             [[maybe_unused]] const int FLUENT_V_MARGIN            = 8;   // 常规模式垂直边距（上下各8px）
@@ -3967,6 +3978,17 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type,
                     contentSize = QProxyStyle::sizeFromContents( type, &vOpt, size, widget );
                     contentSize.rwidth() += FLUENT_H_MARGIN;
                     contentSize.setHeight( FLUENT_ITEM_HEIGHT );
+                }
+                else if (auto view = qobject_cast<const QListView*>(widget))
+                {
+                    if (view->parentWidget() &&
+                        view->parentWidget()->parentWidget() &&
+                        qobject_cast<const QComboBox*>(view->parentWidget()->parentWidget()))
+                    {
+                        contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
+                        contentSize.setHeight(32);
+                        return contentSize;
+                    }
                 }
                 else
                 {
@@ -4067,7 +4089,17 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             break;
         }
         case PM_DefaultFrameWidth :
+        {
             res = 4;
+            if (qobject_cast<const QListView*>(widget))
+            {
+                res = 2;
+            }
+            if (isComboBoxPopup( const_cast<QWidget*>( widget ) ))
+            {
+                res = 2;
+            }
+        }
             break;
         case PM_ButtonShiftHorizontal :
         case PM_ButtonShiftVertical :

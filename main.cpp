@@ -46,13 +46,11 @@ int main(int argc, char *argv[])
 #else
     a.styleHints()->setColorScheme(Qt::ColorScheme::Dark);
     qApp->setStyle(new FluentUI3Style());
-    // a.setStyle("windows11");
+    a.setStyle("windows11");
 #endif
 
     MainWindow w;
     w.show();
-
-
     return a.exec();
 }
 

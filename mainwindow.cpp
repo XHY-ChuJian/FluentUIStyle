@@ -473,6 +473,10 @@ void MainWindow::init()
     initMenuAndToolBar();
 
     {
+        ui->scrollAreaWidgetContents->setAutoFillBackground( false );
+    }
+
+    {
         //pushButton、pushButton_2、toolButton添加图标
         ui->pushButton->setIcon( createFluentIcon( "\ue8a5" ) );
         ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
