@@ -6,8 +6,7 @@
 
 ## 项目简介
 
-FluentUI3Style是一个基于Qt的自定义样式类，旨在模仿Windows 11的FluentUI3设计风格，为Qt应用程序提供现代化的界面外观。
-继承QProxyStyle类实现样式，使用到项目中超简单
+FluentUI3Style于继承QProxyStyle实现，实现FluentUI3UI风格，使用到项目中超简单。
 
 ```cpp
 QApplication app(argc, argv);
@@ -88,20 +87,9 @@ FluentUI3Style/
    app.setStyle(new FluentUI3Style);
    ```
 
-## 兼容性
-
-- **Qt 6.6.3**：运行正常
-- **Qt 5.15.2**：基本兼容
-
 ## 示例效果
 <img width="1538" height="975" alt="screenshot-20260304-101705" src="https://github.com/user-attachments/assets/2cdc3f2d-d1a2-4c1b-87f3-156bfe3fe0ca" />
 <img width="1538" height="975" alt="screenshot-20260304-103936" src="https://github.com/user-attachments/assets/fd89ce3d-9188-476e-a860-d02019489ca7" />
 <img width="1538" height="975" alt="screenshot-20260304-103943" src="https://github.com/user-attachments/assets/eba2706f-e1f2-4921-b2f0-b498b4930bc8" />
 <img width="1538" height="975" alt="screenshot-20260304-103954" src="https://github.com/user-attachments/assets/ae30836d-d765-48e3-b062-b90323508f21" />
 <img width="1538" height="975" alt="screenshot-20260304-104007" src="https://github.com/user-attachments/assets/9dce1186-45d0-4fce-9ed4-bf0fd51c8a01" />
-
-## 总结
-
-FluentUI3Style是一个基于Qt 6.10 Windows 11样式代码移植并优化的FluentUI3风格实现。它不仅保留了原生样式的美观性，还通过修复问题和调整控件大小等方式，提供了更加完善和一致的用户体验。
-
-通过使用FluentUI3Style，开发者可以轻松为Qt应用程序添加Windows 11风格的现代化界面，提升用户体验，同时享受跨版本兼容的便利。
