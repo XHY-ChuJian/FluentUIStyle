@@ -69,7 +69,6 @@ void PaletteManager::applyLight(QPalette& p) const
     p.setColor(QPalette::Disabled, QPalette::Accent, QColor(120,120,120,255));
 #endif
 
-
     // Inactive
     p.setColor(QPalette::Inactive, QPalette::WindowText, QColor(0,0,0,255));
     p.setColor(QPalette::Inactive, QPalette::Button, QColor(240,240,240,255));
@@ -81,7 +80,7 @@ void PaletteManager::applyLight(QPalette& p) const
     p.setColor(QPalette::Inactive, QPalette::BrightText, QColor(255,255,255,255));
     p.setColor(QPalette::Inactive, QPalette::ButtonText, QColor(0,0,0,255));
     p.setColor(QPalette::Inactive, QPalette::Base, QColor(255,255,255,255));
-    p.setColor(QPalette::Inactive, QPalette::Window, QColor(240,240,240,255));
+    p.setColor(QPalette::Inactive, QPalette::Window, QColor(/*240,240,240,255*/255,255,255,255));
     p.setColor(QPalette::Inactive, QPalette::Shadow, QColor(105,105,105,255));
     p.setColor(QPalette::Inactive, QPalette::Highlight, QColor(240,240,240,255));
     p.setColor(QPalette::Inactive, QPalette::HighlightedText, QColor(0,0,0,255));

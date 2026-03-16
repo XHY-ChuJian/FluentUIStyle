@@ -72,12 +72,14 @@ void FluentUIAppearancePrivate::applyTheme()
     qApp->styleHints()->setColorScheme(theme == Theme::Dark ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 #endif
     qApp->setStyle(new FluentUI3Style());
+    // qApp->setStyle("windows11");
     updateTitleBar();
 }
 
 void FluentUIAppearancePrivate::updateTitleBar()
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+#ifdef _MSC_VER
     if (mainWindow == nullptr)
         return;
 
@@ -88,6 +90,7 @@ void FluentUIAppearancePrivate::updateTitleBar()
         darkMode = TRUE;
     }
     DwmSetWindowAttribute(hwnd, 20, &darkMode, sizeof(darkMode));
+#endif
 #endif
 }
 

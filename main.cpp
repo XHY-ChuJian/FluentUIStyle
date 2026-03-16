@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QTextEdit>
 #include "fluentuiappearance.h"
+#include "qabstractitemview.h"
 #include "qboxlayout.h"
 #include "qcombobox.h"
 #include "qdebug.h"
@@ -12,6 +13,7 @@
 #include <QApplication>
 #include <QPalette>
 #include <QDebug>
+#include <QPropertyAnimation>
 
 #include "mainwindow.h"
 
@@ -26,6 +28,8 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication a(argc, argv);
+
+    // qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
 
     QFont font = qApp->font();
     font.setPixelSize(13);

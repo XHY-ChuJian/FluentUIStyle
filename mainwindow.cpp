@@ -16,6 +16,7 @@
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <QTextStream>
+#include <QTimer>
 #include <QToolBar>
 
 #include <fluentui3style.h>
@@ -85,6 +86,7 @@ MainWindow::MainWindow( QWidget* parent )
     ui->tableWidget->verticalHeader()->setMinimumSectionSize( 32 );
 
     init();
+    ui->stackedWidget->setCurrentIndex(0);
 
     ui->comboBox->addItem( "窗含西岭千秋雪" );
     ui->comboBox->addItem( "门泊东吴万里船" );
@@ -97,8 +99,9 @@ MainWindow::MainWindow( QWidget* parent )
     ui->comboBox->setView( new QListView() );
 #endif
 
-    // 从文件读取日志内容
     loadChangelog();
+
+    // adjustSize();
 }
 
 void MainWindow::loadChangelog()
@@ -378,46 +381,32 @@ void MainWindow::initMenuAndToolBar()
     themeComboBox->addItem( "暗色" );
     themeComboBox->blockSignals( false );
 
-#if ( QT_VERSION >= QT_VERSION_CHECK( 6, 8, 0 ) )
-    themeComboBox->setCurrentIndex( qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0 );
-    connect( themeComboBox,
-             QOverload<int>::of( &QComboBox::currentIndexChanged ),
-             this,
-             [ = ]( int index )
-             {
-                 if ( index == 0 )
-                 {
-                     qApp->styleHints()->setColorScheme( Qt::ColorScheme::Light );
-                 }
-                 else
-                 {
-                     qApp->styleHints()->setColorScheme( Qt::ColorScheme::Dark );
-                 }
-                 // 更新图标
-                 updateActionIcons();
-             } );
-#else
     themeComboBox->setView( new QListView );
     themeComboBox->setCurrentIndex( fluentUIAppearance.theme() == Theme::Dark ? 1 : 0 );
     connect( themeComboBox,
-             QOverload<int>::of( &QComboBox::currentIndexChanged ),
-             this,
-             [ = ]( int index )
-             {
-                 fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
-                 updateActionIcons();
-             } );
-#endif
+            QOverload<int>::of( &QComboBox::currentIndexChanged ),
+            this,
+            [ = ]( int index )
+            {
+                fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
+                updateActionIcons();
+            } );
     toolBar->addWidget( themeComboBox );
 }
 
 void MainWindow::updateActionIcons()
 {
     {
-        ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
+        //TabBar添加图标
+        ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
+        ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
+        ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
+    }
 
-        ui->toolButton_2->setText( "工具按钮" );
+    {
+        ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
+        ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
     }
 
     // 更新action图标
@@ -428,6 +417,7 @@ void MainWindow::updateActionIcons()
         if ( action )
         {
             action->setIcon( createFluentIcon( iconCode ) );
+
         }
     }
 
@@ -447,9 +437,19 @@ void MainWindow::init()
 {
     initMenuAndToolBar();
 
-    ui->spinBox->setProperty( "horizonalButtons", true );
+    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
+    ui->spinBox_2->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
+    ui->spinBox_3->setProperty( "spinBoxButtonLayout", ArrowsHorizontalRight );
+    ui->doubleSpinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
     {
         ui->scrollAreaWidgetContents->setAutoFillBackground( false );
+    }
+
+    {
+        //TabBar添加图标
+        ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
+        ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
+        ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
     }
 
     {
@@ -459,6 +459,18 @@ void MainWindow::init()
         // toolButton_2添加文字和图标
         ui->toolButton_2->setText( "工具按钮" );
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
+
+        //toolButton_3 带文字和图标以及4个菜单
+        ui->toolButton_3->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        ui->toolButton_3->setPopupMode(QToolButton::InstantPopup);
+        ui->toolButton_3->setText( "菜单按钮" );
+        ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
+        QMenu* menu = new QMenu( ui->toolButton_3 );
+        actionIconMap [menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" )] = "\ue8a5";
+        actionIconMap [menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" )] = "\ue8b5";
+        actionIconMap [menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" )] = "\ue8c3";
+        actionIconMap [menu->addAction( createFluentIcon( "\ue8a5" ), "打开文件" )] = "\ue8a5";
+        ui->toolButton_3->setMenu( menu );
     }
 
     {
@@ -503,18 +515,27 @@ void MainWindow::init()
     }
 }
 
+#include <QApplication>
 // void MainWindow::on_horizonalBtn_clicked()
 // {
-//     // ui->spinBox->setProperty( "horizonalButtons", true );
-//     // ui->doubleSpinBox->setProperty( "horizonalButtons", true );
-//     // ui->spinBox->setFrame( ui->spinBox->hasFrame() );
-//     // ui->doubleSpinBox->setFrame( ui->doubleSpinBox->hasFrame() );
+//     ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
+//     QSize s = ui->spinBox->size();
+
+//     ui->spinBox->resize(s.width() + 1, s.height());
+
+//     // QTimer::singleShot(0, this, [=]{
+//     //     ui->spinBox->resize(s);
+//     // });
 // }
 
 // void MainWindow::on_verticalBtn_clicked()
 // {
-//     // ui->spinBox->setProperty( "horizonalButtons", false );
-//     // ui->doubleSpinBox->setProperty( "horizonalButtons", false );
-//     // ui->spinBox->setFrame( ui->spinBox->hasFrame() );
-//     // ui->doubleSpinBox->setFrame( ui->doubleSpinBox->hasFrame() );
+//     ui->spinBox->setProperty( "horizonalButtons", false );
+//     QSize s = ui->spinBox->size();
+
+//     ui->spinBox->resize(s.width() + 1, s.height());
+
+//     // QTimer::singleShot(0, this, [=]{
+//     //     ui->spinBox->resize(s);
+//     // });
 // }

@@ -51,6 +51,14 @@ enum class ControlType
     ControlAlt
 };
 
+enum SpinBoxButtonLayout
+{
+    ArrowsVertical,
+    ArrowsHorizontalSides,
+    ArrowsHorizontalRight,
+    PlusMinusHorizontalSides
+};
+
 class FluentUI3Style : public QProxyStyle
 {
     Q_OBJECT
@@ -70,7 +78,7 @@ public:
                        QPainter* painter,
                        const QWidget* widget = nullptr ) const override;
 
-    QRect subElementRect(QStyle::SubElement element, const QStyleOption *option,
+    QRect subElementRect(SubElement element, const QStyleOption *option,
                          const QWidget *widget = nullptr) const override;
 
     QRect subControlRect(ComplexControl control, const QStyleOptionComplex *option,
@@ -114,9 +122,12 @@ private:
                             QPalette::ColorRole role = QPalette::ButtonText ) const;
 
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
-    inline QColor winUI3Color(enum WINUI3Color col) const;
+    QColor winUI3Color(enum WINUI3Color col) const;
 
-    QIcon makeFluentIcon( const QChar& ch ) const;
+    QIcon fluentIcon( const QChar& ch ) const;
+
+    void drawFluentShadow(QPainter* painter, QRect rect, int shadowWidth, int radius) const;
+    void drawEffectShadow(QPainter* painter, QRect widgetRect, int shadowBorderWidth, int borderRadius) const;
 
 private:
     mutable QFont assetFont;

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>resource/Segoe Fluent Icons.ttf</file>
+        <file>resource/images/window-restore-s-dark.png</file>
+        <file>resource/images/window-restore-s-light.png</file>
     </qresource>
 </RCC>
