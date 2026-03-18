@@ -8,6 +8,7 @@
 #include "qabstractanimation.h"
 #include "qdatetime.h"
 #include "qimage.h"
+#include "qvariantanimation.h"
 
 QT_REQUIRE_CONFIG(animation);
 
@@ -24,7 +25,7 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
-class QStyleAnimation : public QAbstractAnimation
+class QStyleAnimation : public QVariantAnimation
 {
     Q_OBJECT
 
@@ -34,7 +35,7 @@ public:
 
     QObject *target() const;
 
-    int duration() const override;
+    int duration() const ;
     void setDuration(int duration);
 
     int delay() const;
