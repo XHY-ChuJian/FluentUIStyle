@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
+#include "qpainterpath.h"
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringbuilder.h>
@@ -81,6 +82,51 @@ static inline qreal getDpr( const QPainter* painter )
 {
     Q_ASSERT( painter && painter->device() );
     return painter->device()->devicePixelRatio();
+}
+
+static inline QPainterPath buildRoundedPolyline( const QList<QPointF>& points, qreal radius )
+{
+    QPainterPath path;
+
+    if ( points.size() < 2 )
+    {
+        return path;
+    }
+
+    path.moveTo( points[ 0 ] );
+
+    for ( int i = 1; i < points.size() - 1; ++i )
+    {
+        const QPointF& p0 = points[ i - 1 ];
+        const QPointF& p1 = points[ i ];
+        const QPointF& p2 = points[ i + 1 ];
+
+        QVector2D v1( p1 - p0 );
+        QVector2D v2( p2 - p1 );
+
+        QVector2D v1n = v1.normalized();
+        QVector2D v2n = v2.normalized();
+
+        // 共线检测
+        if ( QVector2D::dotProduct( v1n, v2n ) > 0.999 )
+        {
+            path.lineTo( p1 );
+            continue;
+        }
+
+        qreal maxAllowedRadius = std::min( v1.length(), v2.length() ) / 2;
+        qreal r                = std::min( radius, maxAllowedRadius );
+
+        QPointF p1_before = p1 - r * v1n.toPointF();
+        QPointF p1_after  = p1 + r * v2n.toPointF();
+
+        path.lineTo( p1_before );
+        path.quadTo( p1, p1_after );
+    }
+
+    path.lineTo( points.last() );
+
+    return path;
 }
 }  // namespace QStyleHelper
 

@@ -407,6 +407,7 @@ void MainWindow::updateActionIcons()
         ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
+        ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
     }
 
     // 更新action图标
@@ -461,6 +462,7 @@ void MainWindow::init()
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
 
         //toolButton_3 带文字和图标以及4个菜单
+        ui->toolButton_3->setAutoRaise(false);
         ui->toolButton_3->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         ui->toolButton_3->setPopupMode(QToolButton::InstantPopup);
         ui->toolButton_3->setText( "菜单按钮" );
@@ -471,6 +473,13 @@ void MainWindow::init()
         actionIconMap [menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" )] = "\ue8c3";
         actionIconMap [menu->addAction( createFluentIcon( "\ue8a5" ), "打开文件" )] = "\ue8a5";
         ui->toolButton_3->setMenu( menu );
+
+        //toolButton_4添加图标和文字，上下
+        ui->toolButton_4->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
+        ui->toolButton_4->setText( "上下按钮" );
+        ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
+
+        ui->toolButton_4->setMenu( menu );
     }
 
     {

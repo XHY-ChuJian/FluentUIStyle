@@ -25,49 +25,6 @@
 #include "qstylehelper_p.h"
 #include "qstyleoption.h"
 
-QPainterPath buildRoundedPolyline(const QList<QPointF> &points, qreal radius)
-{
-    QPainterPath path;
-
-    if (points.size() < 2)
-        return path;
-
-    path.moveTo(points[0]);
-
-    for (int i = 1; i < points.size() - 1; ++i)
-    {
-        const QPointF &p0 = points[i - 1];
-        const QPointF &p1 = points[i];
-        const QPointF &p2 = points[i + 1];
-
-        QVector2D v1(p1 - p0);
-        QVector2D v2(p2 - p1);
-
-        QVector2D v1n = v1.normalized();
-        QVector2D v2n = v2.normalized();
-
-        // 共线检测
-        if (QVector2D::dotProduct(v1n, v2n) > 0.999)
-        {
-            path.lineTo(p1);
-            continue;
-        }
-
-        qreal maxAllowedRadius = std::min(v1.length(), v2.length()) / 2;
-        qreal r = std::min(radius, maxAllowedRadius);
-
-        QPointF p1_before = p1 - r * v1n.toPointF();
-        QPointF p1_after  = p1 + r * v2n.toPointF();
-
-        path.lineTo(p1_before);
-        path.quadTo(p1, p1_after);
-    }
-
-    path.lineTo(points.last());
-
-    return path;
-}
-
 #if QT_VERSION <= QT_VERSION_CHECK( 6, 8, 0 )
 #    include "palettemanager.h"
 #endif
@@ -530,23 +487,6 @@ static void drawArrow( const QStyle* style,
     QStyleOption arrowOpt = *toolbutton;
     arrowOpt.rect         = rect;
     style->drawPrimitive( pe, &arrowOpt, painter, widget );
-}
-
-void drawRestore( QPainter* p, const QRect& rect )
-{
-    p->save();
-
-    QPen pen( Qt::black, 1.5 );
-    p->setPen( pen );
-    p->setBrush( Qt::NoBrush );
-
-    QRect r1 = rect.adjusted( 6, 4, -2, -6 );  // 前面的窗口
-    QRect r2 = rect.adjusted( 4, 6, -6, -4 );  // 后面的窗口
-
-    p->drawRect( r2 );
-    p->drawRect( r1 );
-
-    p->restore();
 }
 
 #endif  // QT_CONFIG(toolbutton)
@@ -1139,6 +1079,60 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 }
             }
         }
+        if ( control == CC_ToolButton )
+        {
+            const QStyleOptionToolButton* tb = qstyleoption_cast<const QStyleOptionToolButton*>( option );
+
+            if ( !tb )
+            {
+                return;
+            }
+
+            QObject* obj = option->styleObject;
+            int state    = option->state;
+            int oldState = obj->property( "_q_stylestate" ).toInt();
+            obj->setProperty( "_q_stylestate", state );
+
+            bool doTransition = ( state & State_Sunken ) != ( oldState & State_Sunken ) ||  ( state & State_On ) != ( oldState & State_On );
+            if ( doTransition && ( state & State_Enabled ) && ( tb->features & QStyleOptionToolButton::HasMenu ) )
+            {
+                QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
+                t->setEasingCurve( QEasingCurve::InOutSine );
+                qreal start              = ( state & State_Sunken ) ? 0 : 180;
+                qreal end                = ( state & State_Sunken ) ? 180.0 : 0.0;
+                t->setStartValue( start );
+                t->setEndValue( end );
+                t->setDuration( 120 );
+                startAnimation( t );
+            }
+        }
+        if ( control == CC_ComboBox )
+        {
+            const QStyleOptionComboBox* cb = qstyleoption_cast<const QStyleOptionComboBox*>( option );
+
+            if ( !cb )
+            {
+                return;
+            }
+
+            QObject* obj = option->styleObject;
+            int state    = option->state;
+            int oldState = obj->property( "_q_stylestate" ).toInt();
+            obj->setProperty( "_q_stylestate", state );
+
+            bool doTransition = ( state & State_On ) != ( oldState & State_On );
+            if ( doTransition && ( state & State_Enabled ) && false) //combox视觉效果，好像是先弹窗后，状态才改变，所以暂时先不加动画
+             {
+                QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
+                t->setEasingCurve( QEasingCurve::InOutSine );
+                qreal start              = ( state & State_On ) ? 0 : 180;
+                qreal end                = ( state & State_On ) ? 180.0 : 0.0;
+                t->setStartValue( start );
+                t->setEndValue( end );
+                t->setDuration( 100 );
+                startAnimation( t );
+            }
+        }
     }
 
     switch ( control )
@@ -1152,7 +1146,10 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                            : SpinBoxButtonLayout::ArrowsVertical;
 
                 QCachedPainter cp(
-                    painter, QLatin1String( "win11_spinbox" ) % HexString<uint8_t>( colorSchemeIndex ) % HexString<uint8_t>( buttonLayout ), sb, sb->rect.size() );
+                    painter,
+                    QLatin1String( "win11_spinbox" ) % HexString<uint8_t>( colorSchemeIndex ) % HexString<uint8_t>( buttonLayout ),
+                    sb,
+                    sb->rect.size() );
                 if ( cp.needsPainting() )
                 {
                     [[maybe_unused]] const auto frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
@@ -1184,7 +1181,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         }
 
                         bool horizonal = buttonLayout != SpinBoxButtonLayout::ArrowsVertical;
-                        QString c = isUp ? ChevronUp : ChevronDown;
+                        QString c      = isUp ? ChevronUp : ChevronDown;
                         if ( buttonLayout == SpinBoxButtonLayout::PlusMinusHorizontalSides )
                         {
                             c = isUp ? Add : Remove;
@@ -1396,9 +1393,34 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 {
                     QRectF arrowRect = proxy()->subControlRect( CC_ComboBox, option, SC_ComboBoxArrow, widget ).adjusted( 4, 0, -4, 0 );
 
-                    painter->setFont( assetFont );
+                    // painter->setFont( assetFont );
+                    // painter->setPen( controlTextColor( option ) );
+                    // painter->drawText( arrowRect, Qt::AlignCenter, ChevronDownMed );
+
+                    // QRect arrowRect = menuarea;
+
+                    QFont font( assetFont );
+                    painter->setFont( font );
                     painter->setPen( controlTextColor( option ) );
-                    painter->drawText( arrowRect, Qt::AlignCenter, ChevronDownMed );
+
+                    QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                    qreal angle                      = 0;
+                    // if ( state & State_On )
+                    // {
+                    //     angle = 180;
+                    // }
+                    if ( animation )
+                    {
+                        angle = animation->currentValue();
+                    }
+                    painter->save();
+                    QPointF c = arrowRect.center();
+                    painter->translate( c );
+                    painter->rotate( angle );
+
+                    QRect r( -arrowRect.width() / 2, -arrowRect.height() / 2, arrowRect.width(), arrowRect.height() );
+                    painter->drawText( r, Qt::AlignCenter, ChevronDownMed );
+                    painter->restore();
                 }
 
                 if ( state & State_KeyboardFocusChange && hasFocus )
@@ -1410,37 +1432,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             }
             break;
         }
-        // if ( const QStyleOptionComboBox* combobox = qstyleoption_cast<const QStyleOptionComboBox*>( option ) )
-        // {
-        //     const auto frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
-
-        //     const bool hasFocus = state & State_HasFocus;
-        //     QStyleOption opt( *option );
-        //     opt.state.setFlag( QStyle::State_On, false );
-        //     drawRoundedRect( painter, frameRect, Qt::NoPen, controlFillBrush( &opt, ControlType::Control ) );
-
-        //     if ( combobox->frame )
-        //     {
-        //         drawLineEditFrame( painter, frameRect, combobox, combobox->editable );
-        //     }
-
-        //     if ( sub & SC_ComboBoxArrow )
-        //     {
-        //         QRectF rect = proxy()
-        //                           ->subControlRect( CC_ComboBox, option, SC_ComboBoxArrow, widget )
-        //                           .adjusted( 4, 0, -4, 1 );
-        //         painter->setFont( assetFont );
-        //         painter->setPen( controlTextColor( option ) );
-        //         painter->drawText( rect, Qt::AlignCenter, ChevronDownMed );
-        //     }
-        //     if ( state & State_KeyboardFocusChange && hasFocus )
-        //     {
-        //         QStyleOptionFocusRect fropt;
-        //         fropt.QStyleOption::operator=( *option );
-        //         proxy()->drawPrimitive( PE_FrameFocusRect, &fropt, painter, widget );
-        //     }
-        // }
-        // break;
 #endif  // QT_CONFIG(combobox)
         case CC_ScrollBar :
             if ( const QStyleOptionSlider* scrollbar = qstyleoption_cast<const QStyleOptionSlider*>( option ) )
@@ -1638,9 +1629,141 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 }
             }
             break;
+#if QT_CONFIG( toolbutton )
         case CC_ToolButton :
-            QProxyStyle::drawComplexControl( control, option, painter, widget );
+            if ( const auto* toolbutton = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
+            {
+                QRect button, menuarea;
+                button   = proxy()->subControlRect( control, toolbutton, SC_ToolButton, widget );
+                menuarea = proxy()->subControlRect( control, toolbutton, SC_ToolButtonMenu, widget );
+
+                State bflags   = toolbutton->state & ~State_Sunken;
+                State mflags   = bflags;
+                bool autoRaise = flags & State_AutoRaise;
+                if ( autoRaise )
+                {
+                    if ( !( bflags & State_MouseOver ) || !( bflags & State_Enabled ) )
+                    {
+                        bflags &= ~State_Raised;
+                    }
+                }
+
+                if ( toolbutton->state & State_Sunken )
+                {
+                    if ( toolbutton->activeSubControls & SC_ToolButton )
+                    {
+                        bflags |= State_Sunken;
+                        mflags |= State_MouseOver | State_Sunken;
+                    }
+                    else if ( toolbutton->activeSubControls & SC_ToolButtonMenu )
+                    {
+                        mflags |= State_Sunken;
+                        bflags |= State_MouseOver;
+                    }
+                }
+
+                QStyleOption tool = *toolbutton;
+                if ( toolbutton->subControls & SC_ToolButton )
+                {
+                    if ( flags & ( State_Sunken | State_On | State_Raised ) || !autoRaise )
+                    {
+                        tool.rect  = option->rect;
+                        tool.state = bflags;
+                        if ( autoRaise )  // for tool bars
+                        {
+                            proxy()->drawPrimitive( PE_PanelButtonTool, &tool, painter, widget );
+                        }
+                        else
+                        {
+                            proxy()->drawPrimitive( PE_PanelButtonBevel, &tool, painter, widget );
+                        }
+                    }
+                }
+
+                if ( toolbutton->state & State_HasFocus )
+                {
+                    QStyleOptionFocusRect fr;
+                    fr.QStyleOption::operator=( *toolbutton );
+                    fr.rect.adjust( 3, 3, -3, -3 );
+                    if ( toolbutton->features & QStyleOptionToolButton::MenuButtonPopup )
+                    {
+                        fr.rect.adjust( 0, 0, -proxy()->pixelMetric( QStyle::PM_MenuButtonIndicator, toolbutton, widget ), 0 );
+                    }
+                    proxy()->drawPrimitive( PE_FrameFocusRect, &fr, painter, widget );
+                }
+                QStyleOptionToolButton label = *toolbutton;
+                label.state                  = bflags;
+                int fw                       = 2;
+                if ( !autoRaise )
+                {
+                    label.state &= ~State_Sunken;
+                }
+                label.rect = button.adjusted( fw, fw, -fw, -fw );
+                proxy()->drawControl( CE_ToolButtonLabel, &label, painter, widget );
+
+                if ( toolbutton->subControls & SC_ToolButtonMenu )
+                {
+                    tool.rect  = menuarea;
+                    tool.state = mflags;
+                    if ( autoRaise )
+                    {
+                        proxy()->drawPrimitive( PE_IndicatorButtonDropDown, &tool, painter, widget );
+                    }
+                    else
+                    {
+                        tool.state = mflags;
+                        menuarea.adjust( -2, 0, 0, 0 );
+                        // Draw menu button
+                        if ( ( bflags & State_Sunken ) != ( mflags & State_Sunken ) )
+                        {
+                            painter->save();
+                            painter->setClipRect( menuarea );
+                            tool.rect = option->rect;
+                            proxy()->drawPrimitive( PE_PanelButtonBevel, &tool, painter, nullptr );
+                            painter->restore();
+                        }
+                        // Draw arrow
+                        painter->save();
+                        painter->setPen( option->palette.dark().color() );
+                        painter->drawLine( menuarea.left(), menuarea.top() + 3, menuarea.left(), menuarea.bottom() - 3 );
+                        painter->setPen( option->palette.light().color() );
+                        painter->drawLine( menuarea.left() - 1, menuarea.top() + 3, menuarea.left() - 1, menuarea.bottom() - 3 );
+
+                        tool.rect = menuarea.adjusted( 2, 3, -2, -1 );
+                        proxy()->drawPrimitive( PE_IndicatorArrowDown, &tool, painter, widget );
+                        painter->restore();
+                    }
+                }
+                else if ( toolbutton->features & QStyleOptionToolButton::HasMenu )
+                {
+                    QRect arrowRect = menuarea;
+
+                    QFont font( assetFont );
+                    painter->setFont( font );
+                    painter->setPen( controlTextColor( option ) );
+
+                    QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                    qreal angle                      = 0;
+                    if ( state & State_Sunken )
+                    {
+                        angle = 180;
+                    }
+                    if ( animation )
+                    {
+                        angle = animation->currentValue();
+                    }
+                    painter->save();
+                    QPoint c = arrowRect.center();
+                    painter->translate( c );
+                    painter->rotate( angle );
+
+                    QRect r( -arrowRect.width() / 2, -arrowRect.height() / 2, arrowRect.width(), arrowRect.height() );
+                    painter->drawText( r, Qt::AlignCenter, ChevronDown );
+                    painter->restore();
+                }
+            }
             break;
+#endif  // QT_CONFIG(toolbutton)
         default :
             QProxyStyle::drawComplexControl( control, option, painter, widget );
             break;
@@ -1730,7 +1853,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->setPen( pen );
                 painter->setBrush( frame->palette.base() );
                 // painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
-                painter->drawRect(rect);
+                painter->drawRect( rect );
             }
 #endif  // QT_CONFIG(tabwidget)
             break;
@@ -1874,6 +1997,15 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->drawRect( r );
                 return;
             }
+            // underMouse无边框
+            else if ( widget && widget->objectName() == "ScrollLeftButton" )
+            {
+                return;
+            }
+            else if ( widget && widget->objectName() == "ScrollRightButton" )
+            {
+                return;
+            }
         }
         case PE_PanelButtonBevel :
         {
@@ -1889,6 +2021,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokePrimary ] );
             }
+
             drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
             painter->setBrush( controlFillBrush( option, ControlType::Control ) );
             painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
@@ -2236,6 +2369,11 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->drawArc( bottomLeftCorner, -90 * 16, -90 * 16 );
             }
             break;
+        case PE_IndicatorTabTearLeft :
+        case PE_IndicatorTabTearRight :
+            break;
+        case PE_FrameTabBarBase :
+            break;
         default :
             QProxyStyle::drawPrimitive( element, option, painter, widget );
             break;
@@ -2367,7 +2505,7 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
                     widget ? static_cast<SpinBoxButtonLayout>( widget->property( "spinBoxButtonLayout" ).toInt() )
                            : SpinBoxButtonLayout::ArrowsVertical;
                 bool horizonal = buttonLayout != SpinBoxButtonLayout::ArrowsVertical;
-                QRect r = spinbox->rect.marginsRemoved( QMargins( fw, fw, fw, fw ) );
+                QRect r        = spinbox->rect.marginsRemoved( QMargins( fw, fw, fw, fw ) );
                 if ( !horizonal )
                 {
                     int btnHeight = qMin( r.height() / 2, spinbox->fontMetrics.height() );
@@ -2413,7 +2551,8 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
                         }
                         else  // ArrowsHorizontalSides or PlusMinusHorizontalSides
                         {
-                            ret = QRect( r.x() + 1, r.y() + ( r.height() - buttonSize.height() ) / 2, buttonSize.width(), buttonSize.height() );
+                            ret = QRect(
+                                r.x() + 1, r.y() + ( r.height() - buttonSize.height() ) / 2, buttonSize.width(), buttonSize.height() );
                             if ( subControl == SC_SpinBoxDown )
                             {
                                 ret = QRect( ret.right() + textFieldLength - 1, ret.y(), buttonSize.width(), buttonSize.height() );
@@ -2623,6 +2762,39 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
             break;
         }
 #endif  // QT_CONFIG(groupbox)
+#if QT_CONFIG( toolbutton )
+        case CC_ToolButton :
+            if ( const QStyleOptionToolButton* tb = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
+            {
+                int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, tb, widget );
+                ret     = tb->rect;
+                switch ( subControl )
+                {
+                    case SC_ToolButton :
+                        if ( ( tb->features & ( QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay ) )
+                             == QStyleOptionToolButton::MenuButtonPopup )
+                        {
+                            ret.adjust( 0, 0, -mbi, 0 );
+                        }
+                        break;
+                    case SC_ToolButtonMenu :
+                        if ( ( tb->features & ( QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay ) )
+                             == QStyleOptionToolButton::MenuButtonPopup )
+                        {
+                            ret.adjust( ret.width() - mbi, 0, 0, 0 );
+                        }
+                        else if ( tb->features & QStyleOptionToolButton::HasMenu )
+                        {
+                            ret.adjust( ret.width() - mbi - 12, 0, 0, 0 );
+                        }
+                        break;
+                    default :
+                        break;
+                }
+                ret = visualRect( tb->direction, tb->rect, ret );
+            }
+            break;
+#endif  // QT_CONFIG(toolbutton)
         default :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
     }
@@ -2656,35 +2828,28 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 QRectF tabRect = tab->rect.marginsRemoved( QMargins( 0, 0, 0, 0 ) );
                 painter->setPen( Qt::NoPen );
                 painter->setBrush( tab->palette.base() );
-                if (tab->state & State_Selected)
+                if ( tab->state & State_Selected )
                 {
-                    painter->setBrush(colorSchemeIndex == 0
-                        ? QColor(230,230,230)
-                        : QColor(60,60,60));
+                    painter->setBrush( colorSchemeIndex == 0 ? QColor( 230, 230, 230 ) : QColor( 60, 60, 60 ) );
 
                     const int arcLength = 16;
                     QList<QPointF> pts;
-                    pts << QPointF(tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y())
-                        << tabRect.bottomLeft()
-                        << tabRect.topLeft()
-                        << tabRect.topRight()
-                        << tabRect.bottomRight()
-                        << QPointF(tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y());
+                    pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft()
+                        << tabRect.topLeft() << tabRect.topRight() << tabRect.bottomRight()
+                        << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
 
-                    auto path = buildRoundedPolyline(pts, 7);
-                    painter->fillPath(path, painter->brush());
+                    auto path = QStyleHelper::buildRoundedPolyline( pts, 7 );
+                    painter->fillPath( path, painter->brush() );
                 }
-                else if (tab->state & State_MouseOver)
+                else if ( tab->state & State_MouseOver )
                 {
-                    painter->setBrush(colorSchemeIndex == 0
-                        ? QColor(0,0,0,18)
-                        : QColor(255,255,255,18));
+                    painter->setBrush( colorSchemeIndex == 0 ? QColor( 0, 0, 0, 18 ) : QColor( 255, 255, 255, 18 ) );
 
-                    painter->drawRect(tabRect);
+                    painter->drawRect( tabRect );
                 }
                 else
                 {
-                    painter->setBrush(tab->palette.window());
+                    painter->setBrush( tab->palette.window() );
                 }
 
                 painter->setBrush( Qt::NoBrush );
@@ -2701,16 +2866,22 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 #    endif
             if ( const QStyleOptionToolButton* toolbutton = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
             {
-                QRect rect = toolbutton->rect;
-                int shiftX = 0;
-                int shiftY = 0;
+                QRect rect     = toolbutton->rect;
+                int shiftX     = 0;
+                int shiftY     = 0;
+                int leftMargin = 0;
+                if ( toolbutton->features & QStyleOptionToolButton::HasMenu )
+                {
+                    leftMargin = 4;
+                }
                 if ( toolbutton->state & ( State_Sunken | State_On ) )
                 {
                     shiftX = proxy()->pixelMetric( PM_ButtonShiftHorizontal, toolbutton, widget );
                     shiftY = proxy()->pixelMetric( PM_ButtonShiftVertical, toolbutton, widget );
                 }
                 // Arrow type always overrules and is always shown
-                bool hasArrow = toolbutton->features & QStyleOptionToolButton::Arrow;
+                // FluentUI don't have arrow type
+                bool hasArrow = /*toolbutton->features & QStyleOptionToolButton::Arrow*/ false;
                 if ( ( ( !hasArrow && toolbutton->icon.isNull() ) && !toolbutton->text.isEmpty() )
                      || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly )
                 {
@@ -2780,6 +2951,14 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                                                                   // QToolButton::sizeHint()
                             tr.adjust( 0, pr.height() - 1, 0, -1 );
                             pr.translate( shiftX, shiftY );
+
+                            const int mbi = pixelMetric( PM_MenuButtonIndicator, option, widget );
+                            if ( toolbutton->features & QStyleOptionToolButton::HasMenu )
+                            {
+                                // pr.translate(-mbi + 4, 0);
+                                tr.translate( -mbi + 4, 0 );
+                            }
+
                             if ( !hasArrow )
                             {
                                 proxy()->drawItemPixmap( painter, pr, Qt::AlignCenter, pm );
@@ -2794,8 +2973,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         {
                             pr.setWidth( pmSize.width() + 4 );  // ### 4 is currently hardcoded
                                                                 // in QToolButton::sizeHint()
-                            tr.adjust( pr.width(), 0, 0, 0 );
-                            pr.translate( shiftX, shiftY );
+                            tr.adjust( pr.width() + 2, 0, 0, 0 );
+                            pr.translate( shiftX + leftMargin, shiftY );
                             if ( !hasArrow )
                             {
                                 proxy()->drawItemPixmap(
@@ -2807,7 +2986,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             }
                             alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                         }
-                        tr.translate( shiftX, shiftY );
+                        tr.translate( shiftX + leftMargin, shiftY );
                         const QString text = toolButtonElideText( toolbutton, tr, alignment );
                         painter->setPen( controlTextColor( option ) );
                         proxy()->drawItemText( painter,
@@ -3276,12 +3455,13 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 const QRect rect = menuitem->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
                 if ( act && dis == false )
                 {
-                    //实际绘制时，右边界会有1px，调整后可以覆盖掉这个
-                    QRectF r = QRectF(rect).adjusted(0, 0, 1, 0);
+                    // 实际绘制时，右边界会有1px，调整后可以覆盖掉这个
+                    QRectF r = QRectF( rect ).adjusted( 0, 0, 1, 0 );
                     drawRoundedRect( painter,
                                      r,
                                      Qt::NoPen,
-                                     highContrastTheme ? menuitem->palette.brush( QPalette::Highlight ) : QBrush( winUI3Color( subtleHighlightColor ) ) );
+                                     highContrastTheme ? menuitem->palette.brush( QPalette::Highlight )
+                                                       : QBrush( winUI3Color( subtleHighlightColor ) ) );
                 }
 
                 if ( menuitem->menuItemType == QStyleOptionMenuItem::Separator )
@@ -3793,11 +3973,15 @@ void FluentUI3Style::polish( QWidget* widget )
     {
         auto buttons = dock->findChildren<QAbstractButton*>();
 
-        for ( auto btn : buttons )
+        for ( auto btn : std::as_const( buttons ) )
         {
             btn->setAttribute( Qt::WA_Hover, true );
             btn->setMouseTracking( true );
         }
+    }
+    if ( widget && ( widget->objectName() == "ScrollLeftButton" || widget->objectName() == "ScrollRightButton" ) )
+    {
+        ( (QToolButton*)widget )->setAutoRaise( true );
     }
 
     const bool isScrollBar  = qobject_cast<QScrollBar*>( widget );
@@ -4025,6 +4209,24 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         case CT_ToolButton :
         {
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
+            if ( auto optionTbtn = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
+            {
+                if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && optionTbtn->toolButtonStyle == Qt::ToolButtonTextBesideIcon )
+                {
+                    const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
+                    contentSize.rwidth() += mbi + 4;
+                }
+                else if ( optionTbtn->features & QStyleOptionToolButton::HasMenu
+                          && optionTbtn->toolButtonStyle == Qt::ToolButtonTextUnderIcon )
+                {
+                    const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
+                    contentSize.rwidth() += mbi + 4;
+                }
+
+                //手动根据QToolButton的文字和Icon计算大小，
+                //因为QProxyStyle::sizeFromContents计算的大小不准确，无法满足FluentUI3的设计规范
+                //TODO
+            }
             break;
         }
         case CT_ItemViewItem :
@@ -4074,12 +4276,12 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             }
             break;
         }
-    case CT_TabBarTab:
-    {
-        contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
-        contentSize.setHeight(32);
-        contentSize.setWidth(contentSize.width()+20);
-    }
+        case CT_TabBarTab :
+        {
+            contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
+            contentSize.setHeight( 32 );
+            contentSize.setWidth( contentSize.width() + 20 );
+        }
         break;
         default :
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
@@ -4342,7 +4544,7 @@ void FluentUI3Style::unpolish( QWidget* widget )
 QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* option, const QWidget* widget ) const
 {
     // if (sp == SP_TitleBarCloseButton) { return makeFluentIcon(QChar(0xE8BB)); }
-    if ( sp == SP_LineEditClearButton || sp == SP_TitleBarCloseButton || sp == SP_TabCloseButton)
+    if ( sp == SP_LineEditClearButton || sp == SP_TitleBarCloseButton || sp == SP_TabCloseButton )
     {
         QIcon icon = fluentIcon( QChar( 0xE894 ) );
         return icon;

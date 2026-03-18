@@ -14,7 +14,7 @@ static const qreal ScrollBarFadeOutDuration = 200.0;
 static const qreal ScrollBarFadeOutDelay    = 450.0;
 
 QStyleAnimation::QStyleAnimation( QObject* target )
-    : QAbstractAnimation( target )
+    : QVariantAnimation( target )
     , _delay( 0 )
     , _duration( -1 )
     , _startTime( QTime::currentTime() )
