@@ -74,8 +74,8 @@ MainWindow::MainWindow( QWidget* parent )
     )";
     // setStyleSheet( strStyleSheet );
     QList<QWidget*> widgetList;
-    widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6
-               << ui->widget_7 << ui->widget_8 << ui->widget_9 << ui->widget_10 << ui->widget_12;
+    widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7 << ui->widget_8
+               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13;
     for ( QWidget* w : widgetList )
     {
         // draw border in style
@@ -86,7 +86,7 @@ MainWindow::MainWindow( QWidget* parent )
     ui->tableWidget->verticalHeader()->setMinimumSectionSize( 32 );
 
     init();
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->stackedWidget->setCurrentIndex( 0 );
 
     ui->comboBox->addItem( "窗含西岭千秋雪" );
     ui->comboBox->addItem( "门泊东吴万里船" );
@@ -384,20 +384,20 @@ void MainWindow::initMenuAndToolBar()
     themeComboBox->setView( new QListView );
     themeComboBox->setCurrentIndex( fluentUIAppearance.theme() == Theme::Dark ? 1 : 0 );
     connect( themeComboBox,
-            QOverload<int>::of( &QComboBox::currentIndexChanged ),
-            this,
-            [ = ]( int index )
-            {
-                fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
-                updateActionIcons();
-            } );
+             QOverload<int>::of( &QComboBox::currentIndexChanged ),
+             this,
+             [ = ]( int index )
+             {
+                 fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
+                 updateActionIcons();
+             } );
     toolBar->addWidget( themeComboBox );
 }
 
 void MainWindow::updateActionIcons()
 {
     {
-        //TabBar添加图标
+        // TabBar添加图标
         ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
         ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
         ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
@@ -418,7 +418,6 @@ void MainWindow::updateActionIcons()
         if ( action )
         {
             action->setIcon( createFluentIcon( iconCode ) );
-
         }
     }
 
@@ -442,12 +441,15 @@ void MainWindow::init()
     ui->spinBox_2->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
     ui->spinBox_3->setProperty( "spinBoxButtonLayout", ArrowsHorizontalRight );
     ui->doubleSpinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
+
+    ui->checkBox_5->setText("Off");
+
     {
         ui->scrollAreaWidgetContents->setAutoFillBackground( false );
     }
 
     {
-        //TabBar添加图标
+        // TabBar添加图标
         ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
         ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
         ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
@@ -461,20 +463,20 @@ void MainWindow::init()
         ui->toolButton_2->setText( "工具按钮" );
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
 
-        //toolButton_3 带文字和图标以及4个菜单
-        ui->toolButton_3->setAutoRaise(false);
-        ui->toolButton_3->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        ui->toolButton_3->setPopupMode(QToolButton::InstantPopup);
+        // toolButton_3 带文字和图标以及4个菜单
+        ui->toolButton_3->setAutoRaise( false );
+        ui->toolButton_3->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+        ui->toolButton_3->setPopupMode( QToolButton::InstantPopup );
         ui->toolButton_3->setText( "菜单按钮" );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
-        QMenu* menu = new QMenu( ui->toolButton_3 );
-        actionIconMap [menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" )] = "\ue8a5";
-        actionIconMap [menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" )] = "\ue8b5";
-        actionIconMap [menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" )] = "\ue8c3";
-        actionIconMap [menu->addAction( createFluentIcon( "\ue8a5" ), "打开文件" )] = "\ue8a5";
+        QMenu* menu                                                                  = new QMenu( ui->toolButton_3 );
+        actionIconMap[ menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" ) ] = "\ue8a5";
+        actionIconMap[ menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" ) ] = "\ue8b5";
+        actionIconMap[ menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" ) ] = "\ue8c3";
+        actionIconMap[ menu->addAction( createFluentIcon( "\ue8a5" ), "打开文件" ) ] = "\ue8a5";
         ui->toolButton_3->setMenu( menu );
 
-        //toolButton_4添加图标和文字，上下
+        // toolButton_4添加图标和文字，上下
         ui->toolButton_4->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
         ui->toolButton_4->setText( "上下按钮" );
         ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
@@ -525,6 +527,7 @@ void MainWindow::init()
 }
 
 #include <QApplication>
+
 // void MainWindow::on_horizonalBtn_clicked()
 // {
 //     ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
@@ -548,3 +551,25 @@ void MainWindow::init()
 //     //     ui->spinBox->resize(s);
 //     // });
 // }
+
+void MainWindow::on_checkBox_4_clicked( bool checked )
+{
+    QList<QCheckBox*> cbs;
+    cbs << ui->checkBox_5 /*<< ui->checkBox_6 << ui->checkBox_7 << ui->checkBox_8 << ui->checkBox_9*/;
+    for ( QCheckBox* cb : cbs )
+    {
+        cb->setChecked( checked );
+    }
+}
+
+void MainWindow::on_checkBox_5_checkStateChanged(Qt::CheckState state)
+{
+    ui->checkBox_5->setText( state == Qt::Checked ? "On" : "Off" );
+}
+
+
+void MainWindow::on_checkBox_5_stateChanged(int arg1)
+{
+    ui->checkBox_5->setText( arg1 == Qt::Checked ? "On" : "Off" );
+}
+

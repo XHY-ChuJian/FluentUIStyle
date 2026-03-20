@@ -2,16 +2,29 @@
 
 #include <QApplication>
 #include <QBitmap>
+#include <QComboBox>
+#include <QCommandLinkButton>
 #include <QDockWidget>
 #include <QFontMetrics>
+#include <QGraphicsDropShadowEffect>
+#include <QGraphicsView>
+#include <QHash>
 #include <QIcon>
+#include <QLineEdit>
+#include <QListView>
+#include <QMdiArea>
+#include <QMenu>
 #include <QObject>
+#include <QPointer>
+#include <QScreen>
 #include <QScrollBar>
 #include <QSettings>
 #include <QSpinBox>
 #include <QString>
 #include <QStyleHints>
 #include <QSysInfo>
+#include <QTableView>
+#include <QTextEdit>
 #include <QTextLayout>
 #include <QToolButton>
 #include <QTreeView>
@@ -20,6 +33,7 @@
 
 #include "fluentuiappearance.h"
 #include "qapplication.h"
+#include "qcheckbox.h"
 #include "qhexstring_p.h"
 #include "qstyleanimation_p.h"
 #include "qstylehelper_p.h"
@@ -89,7 +103,7 @@ static constexpr int percentToAlpha( double percent )
     return qRound( percent * 255. / 100. );
 }
 
-static constexpr std::array<QColor, 34> WINUI3ColorsLight {
+static constexpr std::array<QColor, 37> WINUI3ColorsLight {
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 3.73 ) ),   // subtleHighlightColor (fillSubtleSecondary)
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 2.41 ) ),   // subtlePressedColor (fillSubtleTertiary)
     QColor( 0x00, 0x00, 0x00, 0x0F ),                     // frameColorLight
@@ -124,9 +138,12 @@ static constexpr std::array<QColor, 34> WINUI3ColorsLight {
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 70 ) ),     // textOnAccentSecondary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // textOnAccentDisabled
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 8.03 ) ),   // dividerStrokeDefault
+    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // switchThumbOn
+    QColor( 0x5A, 0x5A, 0x5A, 0xFF ),                     // switchThumbOff
+    QColor( 0x5A, 0x5A, 0x5A, percentToAlpha( 40 ) ),     // switchThumbDisabled
 };
 
-static std::array<QColor, 34> WINUI3ColorsDark {
+static std::array<QColor, 37> WINUI3ColorsDark {
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.05 ) ),   // subtleHighlightColor (fillSubtleSecondary)
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // subtlePressedColor (fillSubtleTertiary)
     QColor( 0xFF, 0xFF, 0xFF, 0x12 ),                     // frameColorLight
@@ -162,6 +179,9 @@ static std::array<QColor, 34> WINUI3ColorsDark {
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 70 ) ),     // textOnAccentSecondary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 53.02 ) ),  // textOnAccentDisabled
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 8.37 ) ),   // dividerStrokeDefault
+    QColor( 0x1F, 0x1F, 0x1F, 0xFF ),                     // switchThumbOn
+    QColor( 0x5A, 0x5A, 0x5A, 0xFF ),                     // switchThumbOff
+    QColor( 0x5A, 0x5A, 0x5A, percentToAlpha( 40 ) ),     // switchThumbDisabled
 };
 
 // Color of close Button in Titlebar (default + hover)
@@ -171,7 +191,7 @@ static constexpr QColor shellCaptionCloseTextFillColorPrimary( 0xFF, 0xFF, 0xFF,
 static constexpr QColor shellCaptionCloseFillColorSecondary( 0xC4, 0x2B, 0x1C, 0xE6 );
 static constexpr QColor shellCaptionCloseTextFillColorSecondary( 0xFF, 0xFF, 0xFF, 0xB3 );
 
-static std::array<std::array<QColor, 34>, 2> WINUI3Colors { WINUI3ColorsLight, WINUI3ColorsDark };
+static std::array<std::array<QColor, 37>, 2> WINUI3Colors { WINUI3ColorsLight, WINUI3ColorsDark };
 
 static qreal radioButtonInnerRadius( int state, const QStyleOption* option, const QWidget* widget, int indicatorSize )
 {
@@ -491,19 +511,7 @@ static void drawArrow( const QStyle* style,
 
 #endif  // QT_CONFIG(toolbutton)
 
-#include <QComboBox>
-#include <QCommandLinkButton>
-#include <QGraphicsDropShadowEffect>
-#include <QGraphicsView>
-#include <QHash>
-#include <QLineEdit>
-#include <QListView>
-#include <QMdiArea>
-#include <QMenu>
-#include <QScreen>
-#include <QTableView>
-#include <QTextEdit>
-#include <QTextLayout>
+//------------------单动画-------------------------------//
 QHash<QObject*, QStyleAnimation*> animations;
 
 template <typename K, typename V>
@@ -542,6 +550,131 @@ QStyleAnimation* getAnimation( QObject* target )
 {
     return animations.value( target );
 }
+
+//--------------------------------------------------//
+
+//--------------------多动画------------------------------//
+QHash<QObject*, QHash<QByteArray, QPointer<QStyleAnimation>>> extraAnimations;
+
+QStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key )
+{
+    if ( !target )
+    {
+        return nullptr;
+    }
+
+    auto it = extraAnimations.find( target );
+    if ( it == extraAnimations.end() )
+    {
+        return nullptr;
+    }
+
+    return it->value( key, nullptr );
+}
+
+void clearAnimationsEx( QObject* target )
+{
+    if ( !target )
+    {
+        return;
+    }
+
+    auto it = extraAnimations.find( target );
+    if ( it == extraAnimations.end() )
+    {
+        return;
+    }
+
+    const auto animationsForTarget = it.value();
+    extraAnimations.erase( it );
+
+    for ( auto animation : animationsForTarget )
+    {
+        if ( animation )
+        {
+            animation->stop();
+            animation->deleteLater();
+        }
+    }
+}
+
+void removeAnimationEx( QObject* target, const QByteArray& key, QStyleAnimation* animation )
+{
+    auto it = extraAnimations.find( target );
+    if ( it == extraAnimations.end() )
+    {
+        return;
+    }
+
+    const auto current = it->value( key );
+    if ( current != animation )
+    {
+        return;
+    }
+
+    it->remove( key );
+
+    if ( it->isEmpty() )
+    {
+        extraAnimations.erase( it );
+    }
+}
+
+void stopAnimationEx( QObject* target, const QByteArray& key )
+{
+    if ( !target )
+    {
+        return;
+    }
+
+    auto it = extraAnimations.find( target );
+    if ( it == extraAnimations.end() )
+    {
+        return;
+    }
+
+    QPointer<QStyleAnimation> animation = it->take( key );
+    if ( animation )
+    {
+        animation->stop();
+        animation->deleteLater();
+    }
+
+    if ( it->isEmpty() )
+    {
+        extraAnimations.erase( it );
+    }
+}
+
+void startAnimationEx( QStyleAnimation* animation, QObject* target, const QByteArray& key )
+{
+    if ( !animation || !target )
+    {
+        return;
+    }
+
+    if ( !extraAnimations.contains( target ) )
+    {
+        QObject::connect( target, &QObject::destroyed, []( QObject* obj ) { clearAnimationsEx( obj ); } );
+    }
+
+    // 停掉同 key 的旧动画
+    stopAnimationEx( target, key );
+
+    QObject::connect( animation, &QObject::destroyed, [ target, key, animation ]() { removeAnimationEx( target, key, animation ); } );
+
+    extraAnimations[ target ].insert( key, animation );
+    animation->start();
+}
+
+float animationValue( QObject* target, const QByteArray& key, float defaultValue )
+{
+    auto anim = qobject_cast<QNumberStyleAnimation*>( getAnimationEx( target, key ) );
+
+    return anim ? anim->currentValue() : defaultValue;
+}
+
+//--------------------------------------------------//
 
 bool transitionsEnabled()
 {
@@ -1072,8 +1205,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     t->setStartValue( styleObject->property( "_q_inner_radius" ).toFloat() );
                     t->setEndValue( outerRadius * sliderInnerRadius( state, isInsideHandle ) );
                     styleObject->setProperty( "_q_end_radius", t->endValue() );
-
-                    // t->setStartTime( animationTime() );
                     t->setDuration( 150 );
                     startAnimation( t );
                 }
@@ -1093,13 +1224,13 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             int oldState = obj->property( "_q_stylestate" ).toInt();
             obj->setProperty( "_q_stylestate", state );
 
-            bool doTransition = ( state & State_Sunken ) != ( oldState & State_Sunken ) ||  ( state & State_On ) != ( oldState & State_On );
+            bool doTransition = ( state & State_Sunken ) != ( oldState & State_Sunken ) || ( state & State_On ) != ( oldState & State_On );
             if ( doTransition && ( state & State_Enabled ) && ( tb->features & QStyleOptionToolButton::HasMenu ) )
             {
                 QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
                 t->setEasingCurve( QEasingCurve::InOutSine );
-                qreal start              = ( state & State_Sunken ) ? 0 : 180;
-                qreal end                = ( state & State_Sunken ) ? 180.0 : 0.0;
+                qreal start = ( state & State_Sunken ) ? 0 : 180;
+                qreal end   = ( state & State_Sunken ) ? 180.0 : 0.0;
                 t->setStartValue( start );
                 t->setEndValue( end );
                 t->setDuration( 120 );
@@ -1121,12 +1252,12 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             obj->setProperty( "_q_stylestate", state );
 
             bool doTransition = ( state & State_On ) != ( oldState & State_On );
-            if ( doTransition && ( state & State_Enabled ) && false) //combox视觉效果，好像是先弹窗后，状态才改变，所以暂时先不加动画
-             {
+            if ( doTransition && ( state & State_Enabled ) && false )  // combox视觉效果，好像是先弹窗后，状态才改变，所以暂时先不加动画
+            {
                 QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
                 t->setEasingCurve( QEasingCurve::InOutSine );
-                qreal start              = ( state & State_On ) ? 0 : 180;
-                qreal end                = ( state & State_On ) ? 180.0 : 0.0;
+                qreal start = ( state & State_On ) ? 0 : 180;
+                qreal end   = ( state & State_On ) ? 180.0 : 0.0;
                 t->setStartValue( start );
                 t->setEndValue( end );
                 t->setDuration( 100 );
@@ -1796,20 +1927,39 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 int indicatorSize = proxy()->pixelMetric( QStyle::PM_ExclusiveIndicatorWidth, option, widget );
                 t->setEndValue( radioButtonInnerRadius( state, option, widget, indicatorSize ) );
                 styleObject->setProperty( "_q_end_radius", t->endValue() );
-                // t->setStartTime(d->animationTime());
                 t->setDuration( 150 );
                 startAnimation( t );
             }
-            else if ( element == PE_IndicatorCheckBox )
+            else if ( element == PE_IndicatorCheckBox && widget && widget->property( "isSwitchButton" ).toBool() == false )
             {
                 if ( ( oldState & State_Off && state & State_On ) || ( oldState & State_NoChange && state & State_On ) )
                 {
                     QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
                     t->setStartValue( 0.0f );
                     t->setEndValue( 1.0f );
-                    // t->setStartTime(d->animationTime());
                     t->setDuration( 150 );
                     startAnimation( t );
+                }
+            }
+            else if ( element == PE_IndicatorCheckBox && widget && widget->property( "isSwitchButton" ).toBool() == true )
+            {
+                if ( ( state & State_On ) != ( oldState & State_On ) )
+                {
+                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    t->setStartValue( animationValue( styleObject, "_q_thumb_pos", oldState & State_On ? 1.0f : 0.0f ) );
+                    t->setEndValue( state & State_On ? 1.0f : 0.0f );
+                    t->setDuration( 150 );
+                    t->setEasingCurve( QEasingCurve::InOutCubic );
+                    startAnimationEx( t, styleObject, "_q_thumb_pos" );
+                }
+                if ( ( state & State_MouseOver ) != ( oldState & State_MouseOver ) )
+                {
+                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    t->setStartValue( animationValue( styleObject, "_q_thumb_scale", oldState & State_MouseOver ? 1.1f : 0.9f ) );
+                    t->setEndValue( state & State_MouseOver ? 1.1f : 0.9f );
+                    t->setDuration( 150 );
+                    t->setEasingCurve( QEasingCurve::InOutCubic );
+                    startAnimationEx( t, styleObject, "_q_thumb_scale" );
                 }
             }
         }
@@ -1896,8 +2046,15 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             break;
         case PE_IndicatorCheckBox :
-            drawCheckBox( option, painter, widget );
-            return;
+            if ( widget && widget->property( "isSwitchButton" ).toBool() )
+            {
+                drawSwitchButton( option, painter, widget );
+            }
+            else
+            {
+                drawCheckBox( option, painter, widget );
+            }
+            break;
         case PE_IndicatorBranch :
         {
             if ( option->state & State_Children )
@@ -2374,6 +2531,24 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             break;
         case PE_FrameTabBarBase :
             break;
+#if QT_VERSION < QT_VERSION_CHECK( 6, 3, 0 )
+        case PE_IndicatorTabClose :
+        {
+            QIcon tabBarcloseButtonIcon = fluentIcon( QChar( 0xE894 ) );
+            const int size              = proxy()->pixelMetric( QStyle::PM_SmallIconSize, option );
+            QIcon::Mode mode            = option->state & State_Enabled ? ( option->state & State_Raised ? QIcon::Active : QIcon::Normal )
+                                                                        : QIcon::Disabled;
+            if ( !( option->state & State_Raised ) && !( option->state & State_Sunken ) && !( option->state & QStyle::State_Selected ) )
+            {
+                mode = QIcon::Disabled;
+            }
+
+            QIcon::State state = option->state & State_Sunken ? QIcon::On : QIcon::Off;
+            QPixmap pixmap     = tabBarcloseButtonIcon.pixmap( size, mode, state );
+            proxy()->drawItemPixmap( painter, option->rect, Qt::AlignCenter, pixmap );
+            break;
+        }
+#endif
         default :
             QProxyStyle::drawPrimitive( element, option, painter, widget );
             break;
@@ -2387,9 +2562,11 @@ QRect FluentUI3Style::subElementRect( SubElement element, const QStyleOption* op
     {
         case SE_RadioButtonIndicator :
         case SE_CheckBoxIndicator :
+        {
             ret = QProxyStyle::subElementRect( element, option, widget );
             ret.moveLeft( ret.left() + contentItemHMargin );
-            break;
+        }
+        break;
         case SE_ComboBoxFocusRect :
         case SE_CheckBoxFocusRect :
         case SE_RadioButtonFocusRect :
@@ -2804,7 +2981,6 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
 {
     State flags = option->state;
-
     painter->save();
     painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
     switch ( element )
@@ -4223,9 +4399,9 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                     contentSize.rwidth() += mbi + 4;
                 }
 
-                //手动根据QToolButton的文字和Icon计算大小，
-                //因为QProxyStyle::sizeFromContents计算的大小不准确，无法满足FluentUI3的设计规范
-                //TODO
+                // 手动根据QToolButton的文字和Icon计算大小，
+                // 因为QProxyStyle::sizeFromContents计算的大小不准确，无法满足FluentUI3的设计规范
+                // TODO
             }
             break;
         }
@@ -4317,6 +4493,12 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
     {
         case PM_IndicatorWidth :
         case PM_IndicatorHeight :
+        {
+            if ( widget && widget->property( "isSwitchButton" ).toBool() )
+            {
+                return PM_IndicatorWidth == metric ? 40 : 20;
+            }
+        }
         case PM_ExclusiveIndicatorWidth :
         case PM_ExclusiveIndicatorHeight :
             res = 18;
@@ -4543,8 +4725,11 @@ void FluentUI3Style::unpolish( QWidget* widget )
 
 QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* option, const QWidget* widget ) const
 {
-    // if (sp == SP_TitleBarCloseButton) { return makeFluentIcon(QChar(0xE8BB)); }
+#if QT_VERSION > QT_VERSION_CHECK( 6, 3, 0 )
     if ( sp == SP_LineEditClearButton || sp == SP_TitleBarCloseButton || sp == SP_TabCloseButton )
+#else
+    if ( sp == SP_LineEditClearButton || sp == SP_TitleBarCloseButton )
+#endif
     {
         QIcon icon = fluentIcon( QChar( 0xE894 ) );
         return icon;
@@ -4600,6 +4785,92 @@ void FluentUI3Style::drawCheckBox( const QStyleOption* option, QPainter* painter
         painter->setPen( controlTextColor( option, QPalette::Window ) );
         painter->drawText( rect, Qt::AlignCenter, Dash12 );
     }
+
+    painter->restore();
+}
+
+void FluentUI3Style::drawSwitchButton( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
+{
+    Q_UNUSED( widget )
+
+    const QStyleOptionButton* btn = static_cast<const QStyleOptionButton*>( option );
+
+    painter->save();
+
+    QRect rect = btn->rect.adjusted( 1, 1, -1, -1 );
+
+    bool checked = btn->state & State_On;
+    bool hovered = btn->state & State_MouseOver;
+    bool pressed = btn->state & State_Sunken;
+    bool enabled = btn->state & State_Enabled;
+
+    QRect trackRect = rect.adjusted( 0, 0, 0, 0 );
+    int radius      = trackRect.height() / 2;
+    int margin      = 3;
+    int thumbRadius = radius - margin;
+
+    float pos     = animationValue( option->styleObject, "_q_thumb_pos", ( checked ? 1.0f : 0.0f ) );
+    float scale   = animationValue( option->styleObject, "_q_thumb_scale", ( hovered ? 1.1f : 0.9f ) );
+    float stretch = pressed ? 1.3f : 1.0f;
+
+    QColor thumbColor;
+
+    if ( !enabled )
+    {
+        thumbColor = winUI3Color( switchThumbDisabled );
+    }
+    else if ( checked )
+    {
+        thumbColor = winUI3Color( switchThumbOn );
+    }
+    else
+    {
+        thumbColor = winUI3Color( switchThumbOff );
+    }
+
+    // Hover / Pressed
+    if ( hovered )
+    {
+        thumbColor = thumbColor.lighter( 110 );
+    }
+
+    if ( pressed )
+    {
+        thumbColor = thumbColor.darker( 110 );
+    }
+
+    QPen pen;
+    pen.setColor( borderPenControlAlt( option ).color() );
+    if ( checked )
+    {
+        pen.setColor( controlFillBrush( option, ControlType::ControlAlt ).color() );
+    }
+    painter->setPen( pen );
+    painter->setBrush( controlFillBrush( option, ControlType::ControlAlt ) );
+    painter->drawRoundedRect( trackRect, radius, radius );
+
+    int baseRadius = thumbRadius;
+
+    // 放大后的半径
+    int r = int( baseRadius * scale );
+
+    // 椭圆尺寸（press 拉伸）
+    int w = int( r * 2 * stretch );
+    int h = int( r * 2 );
+
+    // 可移动范围（左右留 margin）
+    QRect innerRect = rect.adjusted( margin, margin, -margin, -margin );
+    int minX        = innerRect.left();
+    int maxX        = innerRect.right() - w + 1;
+
+    int x = minX + int( pos * ( maxX - minX ) );
+    int y = innerRect.top() + ( innerRect.height() - h ) / 2;
+
+    QRect thumbRect( x, y, w, h );
+
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( thumbColor );
+    painter->drawRoundedRect( thumbRect, r, r );
 
     painter->restore();
 }

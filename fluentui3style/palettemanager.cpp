@@ -27,7 +27,7 @@ void PaletteManager::applyLight(QPalette& p) const
     p.setColor(QPalette::Active, QPalette::BrightText, QColor(255,255,255,255));
     p.setColor(QPalette::Active, QPalette::ButtonText, QColor(0,0,0,255));
     p.setColor(QPalette::Active, QPalette::Base, QColor(255,255,255,255));
-    p.setColor(QPalette::Active, QPalette::Window, QColor(255,255,255,255));
+    p.setColor(QPalette::Active, QPalette::Window, QColor(/*255,255,255*/250, 250, 250,255));
     p.setColor(QPalette::Active, QPalette::Shadow, QColor(105,105,105,255));
     p.setColor(QPalette::Active, QPalette::Highlight, QColor(0,120,215,255));
     p.setColor(QPalette::Active, QPalette::HighlightedText, QColor(255,255,255,255));
