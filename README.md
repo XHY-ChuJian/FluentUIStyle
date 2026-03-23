@@ -2,8 +2,8 @@
 
 ## 预览
 
-<img width="1588" height="1102" alt="QQ20260306-155735" src="https://github.com/user-attachments/assets/5a13858e-26fd-4bdc-8d69-7138bc022a5b" />
-<img width="1588" height="1102" alt="QQ20260306-155809" src="https://github.com/user-attachments/assets/6f97ea1e-d19d-4580-96f4-d37b879bcab3" />
+<img width="1528" height="1148" alt="screenshot-20260323-092142" src="https://github.com/user-attachments/assets/730aa691-bc6e-4453-99de-9ad83ac0c3e0" />
+<img width="1528" height="1148" alt="screenshot-20260323-092155" src="https://github.com/user-attachments/assets/b7a94eb7-a137-41fe-8590-5935adb167aa" />
 
 ## 项目简介
 
