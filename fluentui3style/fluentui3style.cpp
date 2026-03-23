@@ -4545,7 +4545,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             {
                 const int fontSize = widget->font().pixelSize();
                 QFont f( assetFont );
-                f.setPixelSize( qRound( fontSize * 0.9f ) );  // a little bit smaller
+                f.setPixelSize( qRound( fontSize * 0.9f ) <= 0 ? 1 : qRound( fontSize * 0.9f ));  // a little bit smaller
                 QFontMetrics fm( f );
                 res += fm.horizontalAdvance( ChevronDownMed );
             }
@@ -4806,7 +4806,7 @@ void FluentUI3Style::drawSwitchButton( const QStyleOption* option, QPainter* pai
 
     QRect trackRect = rect.adjusted( 0, 0, 0, 0 );
     int radius      = trackRect.height() / 2;
-    int margin      = 3;
+    int margin      = 2;
     int thumbRadius = radius - margin;
 
     float pos     = animationValue( option->styleObject, "_q_thumb_pos", ( checked ? 1.0f : 0.0f ) );

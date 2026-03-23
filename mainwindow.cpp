@@ -368,6 +368,7 @@ void MainWindow::initMenuAndToolBar()
     // ================= 其他控件 =================
     // 添加禁用按钮
     QCheckBox* cb = new QCheckBox( "禁用", this );
+    cb->setProperty("isSwitchButton", true);
     connect( cb, &QCheckBox::clicked, this, [ = ]( bool checked ) { centralWidget()->setEnabled( !checked ); } );
     toolBar->addWidget( cb );
     toolBar->addSeparator();
@@ -438,9 +439,6 @@ void MainWindow::init()
     initMenuAndToolBar();
 
     ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
-    ui->spinBox_2->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
-    ui->spinBox_3->setProperty( "spinBoxButtonLayout", ArrowsHorizontalRight );
-    ui->doubleSpinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
 
     ui->checkBox_5->setText("Off");
 
@@ -571,5 +569,33 @@ void MainWindow::on_checkBox_5_checkStateChanged(Qt::CheckState state)
 void MainWindow::on_checkBox_5_stateChanged(int arg1)
 {
     ui->checkBox_5->setText( arg1 == Qt::Checked ? "On" : "Off" );
+}
+
+
+void MainWindow::on_radioButton_7_clicked()
+{
+    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
+    ui->spinBox->setFrame( ui->spinBox->hasFrame() );
+}
+
+
+void MainWindow::on_radioButton_4_clicked()
+{
+    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
+    ui->spinBox->setFrame( ui->spinBox->hasFrame() );
+}
+
+
+void MainWindow::on_radioButton_5_clicked()
+{
+    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsHorizontalRight );
+    ui->spinBox->setFrame( ui->spinBox->hasFrame() );
+}
+
+
+void MainWindow::on_radioButton_6_clicked()
+{
+    ui->spinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
+    ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 

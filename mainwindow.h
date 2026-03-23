@@ -25,6 +25,14 @@ private slots:
 
     void on_checkBox_5_stateChanged(int arg1);
 
+    void on_radioButton_7_clicked();
+
+    void on_radioButton_4_clicked();
+
+    void on_radioButton_5_clicked();
+
+    void on_radioButton_6_clicked();
+
 private:
     void init();
     void initMenuAndToolBar();

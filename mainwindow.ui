@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1195</width>
+    <width>1152</width>
     <height>804</height>
    </rect>
   </property>
@@ -27,55 +27,6 @@
     <property name="bottomMargin">
      <number>7</number>
     </property>
-    <item row="0" column="0">
-     <widget class="QListWidget" name="listWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="currentRow">
-       <number>0</number>
-      </property>
-      <item>
-       <property name="text">
-        <string>基础控件</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>List</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tree</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Table &amp; Tab</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Mdi</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>SrollArea</string>
-       </property>
-      </item>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
@@ -700,19 +651,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>413</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <widget class="QSpinBox" name="spinBox">
              <property name="minimumSize">
               <size>
@@ -726,32 +664,46 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="spinBox_2">
-             <property name="maximum">
-              <number>99</number>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-             <property name="value">
-              <number>0</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="spinBox_3">
-             <property name="maximum">
-              <number>99</number>
-             </property>
-             <property name="value">
-              <number>99</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox">
-             <property name="minimumSize">
+             <property name="sizeHint" stdset="0">
               <size>
-               <width>80</width>
-               <height>31</height>
+               <width>413</width>
+               <height>20</height>
               </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButton_7">
+             <property name="text">
+              <string>Vertical</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButton_4">
+             <property name="text">
+              <string>HorizontalSides</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButton_5">
+             <property name="text">
+              <string>HorizontalRight</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButton_6">
+             <property name="text">
+              <string>PlusMinusHorizontalSides</string>
              </property>
             </widget>
            </item>
@@ -1144,7 +1096,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
+             <width>81</width>
              <height>1018</height>
             </rect>
            </property>
@@ -1170,6 +1122,55 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QListWidget" name="listWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="currentRow">
+       <number>0</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>基础控件</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>List</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Tree</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Table &amp; Tab</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Mdi</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>SrollArea</string>
+       </property>
+      </item>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1177,7 +1178,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1195</width>
+     <width>1152</width>
      <height>22</height>
     </rect>
    </property>
