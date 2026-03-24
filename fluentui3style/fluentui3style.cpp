@@ -1908,7 +1908,27 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
     painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
 
     int state = option->state;
-    if ( transitionsEnabled() && option->styleObject && ( element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton ) )
+    if ( transitionsEnabled() && option->styleObject && element == PE_IndicatorBranch && ( option->state & State_Children ) )
+    {
+        QObject* styleObject = option->styleObject;
+        int oldState         = styleObject->property( "_q_stylestate" ).toInt();
+        styleObject->setProperty( "_q_stylestate", int( option->state ) );
+        if ( ( oldState & State_Open ) != ( state & State_Open ) )
+        {
+            QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+            const qreal closedAngle = 0.0;
+            const bool isReverse    = option->direction == Qt::RightToLeft;
+            const bool isOpen       = option->state & State_Open;
+            const qreal openAngle   = isReverse ? -90.0 : 90.0;
+            QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) );
+            t->setStartValue( animation ? animation->currentValue() : ( oldState & State_Open ? openAngle : closedAngle ) );
+            t->setEndValue( isOpen ? openAngle : closedAngle );
+            t->setDuration( 120 );
+            t->setEasingCurve( QEasingCurve::InOutCubic );
+            startAnimation( t );
+        }
+    }
+    else if ( transitionsEnabled() && option->styleObject && ( element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton ) )
     {
         QObject* styleObject = option->styleObject;  // Can be widget or qquickitem
         int oldState         = styleObject->property( "_q_stylestate" ).toInt();
@@ -2065,8 +2085,20 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 f.setPointSize( 12 );
                 painter->setFont( f );
                 painter->setPen( option->palette.color( isOpen ? QPalette::Active : QPalette::Disabled, QPalette::WindowText ) );
-                const auto str = isOpen ? ChevronDownMed : ( isReverse ? ChevronLeftMed : ChevronRightMed );
-                painter->drawText( option->rect, Qt::AlignCenter, str );
+                QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                qreal angle                      = isOpen ? ( isReverse ? -90.0 : 90.0 ) : 0.0;
+                if ( animation )
+                {
+                    angle = animation->currentValue();
+                }
+                painter->save();
+                const QPointF c = option->rect.center();
+                painter->translate( c );
+                painter->rotate( angle );
+
+                QRect r( -option->rect.width() / 2, -option->rect.height() / 2, option->rect.width(), option->rect.height() );
+                painter->drawText( r, Qt::AlignCenter, isReverse ? ChevronLeftMed : ChevronRightMed );
+                painter->restore();
             }
         }
         break;
@@ -4418,12 +4450,8 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             }
 
             // FluentUI 3 列表项标准常量
-            const int FLUENT_H_MARGIN                             = 12;  // 水平边距（左右各12px）
-            [[maybe_unused]] const int FLUENT_V_MARGIN            = 8;   // 常规模式垂直边距（上下各8px）
-            [[maybe_unused]] const int FLUENT_V_MARGIN_COMPACT    = 4;   // 紧凑模式垂直边距
-            const int FLUENT_ITEM_HEIGHT                          = 40;  // 常规列表项总高度
-            [[maybe_unused]] const int FLUENT_ITEM_HEIGHT_COMPACT = 32;  // 紧凑列表项总高度
-
+            const int FLUENT_H_MARGIN    = 12;  // 水平边距（左右各12px）
+            const int FLUENT_ITEM_HEIGHT = 40;  // 常规列表项总高度
             if ( const auto* viewItemOpt = qstyleoption_cast<const QStyleOptionViewItem*>( option ) )
             {
                 if ( const QListView* lv = qobject_cast<const QListView*>( widget ); lv && lv->viewMode() != QListView::IconMode )
@@ -4442,6 +4470,15 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                         contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
                         contentSize.setHeight( 32 );
                         return contentSize;
+                    }
+                }
+                else if ( auto view = qobject_cast<const QTreeView*>( widget ); view && view->property( "ItemHeight" ).toInt() > 0 )
+                {
+                    contentSize    = QProxyStyle::sizeFromContents( type, option, size, widget );
+                    int itemHeight = view->property( "ItemHeight" ).toInt();
+                    if ( itemHeight > 0 )
+                    {
+                        contentSize.setHeight( itemHeight );
                     }
                 }
                 else
@@ -4545,7 +4582,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             {
                 const int fontSize = widget->font().pixelSize();
                 QFont f( assetFont );
-                f.setPixelSize( qRound( fontSize * 0.9f ) <= 0 ? 1 : qRound( fontSize * 0.9f ));  // a little bit smaller
+                f.setPixelSize( qRound( fontSize * 0.9f ) <= 0 ? 1 : qRound( fontSize * 0.9f ) );  // a little bit smaller
                 QFontMetrics fm( f );
                 res += fm.horizontalAdvance( ChevronDownMed );
             }

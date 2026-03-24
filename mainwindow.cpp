@@ -68,11 +68,6 @@ MainWindow::MainWindow( QWidget* parent )
     ui->setupUi( this );
 
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
-    const QString strStyleSheet = R"(
-    #widget, #widget_2,#widget_3,#widget_4,#widget_5,#widget_6,#widget_7,#widget_8,#widget_9,#widget_10
-    {border: 2px solid rgb(226, 226, 226); border-radius: 5px;}
-    )";
-    // setStyleSheet( strStyleSheet );
     QList<QWidget*> widgetList;
     widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7 << ui->widget_8
                << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13;
@@ -117,7 +112,7 @@ void MainWindow::loadChangelog()
         QString content = in.readAll();
         file.close();
         QStringList lines = content.split( "\n" );
-        for ( const QString& line : lines )
+        for ( const QString& line : std::as_const(lines) )
         {
             ui->log->append( line );
         }
@@ -442,6 +437,8 @@ void MainWindow::init()
 
     ui->checkBox_5->setText("Off");
 
+    ui->treeWidget->setProperty("ItemHeight", 32);
+
     {
         ui->scrollAreaWidgetContents->setAutoFillBackground( false );
     }
@@ -464,7 +461,7 @@ void MainWindow::init()
         // toolButton_3 带文字和图标以及4个菜单
         ui->toolButton_3->setAutoRaise( false );
         ui->toolButton_3->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-        ui->toolButton_3->setPopupMode( QToolButton::InstantPopup );
+        ui->toolButton_3->setPopupMode( QToolButton::MenuButtonPopup );
         ui->toolButton_3->setText( "菜单按钮" );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
         QMenu* menu                                                                  = new QMenu( ui->toolButton_3 );

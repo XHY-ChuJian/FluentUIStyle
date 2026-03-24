@@ -30,7 +30,7 @@
     <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -820,6 +820,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </property>
         <item row="0" column="0">
          <widget class="QTreeWidget" name="treeWidget">
+          <property name="animated">
+           <bool>true</bool>
+          </property>
+          <property name="ItemHeight" stdset="0">
+           <number>32</number>
+          </property>
           <column>
            <property name="text">
             <string>省份</string>
@@ -1096,7 +1102,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>81</width>
+             <width>98</width>
              <height>1018</height>
             </rect>
            </property>
