@@ -41,6 +41,11 @@ public:
                         QPainter* painter,
                         const QWidget* widget = nullptr ) const override;
 
+    void drawControl( ControlElement element,
+                     const QStyleOption* option,
+                     QPainter* painter,
+                     const QWidget* widget = nullptr ) const override;
+
     QRect subElementRect( SubElement element, const QStyleOption* option, const QWidget* widget = nullptr ) const override;
 
     QRect subControlRect( ComplexControl control,
@@ -48,11 +53,6 @@ public:
                           SubControl subControl,
                           const QWidget* widget ) const override;
 
-private:
-    void drawControl( ControlElement element,
-                      const QStyleOption* option,
-                      QPainter* painter,
-                      const QWidget* widget = nullptr ) const override;
     int styleHint( StyleHint hint,
                    const QStyleOption* opt      = nullptr,
                    const QWidget* widget        = nullptr,

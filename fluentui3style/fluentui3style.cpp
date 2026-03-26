@@ -4147,16 +4147,6 @@ void FluentUI3Style::polish( QWidget* widget )
             btn->setIcon( icon );
         }
     }
-    if ( auto dock = qobject_cast<QDockWidget*>( widget ) )
-    {
-        auto buttons = dock->findChildren<QAbstractButton*>();
-
-        for ( auto btn : std::as_const( buttons ) )
-        {
-            btn->setAttribute( Qt::WA_Hover, true );
-            btn->setMouseTracking( true );
-        }
-    }
     if ( widget && ( widget->objectName() == "ScrollLeftButton" || widget->objectName() == "ScrollRightButton" ) )
     {
         ( (QToolButton*)widget )->setAutoRaise( true );
