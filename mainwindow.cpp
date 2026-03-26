@@ -25,9 +25,36 @@
 #include "fluentuiappearance.h"
 #include "ui_mainwindow.h"
 
+class MenuOffsetFilter : public QObject
+{
+public:
+    explicit MenuOffsetFilter(QObject* parent = nullptr)
+        : QObject(parent)
+    {}
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override
+    {
+        if (event->type() == QEvent::Show)
+        {
+            if (auto menu = qobject_cast<QMenu*>(obj))
+            {
+                auto menuParent =  menu->parentWidget();
+                qDebug()<< menu->menuAction()->parentWidget();
+                if (menuParent && menuParent->inherits("QMenuBar") )
+                {
+                    QPoint pos = menu->pos();
+                    menu->move(pos + QPoint(2, 0));
+                }
+            }
+        }
+
+        return QObject::eventFilter(obj, event);
+    }
+};
+
 // 存储所有需要更新图标的action及其对应的图标代码
 QMap<QAction*, QString> actionIconMap;
-
 // 存储所有需要更新图标的menu及其对应的图标代码
 QMap<QMenu*, QString> menuIconMap;
 
@@ -66,6 +93,7 @@ MainWindow::MainWindow( QWidget* parent )
 {
     setAttribute( Qt::WA_StyledBackground );
     ui->setupUi( this );
+    qApp->installEventFilter(new MenuOffsetFilter(qApp));
 
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
     QList<QWidget*> widgetList;
@@ -404,6 +432,7 @@ void MainWindow::updateActionIcons()
         ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
         ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
+        ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
     }
 
     // 更新action图标
@@ -477,6 +506,8 @@ void MainWindow::init()
         ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
 
         ui->toolButton_4->setMenu( menu );
+
+        ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
     }
 
     {

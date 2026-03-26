@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
     resources.qrc
     fluentui3style/fluentui3style.cpp
     fluentui3style/fluentui3style.h
+    fluentui3style/fluentui3colors.cpp
+    fluentui3style/fluentui3colors.h
     fluentui3style/fluentuiappearance.cpp
     fluentui3style/fluentuiappearance.h
     fluentui3style/palettemanager.cpp

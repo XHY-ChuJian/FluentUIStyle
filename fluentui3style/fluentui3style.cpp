@@ -1,4 +1,5 @@
 #include "fluentui3style.h"
+#include "fluentui3colors.h"
 
 #include <QApplication>
 #include <QBitmap>
@@ -97,101 +98,6 @@ static inline void drawRoundedRect( QPainter* p, R&& rect, P&& pen, B&& brush )
     p->setBrush( brush );
     p->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 }
-
-static constexpr int percentToAlpha( double percent )
-{
-    return qRound( percent * 255. / 100. );
-}
-
-static constexpr std::array<QColor, 37> WINUI3ColorsLight {
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 3.73 ) ),   // subtleHighlightColor (fillSubtleSecondary)
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 2.41 ) ),   // subtlePressedColor (fillSubtleTertiary)
-    QColor( 0x00, 0x00, 0x00, 0x0F ),                     // frameColorLight
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 60.63 ) ),  // frameColorStrong
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 21.69 ) ),  // frameColorStrongDisabled
-    QColor( 0x00, 0x00, 0x00, 0x72 ),                     // controlStrongFill
-    QColor( 0x00, 0x00, 0x00, 0x29 ),                     // controlStrokeSecondary
-    QColor( 0x00, 0x00, 0x00, 0x14 ),                     // controlStrokePrimary
-    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // menuPanelFill
-    QColor( 0x00, 0x00, 0x00, 0x66 ),                     // controlStrokeOnAccentSecondary
-    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // controlFillSolid
-    QColor( 0x75, 0x75, 0x75, 0x66 ),                     // surfaceStroke
-    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // focusFrameInnerStroke
-    QColor( 0x00, 0x00, 0x00, 0xFF ),                     // focusFrameOuterStroke
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 70 ) ),     // fillControlDefault
-    QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 50 ) ),     // fillControlSecondary
-    QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 30 ) ),     // fillControlTertiary
-    QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 30 ) ),     // fillControlDisabled
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // fillControlInputActive
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 2.41 ) ),   // fillControlAltSecondary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 5.78 ) ),   // fillControlAltTertiary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 9.24 ) ),   // fillControlAltQuarternary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 0.00 ) ),   // fillControlAltDisabled
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 100 ) ),    // fillAccentDefault
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 90 ) ),     // fillAccentSecondary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 80 ) ),     // fillAccentTertiary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 21.69 ) ),  // fillAccentDisabled
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 89.56 ) ),  // textPrimary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 60.63 ) ),  // textSecondary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 36.14 ) ),  // textDisabled
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // textOnAccentPrimary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 70 ) ),     // textOnAccentSecondary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // textOnAccentDisabled
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 8.03 ) ),   // dividerStrokeDefault
-    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // switchThumbOn
-    QColor( 0x5A, 0x5A, 0x5A, 0xFF ),                     // switchThumbOff
-    QColor( 0x5A, 0x5A, 0x5A, percentToAlpha( 40 ) ),     // switchThumbDisabled
-};
-
-static std::array<QColor, 37> WINUI3ColorsDark {
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.05 ) ),   // subtleHighlightColor (fillSubtleSecondary)
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // subtlePressedColor (fillSubtleTertiary)
-    QColor( 0xFF, 0xFF, 0xFF, 0x12 ),                     // frameColorLight
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 60.47 ) ),  // frameColorStrong
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 15.81 ) ),  // frameColorStrongDisabled
-    QColor( 0xFF, 0xFF, 0xFF, 0x8B ),                     // controlStrongFill
-    QColor( 0xFF, 0xFF, 0xFF, 0x18 ),                     // controlStrokeSecondary
-    QColor( 0xFF, 0xFF, 0xFF, 0x12 ),                     // controlStrokePrimary
-    // QColor( 0x0F, 0x0F, 0x0F, 0xFF ),                     // menuPanelFill
-    QColor( 45, 45, 45 ),                                 // menuPanelFill
-    QColor( 0xFF, 0xFF, 0xFF, 0x14 ),                     // controlStrokeOnAccentSecondary
-    QColor( 0x45, 0x45, 0x45, 0xFF ),                     // controlFillSolid
-    QColor( 0x75, 0x75, 0x75, 0x66 ),                     // surfaceStroke
-    QColor( 0x00, 0x00, 0x00, 0xFF ),                     // focusFrameInnerStroke
-    QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // focusFrameOuterStroke
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.05 ) ),   // fillControlDefault
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 8.37 ) ),   // fillControlSecondary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 3.26 ) ),   // fillControlTertiary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // fillControlDisabled
-    QColor( 0x1E, 0x1E, 0x1E, percentToAlpha( 70 ) ),     // fillControlInputActive
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 10.0 ) ),   // fillControlAltDefault
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // fillControlAltSecondary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.98 ) ),   // fillControlAltTertiafillCy
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 0.00 ) ),   // controlAltDisabled
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 100 ) ),    // fillAccentDefault
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 90 ) ),     // fillAccentSecondary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 80 ) ),     // fillAccentTertiary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 15.81 ) ),  // fillAccentDisabled
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // textPrimary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 78.6 ) ),   // textSecondary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 36.28 ) ),  // textDisabled
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 100 ) ),    // textOnAccentPrimary
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 70 ) ),     // textOnAccentSecondary
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 53.02 ) ),  // textOnAccentDisabled
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 8.37 ) ),   // dividerStrokeDefault
-    QColor( 0x1F, 0x1F, 0x1F, 0xFF ),                     // switchThumbOn
-    QColor( 0x5A, 0x5A, 0x5A, 0xFF ),                     // switchThumbOff
-    QColor( 0x5A, 0x5A, 0x5A, percentToAlpha( 40 ) ),     // switchThumbDisabled
-};
-
-// Color of close Button in Titlebar (default + hover)
-static constexpr QColor shellCaptionCloseFillColorPrimary( 0xC4, 0x2B, 0x1C, 0xFF );
-static constexpr QColor shellCaptionCloseTextFillColorPrimary( 0xFF, 0xFF, 0xFF, 0xFF );
-// Color of close Button in Titlebar (pressed + disabled)
-static constexpr QColor shellCaptionCloseFillColorSecondary( 0xC4, 0x2B, 0x1C, 0xE6 );
-static constexpr QColor shellCaptionCloseTextFillColorSecondary( 0xFF, 0xFF, 0xFF, 0xB3 );
-
-static std::array<std::array<QColor, 37>, 2> WINUI3Colors { WINUI3ColorsLight, WINUI3ColorsDark };
 
 static qreal radioButtonInnerRadius( int state, const QStyleOption* option, const QWidget* widget, int indicatorSize )
 {
@@ -1902,6 +1808,63 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
     painter->restore();
 }
 
+void FluentUI3Style::drawSpecialButton( QPainter* painter, const QStyleOption* option, const QWidget* widget, bool& isReturn ) const
+{
+    isReturn = false;
+    if ( !widget )
+        return;
+
+    const QString objectName = widget->objectName();
+    const bool isHover       = option->state & State_MouseOver;
+    const bool isDown        = option->state & State_Sunken;
+
+    if ( objectName == "qt_dockwidget_closebutton" )
+    {
+        isReturn = true;
+        if ( isDown )
+        {
+            painter->setBrush( shellCaptionCloseFillColorSecondary );
+        }
+        else if ( isHover )
+        {
+            painter->setBrush( shellCaptionCloseFillColorPrimary );
+        }
+        else
+        {
+            return;
+        }
+    }
+    else if ( objectName == "qt_dockwidget_floatbutton" )
+    {
+        isReturn = true;
+        if ( isDown )
+        {
+            painter->setBrush( winUI3Color( subtleHighlightColor ).darker( 110 ) );
+        }
+        else if ( isHover )
+        {
+            painter->setBrush( winUI3Color( subtleHighlightColor ) );
+        }
+        else
+        {
+            return;
+        }
+    }
+    else if ( objectName == "ScrollLeftButton" || objectName == "ScrollRightButton" )
+    {
+        isReturn = true;
+        return;  // 无绘制
+    }
+    else
+    {
+        isReturn = false;
+        return;  // 不处理其他按钮
+    }
+
+    painter->setRenderHint( QPainter::Antialiasing );
+    painter->drawRect( option->rect );
+}
+
 void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
 {
     PainterStateGuard guard( painter );
@@ -2143,59 +2106,61 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         break;
         case PE_PanelButtonTool :
         {
-            PainterStateGuard guard( painter );
-            const bool isHover = option->state & State_MouseOver;
-            const bool isDown  = option->state & State_Sunken;
-            QRect r            = option->rect;
+            painter->save();
             painter->setPen( Qt::NoPen );
-            if ( widget && widget->objectName() == "qt_dockwidget_closebutton" )
-            {
-                if ( isHover )
-                {
-                    painter->setBrush( QColor( 232, 17, 35 ) );  // Win11 close hover 红色
-                }
-                else if ( isDown )
-                {
-                    painter->setBrush( QColor( 241, 112, 122 ) );
-                }
-                else
-                {
-                    return;
-                }
 
-                painter->setRenderHint( QPainter::Antialiasing );
-                painter->drawRect( r );
+            bool isReturn = false;
+            drawSpecialButton( painter, option, widget, isReturn );
+            if ( isReturn )
+            {
+                painter->restore();
                 return;
             }
-            else if ( widget && widget->objectName() == "qt_dockwidget_floatbutton" )
-            {
-                if ( isHover )
-                {
-                    painter->setBrush( QColor( 120, 120, 120, 40 ) );  // Fluent hover 灰
-                }
-                else if ( isDown )
-                {
-                    painter->setBrush( QColor( 120, 120, 120, 80 ) );
-                }
-                else
-                {
-                    return;
-                }
+            painter->restore();
 
-                painter->setRenderHint( QPainter::Antialiasing );
-                painter->drawRect( r );
+            const bool isEnabled   = state & QStyle::State_Enabled;
+            const bool isMouseOver = state & QStyle::State_MouseOver;
+            const bool isRaised    = state & QStyle::State_Raised;
+            const QRectF rect      = option->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
+
+            if (state &State_AutoRaise)
+            {
+                painter->setPen( Qt::NoPen );
+                painter->setBrush(Qt::NoBrush);
+
+                if (state & QStyle::State_Sunken && isEnabled)
+                {
+                    painter->setBrush( winUI3Color(subtlePressedColor) );
+                }
+                else if (isMouseOver && isEnabled)
+                {
+                    painter->setBrush( winUI3Color(subtleHighlightColor) );
+                }
+                painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
                 return;
             }
-            // underMouse无边框
-            else if ( widget && widget->objectName() == "ScrollLeftButton" )
+
+            if ( ( !isMouseOver && !isRaised ) || !isEnabled)
             {
-                return;
+                painter->setPen( Qt::NoPen );
             }
-            else if ( widget && widget->objectName() == "ScrollRightButton" )
+            else
             {
-                return;
+                painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokePrimary ] );
+            }
+
+            drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
+            painter->setBrush( controlFillBrush( option, ControlType::Control ) );
+            painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+
+            if ( isRaised )
+            {
+                const qreal sublineOffset = secondLevelRoundingRadius - 0.5;
+                painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokeSecondary ] );
+                painter->drawLine( rect.bottomLeft() + QPointF( sublineOffset, 0.5 ), rect.bottomRight() + QPointF( -sublineOffset, 0.5 ) );
             }
         }
+        break;
         case PE_PanelButtonBevel :
         {
             const bool isEnabled   = state & QStyle::State_Enabled;
@@ -3010,6 +2975,46 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
     return ret;
 }
 
+void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
+    {
+        // QRectF tabRect = tab->rect.marginsRemoved( QMargins( 2, 2, 0, 0 ) );
+        QRectF tabRect = tab->rect.marginsRemoved( QMargins( 0, 0, 0, 0 ) );
+        painter->setPen( Qt::NoPen );
+        painter->setBrush( tab->palette.base() );
+        if ( tab->state & State_Selected )
+        {
+            painter->setBrush( winUI3Color( tabBarSelectedBackground ) );
+
+            const int arcLength = 16;
+            QList<QPointF> pts;
+            pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft()
+                << tabRect.topLeft() << tabRect.topRight() << tabRect.bottomRight()
+                << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
+
+            auto path = QStyleHelper::buildRoundedPolyline( pts, 7 );
+            painter->fillPath( path, painter->brush() );
+        }
+        else if ( tab->state & State_MouseOver )
+        {
+            painter->setBrush( winUI3Color( tabBarHoverBackground ) );
+
+            painter->drawRect( tabRect );
+        }
+        else
+        {
+            painter->setBrush( tab->palette.window() );
+        }
+
+        painter->setBrush( Qt::NoBrush );
+        painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color()
+                                                   : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
+    }
+#endif  // QT_CONFIG(tabbar)
+}
+
 void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
 {
     State flags = option->state;
@@ -3029,42 +3034,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 #endif  // QT_CONFIG(combobox)
             break;
         case CE_TabBarTabShape :
-#if QT_CONFIG( tabbar )
-            if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
-            {
-                // QRectF tabRect = tab->rect.marginsRemoved( QMargins( 2, 2, 0, 0 ) );
-                QRectF tabRect = tab->rect.marginsRemoved( QMargins( 0, 0, 0, 0 ) );
-                painter->setPen( Qt::NoPen );
-                painter->setBrush( tab->palette.base() );
-                if ( tab->state & State_Selected )
-                {
-                    painter->setBrush( colorSchemeIndex == 0 ? QColor( 230, 230, 230 ) : QColor( 60, 60, 60 ) );
-
-                    const int arcLength = 16;
-                    QList<QPointF> pts;
-                    pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft()
-                        << tabRect.topLeft() << tabRect.topRight() << tabRect.bottomRight()
-                        << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
-
-                    auto path = QStyleHelper::buildRoundedPolyline( pts, 7 );
-                    painter->fillPath( path, painter->brush() );
-                }
-                else if ( tab->state & State_MouseOver )
-                {
-                    painter->setBrush( colorSchemeIndex == 0 ? QColor( 0, 0, 0, 18 ) : QColor( 255, 255, 255, 18 ) );
-
-                    painter->drawRect( tabRect );
-                }
-                else
-                {
-                    painter->setBrush( tab->palette.window() );
-                }
-
-                painter->setBrush( Qt::NoBrush );
-                painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color()
-                                                           : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
-            }
-#endif  // QT_CONFIG(tabbar)
+            drawTabBarTabShape( option, painter, widget );
             break;
         case CE_ToolButtonLabel :
 #if QT_CONFIG( toolbutton )
@@ -4419,6 +4389,10 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             if ( auto optionTbtn = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
             {
+                if (optionTbtn->toolButtonStyle == Qt::ToolButtonIconOnly)
+                {
+                    contentSize += QSize( 4 , 4 );
+                }
                 if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && optionTbtn->toolButtonStyle == Qt::ToolButtonTextBesideIcon )
                 {
                     const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
@@ -4430,10 +4404,6 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                     const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
                     contentSize.rwidth() += mbi + 4;
                 }
-
-                // 手动根据QToolButton的文字和Icon计算大小，
-                // 因为QProxyStyle::sizeFromContents计算的大小不准确，无法满足FluentUI3的设计规范
-                // TODO
             }
             break;
         }

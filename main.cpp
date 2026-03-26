@@ -16,6 +16,7 @@
 #include <QPropertyAnimation>
 
 #include "mainwindow.h"
+#include "qtoolbar.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,8 +24,6 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-#else
-    // qputenv("QT_SCALE_FACTOR", "1.5");
 #endif
 
     QApplication a(argc, argv);
@@ -40,7 +39,6 @@ int main(int argc, char *argv[])
     fluentUIAppearance.initialize();
 
     MainWindow w;
-
     //动态切换标题栏颜色建议重启软件
     // fluentUIAppearance.setMainWindow(&w);
 
