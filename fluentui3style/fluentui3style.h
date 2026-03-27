@@ -8,6 +8,8 @@
 #include <QSvgRenderer>
 #include <QTabBar>
 
+#include "fluentui3colors.h"
+
 enum class ControlType
 {
     Control,
@@ -72,8 +74,15 @@ public:
 private:
     void drawCheckBox( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
     void drawSwitchButton( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
-    void drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
     void drawSpecialButton( QPainter* painter, const QStyleOption* option, const QWidget* widget, bool& isReturn ) const;
+
+    void drawTabBarTabLabel( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+
+    void drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+    void drawCapsuleTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
 
     QPen borderPenControlAlt( const QStyleOption* option ) const;
 
@@ -84,7 +93,7 @@ private:
     QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
 
     void drawLineEditFrame( QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable = true ) const;
-    QColor winUI3Color( enum WINUI3Color col ) const;
+    QColor winUI3Color( WINUI3Color col ) const;
 
     QIcon fluentIcon( const QChar& ch ) const;
 

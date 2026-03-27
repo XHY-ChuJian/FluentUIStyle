@@ -23,6 +23,7 @@
 #include <palettemanager.h>
 
 #include "fluentuiappearance.h"
+#include "qdebug.h"
 #include "ui_mainwindow.h"
 
 class MenuOffsetFilter : public QObject
@@ -98,7 +99,7 @@ MainWindow::MainWindow( QWidget* parent )
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
     QList<QWidget*> widgetList;
     widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7 << ui->widget_8
-               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13;
+               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_15 << ui->widget_14 << ui->widget_17;
     for ( QWidget* w : widgetList )
     {
         // draw border in style
@@ -106,7 +107,7 @@ MainWindow::MainWindow( QWidget* parent )
         w->setProperty( "fluentBorder", true );
     }
 
-    ui->tableWidget->verticalHeader()->setMinimumSectionSize( 32 );
+    // ui->tableWidget->verticalHeader()->setMinimumSectionSize( 32 );
 
     init();
     ui->stackedWidget->setCurrentIndex( 0 );
@@ -421,10 +422,11 @@ void MainWindow::initMenuAndToolBar()
 void MainWindow::updateActionIcons()
 {
     {
-        // TabBar添加图标
-        ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
-        ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
+        ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ueA86" ) );
+        ui->tabWidget->setTabIcon( 1, createFluentIcon( "\uE7F3" ) );
         ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
+        ui->tabWidget->setTabIcon( 3, createFluentIcon( "\uE836" ) );
+        ui->tabWidget->setTabIcon( 4, createFluentIcon( "\uE9F5" ) );
     }
 
     {
@@ -468,15 +470,68 @@ void MainWindow::init()
 
     ui->treeWidget->setProperty("ItemHeight", 32);
 
-    {
-        ui->scrollAreaWidgetContents->setAutoFillBackground( false );
-    }
+    ui->tabWidget->tabBar()->setProperty("TextAlign", int(Qt::AlignVCenter | Qt::AlignLeft));
 
     {
-        // TabBar添加图标
-        ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ue8a5" ) );
-        ui->tabWidget->setTabIcon( 1, createFluentIcon( "\ue8b5" ) );
-        ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
+        ui->tabGrowPivot->clear();
+        for (int var = 0; var < 5; ++var)
+        {
+            auto lab = new QLabel( QString("Content of Page%1").arg(var + 1) );
+            lab->setAlignment( Qt::AlignCenter );
+            QFont font = lab->font();
+            font.setPixelSize( 44 );
+            font.setBold( true );
+            lab->setFont( font );
+             ui->tabGrowPivot->addTab( lab, QString("Page%1").arg(var + 1) );
+        }
+
+        ui->tabSlidePivot->clear();
+        for (int var = 0; var < 5; ++var)
+        {
+            auto lab = new QLabel( QString("Content of Page%1").arg(var + 1) );
+            lab->setAlignment( Qt::AlignCenter );
+            QFont font = lab->font();
+            font.setPixelSize( 44 );
+            font.setBold( true );
+            lab->setFont( font );
+            ui->tabSlidePivot->addTab( lab, QString("Page%1").arg(var + 1) );
+        }
+
+         ui->tabWidget->clear();
+         for (int var = 0; var < 5; ++var)
+         {
+             auto lab = new QLabel( QString("Content of Tab%1").arg(var + 1) );
+             lab->setAlignment( Qt::AlignCenter );
+             QFont font = lab->font();
+             font.setPixelSize( 44 );
+             font.setBold( true );
+             lab->setFont( font );
+             ui->tabWidget->addTab( lab, QString("Tab%1").arg(var + 1) );
+         }
+         ui->tabWidget->setTabIcon( 0, createFluentIcon( "\ueA86" ) );
+         ui->tabWidget->setTabIcon( 1, createFluentIcon( "\uE7F3" ) );
+         ui->tabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
+         ui->tabWidget->setTabIcon( 3, createFluentIcon( "\uE836" ) );
+         ui->tabWidget->setTabIcon( 4, createFluentIcon( "\uE9F5" ) );
+
+    }
+
+    ui->tabGrowPivot->tabBar()->setProperty("tabStyle", "Pivot");
+    ui->tabGrowPivot->tabBar()->setProperty("pivotIndicatorAnimation", "grow");
+
+    ui->tabSlidePivot->tabBar()->setProperty("tabStyle", "Pivot");
+    ui->tabSlidePivot->tabBar()->setProperty("pivotIndicatorAnimation", "slide");
+
+    //设置前面三个TAbBar的字体，大两号
+    QFont tabFont = ui->tabWidget->tabBar()->font();
+    tabFont.setPixelSize( tabFont.pixelSize() + 2 );
+    ui->tabWidget->tabBar()->setFont( tabFont );
+    ui->tabGrowPivot->tabBar()->setFont( tabFont );
+    ui->tabSlidePivot->tabBar()->setFont( tabFont );
+
+
+    {
+        ui->scrollAreaWidgetContents->setAutoFillBackground( false );
     }
 
     {
