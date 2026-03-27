@@ -1,5 +1,4 @@
 #include "fluentui3style.h"
-#include "fluentui3colors.h"
 
 #include <QApplication>
 #include <QBitmap>
@@ -25,6 +24,7 @@
 #include <QStyleHints>
 #include <QSysInfo>
 #include <QTableView>
+#include <QTabBar>
 #include <QTextEdit>
 #include <QTextLayout>
 #include <QToolButton>
@@ -32,7 +32,12 @@
 
 #include <array>
 
-#include "fluentuiappearance.h"
+// #include <private/qcommonstyle_p.h>
+// #include <private/qstylehelper_p.h>
+// #include <private/qstyleanimation_p.h>
+// #include <private/qhexstring_p.h>
+
+#include "fluentui3colors.h"
 #include "qapplication.h"
 #include "qcheckbox.h"
 #include "qhexstring_p.h"
@@ -41,6 +46,7 @@
 #include "qstyleoption.h"
 
 #if QT_VERSION <= QT_VERSION_CHECK( 6, 8, 0 )
+#    include "fluentuiappearance.h"
 #    include "palettemanager.h"
 #endif
 
@@ -97,6 +103,127 @@ static inline void drawRoundedRect( QPainter* p, R&& rect, P&& pen, B&& brush )
     p->setPen( pen );
     p->setBrush( brush );
     p->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+}
+
+// From QCommonStylePrivate::tabLayout
+static inline void tabLayout( const QStyle* proxyStyle,
+                              const QStyleOptionTab* opt,
+                              const QWidget* widget,
+                              QRect* textRect,
+                              QRect* iconRect )
+{
+    Q_ASSERT( textRect );
+    Q_ASSERT( iconRect );
+    QRect tr          = opt->rect;
+    bool verticalTabs = opt->shape == QTabBar::RoundedEast || opt->shape == QTabBar::RoundedWest || opt->shape == QTabBar::TriangularEast
+                        || opt->shape == QTabBar::TriangularWest;
+    if ( verticalTabs )
+    {
+        tr.setRect( 0, 0, tr.height(), tr.width() );  // 0, 0 as we will have a translate transform
+    }
+
+    int verticalShift   = proxyStyle->pixelMetric( QStyle::PM_TabBarTabShiftVertical, opt, widget );
+    int horizontalShift = proxyStyle->pixelMetric( QStyle::PM_TabBarTabShiftHorizontal, opt, widget );
+    int hpadding        = proxyStyle->pixelMetric( QStyle::PM_TabBarTabHSpace, opt, widget ) / 2;
+    int vpadding        = proxyStyle->pixelMetric( QStyle::PM_TabBarTabVSpace, opt, widget ) / 2;
+    if ( opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth )
+    {
+        verticalShift = -verticalShift;
+    }
+    tr.adjust( hpadding, verticalShift + vpadding, horizontalShift - hpadding, -vpadding );
+    bool selected = opt->state & QStyle::State_Selected;
+    if ( selected )
+    {
+        tr.setTop( tr.top() - verticalShift );
+        tr.setRight( tr.right() - horizontalShift );
+    }
+
+    // left widget
+    if ( !opt->leftButtonSize.isEmpty() )
+    {
+        tr.setLeft( tr.left() + 4 + ( verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width() ) );
+    }
+    // right widget
+    if ( !opt->rightButtonSize.isEmpty() )
+    {
+        tr.setRight( tr.right() - 4 - ( verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width() ) );
+    }
+
+    // icon
+    if ( !opt->icon.isNull() )
+    {
+        QSize iconSize = opt->iconSize;
+        if ( !iconSize.isValid() )
+        {
+            int iconExtent = proxyStyle->pixelMetric( QStyle::PM_SmallIconSize, opt, widget );
+            iconSize       = QSize( iconExtent, iconExtent );
+        }
+        QSize tabIconSize = opt->icon.actualSize( iconSize,
+                                                  ( opt->state & QStyle::State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
+                                                  ( opt->state & QStyle::State_Selected ) ? QIcon::On : QIcon::Off );
+        // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
+        tabIconSize = QSize( qMin( tabIconSize.width(), iconSize.width() ), qMin( tabIconSize.height(), iconSize.height() ) );
+
+        const int offsetX = ( iconSize.width() - tabIconSize.width() ) / 2;
+        *iconRect = QRect( tr.left() + offsetX, tr.center().y() - tabIconSize.height() / 2, tabIconSize.width(), tabIconSize.height() );
+        if ( !verticalTabs )
+        {
+            *iconRect = QStyle::visualRect( opt->direction, opt->rect, *iconRect );
+        }
+        tr.setLeft( tr.left() + tabIconSize.width() + 4 );
+    }
+
+    if ( !verticalTabs )
+    {
+        tr = QStyle::visualRect( opt->direction, opt->rect, tr );
+    }
+
+    *textRect = tr;
+}
+
+static inline QPainterPath buildRoundedPolyline( const QList<QPointF>& points, qreal radius )
+{
+    QPainterPath path;
+
+    if ( points.size() < 2 )
+    {
+        return path;
+    }
+
+    path.moveTo( points[ 0 ] );
+
+    for ( int i = 1; i < points.size() - 1; ++i )
+    {
+        const QPointF& p0 = points[ i - 1 ];
+        const QPointF& p1 = points[ i ];
+        const QPointF& p2 = points[ i + 1 ];
+
+        QVector2D v1( p1 - p0 );
+        QVector2D v2( p2 - p1 );
+
+        QVector2D v1n = v1.normalized();
+        QVector2D v2n = v2.normalized();
+
+        // 共线检测
+        if ( QVector2D::dotProduct( v1n, v2n ) > 0.999 )
+        {
+            path.lineTo( p1 );
+            continue;
+        }
+
+        qreal maxAllowedRadius = std::min( v1.length(), v2.length() ) / 2;
+        qreal r                = std::min( radius, maxAllowedRadius );
+
+        QPointF p1_before = p1 - r * v1n.toPointF();
+        QPointF p1_after  = p1 + r * v2n.toPointF();
+
+        path.lineTo( p1_before );
+        path.quadTo( p1, p1_after );
+    }
+
+    path.lineTo( points.last() );
+
+    return path;
 }
 
 static qreal radioButtonInnerRadius( int state, const QStyleOption* option, const QWidget* widget, int indicatorSize )
@@ -1134,7 +1261,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             if ( doTransition && ( state & State_Enabled ) && ( tb->features & QStyleOptionToolButton::HasMenu ) )
             {
                 QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
-                t->setEasingCurve( QEasingCurve::InOutSine );
+                // t->setEasingCurve( QEasingCurve::InOutSine );
                 qreal start = ( state & State_Sunken ) ? 0 : 180;
                 qreal end   = ( state & State_Sunken ) ? 180.0 : 0.0;
                 t->setStartValue( start );
@@ -1161,7 +1288,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             if ( doTransition && ( state & State_Enabled ) && false )  // combox视觉效果，好像是先弹窗后，状态才改变，所以暂时先不加动画
             {
                 QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
-                t->setEasingCurve( QEasingCurve::InOutSine );
+                // t->setEasingCurve( QEasingCurve::InOutSine );
                 qreal start = ( state & State_On ) ? 0 : 180;
                 qreal end   = ( state & State_On ) ? 180.0 : 0.0;
                 t->setStartValue( start );
@@ -1812,7 +1939,9 @@ void FluentUI3Style::drawSpecialButton( QPainter* painter, const QStyleOption* o
 {
     isReturn = false;
     if ( !widget )
+    {
         return;
+    }
 
     const QString objectName = widget->objectName();
     const bool isHover       = option->state & State_MouseOver;
@@ -1878,16 +2007,16 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         styleObject->setProperty( "_q_stylestate", int( option->state ) );
         if ( ( oldState & State_Open ) != ( state & State_Open ) )
         {
-            QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
-            const qreal closedAngle = 0.0;
-            const bool isReverse    = option->direction == Qt::RightToLeft;
-            const bool isOpen       = option->state & State_Open;
-            const qreal openAngle   = isReverse ? -90.0 : 90.0;
+            QNumberStyleAnimation* t         = new QNumberStyleAnimation( styleObject );
+            const qreal closedAngle          = 0.0;
+            const bool isReverse             = option->direction == Qt::RightToLeft;
+            const bool isOpen                = option->state & State_Open;
+            const qreal openAngle            = isReverse ? -90.0 : 90.0;
             QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) );
             t->setStartValue( animation ? animation->currentValue() : ( oldState & State_Open ? openAngle : closedAngle ) );
             t->setEndValue( isOpen ? openAngle : closedAngle );
             t->setDuration( 120 );
-            t->setEasingCurve( QEasingCurve::InOutCubic );
+            // t->setEasingCurve( QEasingCurve::InOutCubic );
             startAnimation( t );
         }
     }
@@ -1932,7 +2061,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     t->setStartValue( animationValue( styleObject, "_q_thumb_pos", oldState & State_On ? 1.0f : 0.0f ) );
                     t->setEndValue( state & State_On ? 1.0f : 0.0f );
                     t->setDuration( 150 );
-                    t->setEasingCurve( QEasingCurve::InOutCubic );
+                    // t->setEasingCurve( QEasingCurve::InOutCubic );
                     startAnimationEx( t, styleObject, "_q_thumb_pos" );
                 }
                 if ( ( state & State_MouseOver ) != ( oldState & State_MouseOver ) )
@@ -1941,7 +2070,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     t->setStartValue( animationValue( styleObject, "_q_thumb_scale", oldState & State_MouseOver ? 1.1f : 0.9f ) );
                     t->setEndValue( state & State_MouseOver ? 1.1f : 0.9f );
                     t->setDuration( 150 );
-                    t->setEasingCurve( QEasingCurve::InOutCubic );
+                    // t->setEasingCurve( QEasingCurve::InOutCubic );
                     startAnimationEx( t, styleObject, "_q_thumb_scale" );
                 }
             }
@@ -1982,10 +2111,8 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 const auto rect = QRectF( option->rect ).marginsRemoved( QMarginsF( 0.5, 0.5, 0.5, 0.5 ) );
                 const auto pen  = highContrastTheme ? frame->palette.buttonText().color() : winUI3Color( frameColorLight );
-                // drawRoundedRect( painter, rect, pen, frame->palette.base() );
                 painter->setPen( pen );
                 painter->setBrush( frame->palette.base() );
-                // painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
                 painter->drawRect( rect );
             }
 #endif  // QT_CONFIG(tabwidget)
@@ -2123,24 +2250,24 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             const bool isRaised    = state & QStyle::State_Raised;
             const QRectF rect      = option->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
 
-            if (state &State_AutoRaise)
+            if ( state & State_AutoRaise )
             {
                 painter->setPen( Qt::NoPen );
-                painter->setBrush(Qt::NoBrush);
+                painter->setBrush( Qt::NoBrush );
 
-                if (state & QStyle::State_Sunken && isEnabled)
+                if ( state & QStyle::State_Sunken && isEnabled )
                 {
-                    painter->setBrush( winUI3Color(subtlePressedColor) );
+                    painter->setBrush( winUI3Color( subtlePressedColor ) );
                 }
-                else if (isMouseOver && isEnabled)
+                else if ( isMouseOver && isEnabled )
                 {
-                    painter->setBrush( winUI3Color(subtleHighlightColor) );
+                    painter->setBrush( winUI3Color( subtleHighlightColor ) );
                 }
                 painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
                 return;
             }
 
-            if ( ( !isMouseOver && !isRaised ) || !isEnabled)
+            if ( ( !isMouseOver && !isRaised ) || !isEnabled )
             {
                 painter->setPen( Qt::NoPen );
             }
@@ -2977,42 +3104,386 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 
 void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
 {
-#if QT_CONFIG( tabbar )
     if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
     {
-        // QRectF tabRect = tab->rect.marginsRemoved( QMargins( 2, 2, 0, 0 ) );
-        QRectF tabRect = tab->rect.marginsRemoved( QMargins( 0, 0, 0, 0 ) );
-        painter->setPen( Qt::NoPen );
-        painter->setBrush( tab->palette.base() );
-        if ( tab->state & State_Selected )
+        if ( widget && widget->property( "tabStyle" ).toString() == "Pivot" )
         {
-            painter->setBrush( winUI3Color( tabBarSelectedBackground ) );
-
-            const int arcLength = 16;
-            QList<QPointF> pts;
-            pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft()
-                << tabRect.topLeft() << tabRect.topRight() << tabRect.bottomRight()
-                << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
-
-            auto path = QStyleHelper::buildRoundedPolyline( pts, 7 );
-            painter->fillPath( path, painter->brush() );
-        }
-        else if ( tab->state & State_MouseOver )
-        {
-            painter->setBrush( winUI3Color( tabBarHoverBackground ) );
-
-            painter->drawRect( tabRect );
+            drawPivotTab( tab, painter, widget );
         }
         else
         {
-            painter->setBrush( tab->palette.window() );
+            drawCapsuleTab( tab, painter, widget );
+        }
+    }
+}
+
+void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+    Q_UNUSED( widget )
+#if QT_CONFIG( tabbar )
+    // QRectF tabRect = tab->rect.marginsRemoved( QMargins( 2, 2, 0, 0 ) );
+    QRectF tabRect = tab->rect.marginsRemoved( QMargins( 0, 0, 0, 0 ) );
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( tab->palette.base() );
+
+    const qreal radius = 7;
+    if ( tab->state & State_Selected )
+    {
+        painter->setBrush( winUI3Color( tabBarSelectedBackground ) );
+
+        const int arcLength = 14;
+        QList<QPointF> pts;
+        pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() )
+            << tabRect.bottomLeft() << tabRect.topLeft()
+            << tabRect.topRight() << tabRect.bottomRight()
+            << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
+
+        QPainterPath path = buildRoundedPolyline( pts, radius );
+        painter->fillPath( path, painter->brush() );
+    }
+    else if ( tab->state & State_MouseOver )
+    {
+        painter->setBrush( winUI3Color( tabBarHoverBackground ) );
+
+        QList<QPointF> pts;
+        pts << tabRect.bottomLeft()
+            << tabRect.topLeft()
+            << tabRect.topRight()
+            << tabRect.bottomRight();
+
+        QPainterPath path = buildRoundedPolyline( pts, radius );
+        pts << tabRect.bottomLeft();
+        painter->drawPath( path );
+    }
+    else
+    {
+        painter->setBrush( tab->palette.window() );
+    }
+
+    painter->setBrush( Qt::NoBrush );
+    painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color()
+                                               : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
+#endif  // QT_CONFIG(tabbar)
+}
+
+void FluentUI3Style::drawPivotTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( tab->state & QStyle::State_Selected )
+    {
+        const QString animationType = widget ? widget->property( "pivotIndicatorAnimation" ).toString().toLower() : QString();
+        if ( animationType == "slide" )
+        {
+            drawPivotSlidingIndicator( tab, painter, widget );
+        }
+        else
+        {
+            drawPivotGrowingIndicator( tab, painter, widget );
+        }
+    }
+#endif
+}
+
+void FluentUI3Style::drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab )
+    {
+        return;
+    }
+
+    QObject* styleObject = tab->styleObject;
+    if ( !styleObject )
+    {
+        return;
+    }
+
+    constexpr qreal indicatorHeight = 3.0;
+    constexpr int indicatorMargin   = 10;
+    const QByteArray animKey        = "_q_pivot_indicator_grow";
+
+    const QRect r = tab->rect;
+    int targetWidth = r.width() - indicatorMargin * 2;
+    if ( targetWidth < 0 )
+    {
+        targetWidth = 0;
+    }
+
+    int currentTabIndex = -1;
+    if ( const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget ) )
+    {
+        currentTabIndex = tabBar->tabAt( r.center() );
+    }
+
+    const int previousTabIndex = styleObject->property( "_q_pivot_grow_selected_tab_index" ).toInt();
+
+    bool isMovingTab = false;
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
+#endif
+
+    bool selectionChanged = ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex );
+    if ( isMovingTab )
+    {
+        selectionChanged = false;
+    }
+
+    if ( selectionChanged )
+    {
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 300 );
+        t->setEasingCurve( QEasingCurve::InOutSine );
+        startAnimationEx( t, styleObject, animKey );
+    }
+
+    qreal progress = animationValue( styleObject, animKey, 1.0f );
+    if ( progress < 0.0 )
+    {
+        progress = 0.0;
+    }
+    else if ( progress > 1.0 )
+    {
+        progress = 1.0;
+    }
+
+    const qreal currentWidth = targetWidth * progress;
+    const QRect indicator( qRound( r.left() + indicatorMargin + ( targetWidth - currentWidth ) / 2.0 ),
+                           qRound( r.bottom() - indicatorHeight ),
+                           qRound( currentWidth ),
+                           qRound( indicatorHeight ) );
+
+    styleObject->setProperty( "_q_pivot_grow_selected_tab_index", currentTabIndex );
+
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( calculateAccentColor( tab ) );
+    painter->drawRoundedRect( indicator, indicatorHeight / 2.0, indicatorHeight / 2.0 );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab )
+    {
+        return;
+    }
+
+    QObject* styleObject = tab->styleObject;
+    if ( !styleObject )
+    {
+        return;
+    }
+
+    constexpr qreal indicatorHeight = 3.0;
+    constexpr int indicatorMargin   = 10;
+    const QByteArray animKey        = "_q_pivot_indicator_slide";
+
+    const QRect r = tab->rect;
+    int targetWidth = r.width() - indicatorMargin * 2;
+    if ( targetWidth < 0 )
+    {
+        targetWidth = 0;
+    }
+
+    const qreal targetLeft  = r.left() + indicatorMargin;
+    const qreal targetTop   = r.bottom() - indicatorHeight;
+    const qreal targetW     = targetWidth;
+    const qreal targetH     = indicatorHeight;
+
+    int currentTabIndex = -1;
+    if ( const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget ) )
+    {
+        currentTabIndex = tabBar->tabAt( r.center() );
+    }
+
+    const int previousTabIndex = styleObject->property( "_q_pivot_selected_tab_index" ).toInt();
+    bool isMovingTab           = false;
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
+#endif
+
+    qreal fromLeft = styleObject->property( "_q_pivot_indicator_from_left" ).toReal();
+    qreal fromTop  = styleObject->property( "_q_pivot_indicator_from_top" ).toReal();
+    qreal fromW    = styleObject->property( "_q_pivot_indicator_from_width" ).toReal();
+    qreal fromH    = styleObject->property( "_q_pivot_indicator_from_height" ).toReal();
+    qreal toLeft   = styleObject->property( "_q_pivot_indicator_to_left" ).toReal();
+    qreal toTop    = styleObject->property( "_q_pivot_indicator_to_top" ).toReal();
+    qreal toW      = styleObject->property( "_q_pivot_indicator_to_width" ).toReal();
+    qreal toH      = styleObject->property( "_q_pivot_indicator_to_height" ).toReal();
+
+    if ( toW <= 0.0 )
+    {
+        fromLeft = targetLeft;
+        fromTop  = targetTop;
+        fromW    = targetW;
+        fromH    = targetH;
+        toLeft   = targetLeft;
+        toTop    = targetTop;
+        toW      = targetW;
+        toH      = targetH;
+    }
+
+    bool selectionChanged = ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex );
+    if ( isMovingTab )
+    {
+        selectionChanged = false;
+    }
+
+    if ( selectionChanged )
+    {
+        const qreal progress = animationValue( styleObject, animKey, 1.0f );
+        const qreal currentLeft = fromLeft + ( toLeft - fromLeft ) * progress;
+        const qreal currentTop  = fromTop + ( toTop - fromTop ) * progress;
+        const qreal currentW    = fromW + ( toW - fromW ) * progress;
+        const qreal currentH    = fromH + ( toH - fromH ) * progress;
+
+        fromLeft = currentLeft;
+        fromTop  = currentTop;
+        fromW    = currentW;
+        fromH    = currentH;
+        toLeft   = targetLeft;
+        toTop    = targetTop;
+        toW      = targetW;
+        toH      = targetH;
+
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 300 );
+        t->setEasingCurve( QEasingCurve::InOutSine );
+        startAnimationEx( t, styleObject, animKey );
+    }
+    else if ( currentTabIndex < 0 || previousTabIndex < 0 )
+    {
+        fromLeft = targetLeft;
+        fromTop  = targetTop;
+        fromW    = targetW;
+        fromH    = targetH;
+        toLeft   = targetLeft;
+        toTop    = targetTop;
+        toW      = targetW;
+        toH      = targetH;
+    }
+
+    const qreal progress = animationValue( styleObject, animKey, 1.0f );
+    const qreal drawLeft = fromLeft + ( toLeft - fromLeft ) * progress;
+    const qreal drawTop  = fromTop + ( toTop - fromTop ) * progress;
+    const qreal drawW    = fromW + ( toW - fromW ) * progress;
+    const qreal drawH    = fromH + ( toH - fromH ) * progress;
+
+    styleObject->setProperty( "_q_pivot_selected_tab_index", currentTabIndex );
+    styleObject->setProperty( "_q_pivot_indicator_from_left", fromLeft );
+    styleObject->setProperty( "_q_pivot_indicator_from_top", fromTop );
+    styleObject->setProperty( "_q_pivot_indicator_from_width", fromW );
+    styleObject->setProperty( "_q_pivot_indicator_from_height", fromH );
+    styleObject->setProperty( "_q_pivot_indicator_to_left", toLeft );
+    styleObject->setProperty( "_q_pivot_indicator_to_top", toTop );
+    styleObject->setProperty( "_q_pivot_indicator_to_width", toW );
+    styleObject->setProperty( "_q_pivot_indicator_to_height", toH );
+
+    QRect indicator( qRound( drawLeft ), qRound( drawTop ), qRound( drawW ), qRound( drawH ) );
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( calculateAccentColor( tab ) );
+    painter->drawRoundedRect( indicator, indicatorHeight / 2.0, indicatorHeight / 2.0 );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+// From QCommonStyle::drawControl, but only for CE_TabBarTabLabel, and with some adjustments for FluentUI3
+void FluentUI3Style::drawTabBarTabLabel( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
+{
+    if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
+    {
+        QRect tr      = tab->rect;
+        int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
+        if ( widget )
+        {
+            auto textAlign = widget->property( "TextAlign" ).toString();
+            if ( !textAlign.isEmpty() )
+            {
+                alignment = textAlign.toInt() | Qt::TextShowMnemonic;
+            }
         }
 
-        painter->setBrush( Qt::NoBrush );
-        painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color()
-                                                   : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
+        if ( !proxy()->styleHint( SH_UnderlineShortcut, option, widget ) )
+        {
+            alignment |= Qt::TextHideMnemonic;
+        }
+
+        QRect iconRect;
+        tabLayout( proxy(), tab, widget, &tr, &iconRect );
+
+        // compute tr again, unless tab is moving, because the style may override subElementRect
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+        if ( tab->position != QStyleOptionTab::TabPosition::Moving )
+#endif
+        {
+            tr = proxy()->subElementRect( SE_TabBarTabText, option, widget );
+        }
+
+        if ( !tab->icon.isNull() )
+        {
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+            QPixmap tabIcon = tab->icon.pixmap( tab->iconSize,
+                                                QStyleHelper::getDpr( painter ),
+                                                ( tab->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
+                                                ( tab->state & State_Selected ) ? QIcon::On : QIcon::Off );
+#else
+            QPixmap tabIcon = tab->icon.pixmap( tab->iconSize,
+                                                ( tab->state & QStyle::State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
+                                                ( tab->state & QStyle::State_Selected ) ? QIcon::On : QIcon::Off );
+#endif
+            painter->drawPixmap( iconRect.x(), iconRect.y(), tabIcon );
+        }
+
+        // 选中或悬停：使用更高对比度文本色；普通状态：使用更柔和的边框浅色文本
+        QPalette textPalette = tab->palette;
+        const bool isEnabled = tab->state & State_Enabled;
+        const bool isHot     = tab->state & ( State_Selected | State_MouseOver );
+
+        QColor tabTextColor;
+        if ( !isEnabled )
+        {
+            tabTextColor = highContrastTheme ? tab->palette.buttonText().color() : winUI3Color( textDisabled );
+        }
+        else if ( isHot )
+        {
+            tabTextColor = highContrastTheme ? tab->palette.buttonText().color() : winUI3Color( textPrimary );
+        }
+        else
+        {
+            tabTextColor = highContrastTheme ? tab->palette.buttonText().color() : winUI3Color( textSecondary );
+        }
+
+        textPalette.setColor( QPalette::WindowText, tabTextColor );
+        textPalette.setColor( QPalette::ButtonText, tabTextColor );
+        textPalette.setColor( QPalette::Text, tabTextColor );
+
+        proxy()->drawItemText( painter, tr, alignment, textPalette, isEnabled, tab->text, QPalette::WindowText );
+
+        if ( tab->state & State_HasFocus )
+        {
+            const int OFFSET = 1 + pixelMetric( PM_DefaultFrameWidth, option, widget );
+
+            int x1, x2;
+            x1 = tab->rect.left();
+            x2 = tab->rect.right() - 1;
+
+            QStyleOptionFocusRect fropt;
+            fropt.QStyleOption::operator=( *tab );
+            fropt.rect.setRect( x1 + 1 + OFFSET, tab->rect.y() + OFFSET, x2 - x1 - 2 * OFFSET, tab->rect.height() - 2 * OFFSET );
+            drawPrimitive( PE_FrameFocusRect, &fropt, painter, widget );
+        }
     }
-#endif  // QT_CONFIG(tabbar)
 }
 
 void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
@@ -3022,7 +3493,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
     painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
     switch ( element )
     {
-        case QStyle::CE_ComboBoxLabel :
+        case CE_ComboBoxLabel :
 #if QT_CONFIG( combobox )
             if ( const QStyleOptionComboBox* cb = qstyleoption_cast<const QStyleOptionComboBox*>( option ) )
             {
@@ -3098,6 +3569,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         }
 
                         auto tBtnIconSize = toolbutton->iconSize;
+                        // Note: 由于 Qt 源码中 QDockWidgetTitleButton::dockButtonIconSize() 有硬编码限制，
+                        // 即使在 FluentUI3Style 中设置 PM_SmallIconSize 为 20，也会被 isWindowsStyle 检查限制为 10 像素左右。
+                        // 这里直接硬编码为 15 像素，以获得更大的 dock widget title 按钮图标。
                         if ( widget && QString( widget->metaObject()->className() ) == "QDockWidgetTitleButton" )
                         {
                             tBtnIconSize = QSize( 15, 15 );
@@ -3133,7 +3607,6 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             const int mbi = pixelMetric( PM_MenuButtonIndicator, option, widget );
                             if ( toolbutton->features & QStyleOptionToolButton::HasMenu )
                             {
-                                // pr.translate(-mbi + 4, 0);
                                 tr.translate( -mbi + 4, 0 );
                             }
 
@@ -3189,6 +3662,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 }
             }
 #endif  // QT_CONFIG(toolbutton)
+            break;
+        case CE_TabBarTabLabel :
+            drawTabBarTabLabel( option, painter, widget );
             break;
         case CE_ShapedFrame :
             if ( const QStyleOptionFrame* f = qstyleoption_cast<const QStyleOptionFrame*>( option ) )
@@ -3997,7 +4473,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 painter->drawRect( rect.adjusted( 0, 1, -1, -3 ) );
 
                 int buttonMargin      = 4;
-                int mw                = proxy()->pixelMetric( QStyle::PM_DockWidgetTitleMargin, dwOpt, widget );
+                int mw                = proxy()->pixelMetric( PM_DockWidgetTitleMargin, dwOpt, widget );
                 int fw                = proxy()->pixelMetric( PM_DockWidgetFrameWidth, dwOpt, widget );
                 const QDockWidget* dw = qobject_cast<const QDockWidget*>( widget );
                 bool isFloating       = dw && dw->isFloating();
@@ -4007,13 +4483,13 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 if ( dwOpt->closable )
                 {
-                    QSize sz = proxy()->standardIcon( QStyle::SP_TitleBarCloseButton, dwOpt, widget ).actualSize( QSize( 10, 10 ) );
+                    QSize sz = proxy()->standardIcon( QStyle::SP_TitleBarCloseButton, dwOpt, widget ).actualSize( QSize( 15, 15 ) );
                     titleRect.adjust( 0, 0, -sz.width() - mw - buttonMargin, 0 );
                 }
 
                 if ( dwOpt->floatable )
                 {
-                    QSize sz = proxy()->standardIcon( QStyle::SP_TitleBarMaxButton, dwOpt, widget ).actualSize( QSize( 10, 10 ) );
+                    QSize sz = proxy()->standardIcon( QStyle::SP_TitleBarMaxButton, dwOpt, widget ).actualSize( QSize( 15, 15 ) );
                     titleRect.adjust( 0, 0, -sz.width() - mw - buttonMargin, 0 );
                 }
 
@@ -4379,9 +4855,9 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             if ( auto optionTbtn = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
             {
-                if (optionTbtn->toolButtonStyle == Qt::ToolButtonIconOnly)
+                if ( optionTbtn->toolButtonStyle == Qt::ToolButtonIconOnly )
                 {
-                    contentSize += QSize( 4 , 4 );
+                    contentSize += QSize( 4, 4 );
                 }
                 if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && optionTbtn->toolButtonStyle == Qt::ToolButtonTextBesideIcon )
                 {
@@ -4453,7 +4929,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         {
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             contentSize.setHeight( 32 );
-            contentSize.setWidth( contentSize.width() + 20 );
+            contentSize.setWidth( contentSize.width() + 30 );
         }
         break;
         default :
@@ -4574,6 +5050,9 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             break;
         case PM_DockWidgetTitleBarButtonMargin :
             res = 12;
+            break;
+        case PM_TabBarTabShiftVertical :
+            res = 0;
             break;
         default :
             res = QProxyStyle::pixelMetric( metric, option, widget );
