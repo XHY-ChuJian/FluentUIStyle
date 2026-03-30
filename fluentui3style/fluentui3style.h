@@ -90,6 +90,7 @@ private:
     void drawCapsuleTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
 
     QPen borderPenControlAlt( const QStyleOption* option ) const;
 

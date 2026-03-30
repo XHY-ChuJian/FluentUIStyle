@@ -2000,7 +2000,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
     painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
 
     int state = option->state;
-    if ( transitionsEnabled() && option->styleObject && element == PE_IndicatorBranch && ( option->state & State_Children ) )
+    if ( false && option->styleObject && element == PE_IndicatorBranch && ( option->state & State_Children ) )
     {
         QObject* styleObject = option->styleObject;
         int oldState         = styleObject->property( "_q_stylestate" ).toInt();
@@ -3458,7 +3458,7 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
-        t->setDuration( 420 );
+        t->setDuration( 300 );
         startAnimationEx( t, styleObject, animKey );
     }
     else if ( currentTabIndex < 0 || previousTabIndex < 0 )
@@ -3498,6 +3498,67 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
     Q_UNUSED( painter )
     Q_UNUSED( widget )
 #endif
+}
+
+void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
+{
+    if ( !option || !painter || highContrastTheme )
+    {
+        return;
+    }
+
+    const auto clamp01 = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+
+    const QListView* lv = qobject_cast<const QListView*>( widget );
+    if ( !lv && widget )
+    {
+        lv = qobject_cast<const QListView*>( widget->parentWidget() );
+    }
+    if ( !lv || lv->viewMode() == QListView::IconMode )
+    {
+        return;
+    }
+
+    if ( !( option->state & State_Selected ) )
+    {
+        return;
+    }
+
+    QObject* stateObject = lv->viewport() ? static_cast<QObject*>( lv->viewport() ) : const_cast<QListView*>( lv );
+    const QByteArray animKey = "_q_list_indicator_grow";
+    const int currentRow     = option->index.row();
+    const int storedRow      = stateObject->property( "_q_list_indicator_selected_row" ).toInt();
+
+    if ( currentRow >= 0 && currentRow != storedRow )
+    {
+        stateObject->setProperty( "_q_list_indicator_selected_row", currentRow );
+
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( stateObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 100 );
+        startAnimationEx( t, stateObject, animKey );
+    }
+
+    const qreal progress    = clamp01( animationValue( stateObject, animKey, 1.0f ) );
+    const qreal normalInset = option->rect.height() / 4.0;
+    const qreal markerWidth = 2.0;
+    const bool isRtl        = option->direction == Qt::RightToLeft;
+    const qreal xPos        = isRtl ? option->rect.right() - 4.5f : option->rect.left() + 3.5f;
+    const qreal halfHeight  = ( option->rect.height() - normalInset * 2.0 ) * progress * 0.5;
+    const qreal centerY     = option->rect.center().y() + 0.5;
+    const QRectF indicatorRect( QPointF( xPos, centerY - halfHeight ),
+                                QPointF( xPos + markerWidth, centerY + halfHeight ) );
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+    const QColor col = option->palette.accent().color();
+#else
+    const QColor col = option->palette.color( QPalette::Highlight );
+#endif
+
+    painter->setBrush( col );
+    painter->setPen( col );
+    painter->drawRoundedRect( indicatorRect, 1.0, 1.0 );
 }
 
 // From QCommonStyle::drawControl, but only for CE_TabBarTabLabel, and with some adjustments for FluentUI3
@@ -4526,25 +4587,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 painter->setPen( highlightCurrent && highContrastTheme ? vopt->palette.base().color() : vopt->palette.text().color() );
                 viewItemDrawText( painter, vopt, textRect );
 
-                // paint a vertical marker for QListView
-                if ( vopt->state & State_Selected && !highContrastTheme )
-                {
-                    if ( const QListView* lv = qobject_cast<const QListView*>( widget ); lv && lv->viewMode() != QListView::IconMode )
-                    {
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-                        const auto col = vopt->palette.accent().color();
-#else
-                        const auto col = vopt->palette.color( QPalette::Highlight );  // Qt5/Qt6.5 fallback
-#endif
-
-                        painter->setBrush( col );
-                        painter->setPen( col );
-                        const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
-                        const auto yOfs = rect.height() / 4.;
-                        QRectF r( QPointF( xPos, rect.y() + yOfs ), QPointF( xPos + 2, rect.y() + rect.height() - yOfs ) );
-                        painter->drawRoundedRect( r, 1, 1 );
-                    }
-                }
+                drawListViewIndicator( vopt, painter, widget );
             }
             break;
         }
