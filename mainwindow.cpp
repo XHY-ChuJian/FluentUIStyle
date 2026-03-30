@@ -470,6 +470,7 @@ void MainWindow::init()
 
     ui->treeWidget->setProperty("ItemHeight", 32);
 
+    //Text 默认水平居中
     ui->tabWidget->tabBar()->setProperty("TextAlign", int(Qt::AlignVCenter | Qt::AlignLeft));
 
     {
@@ -516,15 +517,13 @@ void MainWindow::init()
 
     }
 
-    ui->tabGrowPivot->tabBar()->setProperty("tabStyle", "Pivot");
-    ui->tabGrowPivot->tabBar()->setProperty("pivotIndicatorAnimation", "grow");
-
-    ui->tabSlidePivot->tabBar()->setProperty("tabStyle", "Pivot");
-    ui->tabSlidePivot->tabBar()->setProperty("pivotIndicatorAnimation", "slide");
+    ui->tabWidget->tabBar()->setProperty(TabBarStyleProperty, TabBarStyle::Capsule);
+    ui->tabGrowPivot->tabBar()->setProperty(TabBarStyleProperty, TabBarStyle::Pivot_Grow);
+    ui->tabSlidePivot->tabBar()->setProperty(TabBarStyleProperty, TabBarStyle::Pivot_Slide);
 
     //设置前面三个TAbBar的字体，大两号
     QFont tabFont = ui->tabWidget->tabBar()->font();
-    tabFont.setPixelSize( tabFont.pixelSize() + 2 );
+    tabFont.setPixelSize( tabFont.pixelSize() + 1 );
     ui->tabWidget->tabBar()->setFont( tabFont );
     ui->tabGrowPivot->tabBar()->setFont( tabFont );
     ui->tabSlidePivot->tabBar()->setFont( tabFont );

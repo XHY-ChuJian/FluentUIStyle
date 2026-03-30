@@ -24,6 +24,14 @@ enum SpinBoxButtonLayout
     PlusMinusHorizontalSides
 };
 
+constexpr const char* TabBarStyleProperty = "tabBarStyle";
+enum TabBarStyle
+{
+    Capsule = 1,
+    Pivot_Grow,
+    Pivot_Slide
+};
+
 class FluentUI3Style : public QProxyStyle
 {
     Q_OBJECT
@@ -80,9 +88,8 @@ private:
 
     void drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
     void drawCapsuleTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
-    void drawPivotTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
-    void drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
-    void drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
 
     QPen borderPenControlAlt( const QStyleOption* option ) const;
 
