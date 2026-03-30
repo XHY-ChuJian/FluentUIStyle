@@ -3106,9 +3106,18 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
 {
     if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
     {
-        if ( widget && widget->property( "tabStyle" ).toString() == "Pivot" )
+        TabBarStyle tabBarStyle = widget ? static_cast<TabBarStyle>( widget->property( "tabBarStyle" ).toInt() ) : TabBarStyle::Capsule;
+        if ( tabBarStyle == TabBarStyle::Pivot_Grow )
         {
-            drawPivotTab( tab, painter, widget );
+            drawPivotGrowingTab( tab, painter, widget );
+        }
+        else if ( tabBarStyle == TabBarStyle::Pivot_Slide )
+        {
+            drawPivotSlidingTab( tab, painter, widget );
+        }
+        else if ( tabBarStyle == TabBarStyle::Capsule )
+        {
+            drawCapsuleTab( tab, painter, widget );
         }
         else
         {
@@ -3166,28 +3175,10 @@ void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* paint
 #endif  // QT_CONFIG(tabbar)
 }
 
-void FluentUI3Style::drawPivotTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
 {
 #if QT_CONFIG( tabbar )
-    if ( tab->state & QStyle::State_Selected )
-    {
-        const QString animationType = widget ? widget->property( "pivotIndicatorAnimation" ).toString().toLower() : QString();
-        if ( animationType == "slide" )
-        {
-            drawPivotSlidingIndicator( tab, painter, widget );
-        }
-        else
-        {
-            drawPivotGrowingIndicator( tab, painter, widget );
-        }
-    }
-#endif
-}
-
-void FluentUI3Style::drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
-{
-#if QT_CONFIG( tabbar )
-    if ( !tab )
+    if ( !tab || !tab->state.testFlag( QStyle::State_Selected ) )
     {
         return;
     }
@@ -3199,7 +3190,7 @@ void FluentUI3Style::drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPai
     }
 
     constexpr qreal indicatorHeight = 3.0;
-    constexpr int indicatorMargin   = 10;
+    constexpr int indicatorMargin   = 15;
     const QByteArray animKey        = "_q_pivot_indicator_grow";
 
     const QRect r = tab->rect;
@@ -3234,7 +3225,7 @@ void FluentUI3Style::drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPai
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 300 );
-        t->setEasingCurve( QEasingCurve::InOutSine );
+        t->setEasingCurve( QEasingCurve::Linear );
         startAnimationEx( t, styleObject, animKey );
     }
 
@@ -3266,10 +3257,10 @@ void FluentUI3Style::drawPivotGrowingIndicator( const QStyleOptionTab* tab, QPai
 #endif
 }
 
-void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
 {
 #if QT_CONFIG( tabbar )
-    if ( !tab )
+    if ( !tab || !tab->state.testFlag( QStyle::State_Selected ) )
     {
         return;
     }
@@ -3281,8 +3272,53 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
     }
 
     constexpr qreal indicatorHeight = 3.0;
-    constexpr int indicatorMargin   = 10;
+    constexpr int indicatorMargin   = 20;
     const QByteArray animKey        = "_q_pivot_indicator_slide";
+    const auto clamp01              = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+    const auto lerp                 = []( qreal a, qreal b, qreal t ) { return a + ( b - a ) * t; };
+    const auto smoothStep           = [&]( qreal t ) {
+        const qreal clamped = clamp01( t );
+        return clamped * clamped * ( 3.0 - 2.0 * clamped );
+    };
+    const auto easeOutCubic = [&]( qreal t ) {
+        const qreal clamped = clamp01( t );
+        const qreal inv     = 1.0 - clamped;
+        return 1.0 - inv * inv * inv;
+    };
+    const auto easeOutBack = [&]( qreal t ) {
+        const qreal clamped = clamp01( t );
+        const qreal x       = clamped - 1.0;
+        constexpr qreal s   = 1.15;
+        return 1.0 + ( s + 1.0 ) * x * x * x + s * x * x;
+    };
+    const auto delayedProgress = [&]( qreal t, qreal delayPortion ) {
+        const qreal clamped = clamp01( t );
+        if ( clamped <= delayPortion )
+        {
+            return 0.0;
+        }
+
+        return clamp01( ( clamped - delayPortion ) / ( 1.0 - delayPortion ) );
+    };
+    const auto releaseProgress = [&]( qreal t, qreal delayPortion ) {
+        const qreal delayed = delayedProgress( t, delayPortion );
+        if ( delayed <= 0.0 )
+        {
+            return 0.0;
+        }
+
+        return easeOutCubic( delayed * delayed );
+    };
+    const auto settleProgress = [&]( qreal t, qreal delayPortion ) {
+        const qreal delayed = delayedProgress( t, delayPortion );
+        if ( delayed <= 0.0 )
+        {
+            return 0.0;
+        }
+
+        const qreal shaped = delayed * delayed * delayed;
+        return smoothStep( shaped );
+    };
 
     const QRect r = tab->rect;
     int targetWidth = r.width() - indicatorMargin * 2;
@@ -3295,6 +3331,79 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
     const qreal targetTop   = r.bottom() - indicatorHeight;
     const qreal targetW     = targetWidth;
     const qreal targetH     = indicatorHeight;
+    const auto indicatorRect = [&]( qreal startLeft,
+                                    qreal startTop,
+                                    qreal startWidth,
+                                    qreal startHeight,
+                                    qreal endLeft,
+                                    qreal endTop,
+                                    qreal endWidth,
+                                    qreal endHeight,
+                                    qreal progressValue ) {
+        const qreal p          = clamp01( progressValue );
+        const qreal startRight = startLeft + startWidth;
+        const qreal endRight   = endLeft + endWidth;
+        const bool movingRight = endLeft >= startLeft;
+
+        const qreal startTabLeft  = startLeft - indicatorMargin;
+        const qreal startTabRight = startRight + indicatorMargin;
+        const qreal endTabLeft    = endLeft - indicatorMargin;
+        const qreal endTabRight   = endRight + indicatorMargin;
+
+        qreal drawLeft  = startLeft;
+        qreal drawRight = startRight;
+
+        if ( qAbs( endLeft - startLeft ) < 0.5 )
+        {
+            const qreal t = smoothStep( p );
+            drawLeft      = lerp( startLeft, endLeft, t );
+            drawRight     = lerp( startRight, endRight, t );
+        }
+        else if ( p < 0.66 )
+        {
+            const qreal stretchT = releaseProgress( p / 0.66, 0.34 );
+
+            if ( movingRight )
+            {
+                drawLeft  = startLeft;
+                drawRight = lerp( startRight, startTabRight, stretchT );
+            }
+            else
+            {
+                drawLeft  = lerp( startLeft, startTabLeft, stretchT );
+                drawRight = startRight;
+            }
+        }
+        else
+        {
+            const qreal settleT     = settleProgress( ( p - 0.66 ) / 0.34, 0.04 );
+            const qreal widthT      = easeOutCubic( settleT );
+            const qreal settleBackT = easeOutBack( settleT );
+            const qreal retractSpan = qMin( endWidth * 0.32, qreal( 20.0 ) );
+            const qreal microBounce = qSin( settleT * 3.14159265358979323846 ) * ( 1.0 - settleT ) * 0.9;
+
+            if ( movingRight )
+            {
+                drawLeft  = lerp( endLeft - retractSpan, endLeft, widthT );
+                drawRight = lerp( endRight + microBounce, endRight, settleBackT );
+            }
+            else
+            {
+                drawLeft  = lerp( endLeft - microBounce, endLeft, settleBackT );
+                drawRight = lerp( endRight + retractSpan, endRight, widthT );
+            }
+        }
+
+        if ( drawRight < drawLeft )
+        {
+            qSwap( drawLeft, drawRight );
+        }
+
+        return QRectF( drawLeft,
+                       lerp( startTop, endTop, smoothStep( p ) ),
+                       qMax( 0.0, drawRight - drawLeft ),
+                       lerp( startHeight, endHeight, smoothStep( p ) ) );
+    };
 
     int currentTabIndex = -1;
     if ( const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget ) )
@@ -3337,16 +3446,10 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
 
     if ( selectionChanged )
     {
-        const qreal progress = animationValue( styleObject, animKey, 1.0f );
-        const qreal currentLeft = fromLeft + ( toLeft - fromLeft ) * progress;
-        const qreal currentTop  = fromTop + ( toTop - fromTop ) * progress;
-        const qreal currentW    = fromW + ( toW - fromW ) * progress;
-        const qreal currentH    = fromH + ( toH - fromH ) * progress;
-
-        fromLeft = currentLeft;
-        fromTop  = currentTop;
-        fromW    = currentW;
-        fromH    = currentH;
+        fromLeft = toLeft;
+        fromTop  = toTop;
+        fromW    = toW;
+        fromH    = toH;
         toLeft   = targetLeft;
         toTop    = targetTop;
         toW      = targetW;
@@ -3355,8 +3458,7 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
         QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
-        t->setDuration( 300 );
-        t->setEasingCurve( QEasingCurve::InOutSine );
+        t->setDuration( 420 );
         startAnimationEx( t, styleObject, animKey );
     }
     else if ( currentTabIndex < 0 || previousTabIndex < 0 )
@@ -3371,11 +3473,8 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
         toH      = targetH;
     }
 
-    const qreal progress = animationValue( styleObject, animKey, 1.0f );
-    const qreal drawLeft = fromLeft + ( toLeft - fromLeft ) * progress;
-    const qreal drawTop  = fromTop + ( toTop - fromTop ) * progress;
-    const qreal drawW    = fromW + ( toW - fromW ) * progress;
-    const qreal drawH    = fromH + ( toH - fromH ) * progress;
+    const qreal progress        = clamp01( animationValue( styleObject, animKey, 1.0f ) );
+    const QRectF indicatorRectF = indicatorRect( fromLeft, fromTop, fromW, fromH, toLeft, toTop, toW, toH, progress );
 
     styleObject->setProperty( "_q_pivot_selected_tab_index", currentTabIndex );
     styleObject->setProperty( "_q_pivot_indicator_from_left", fromLeft );
@@ -3387,7 +3486,10 @@ void FluentUI3Style::drawPivotSlidingIndicator( const QStyleOptionTab* tab, QPai
     styleObject->setProperty( "_q_pivot_indicator_to_width", toW );
     styleObject->setProperty( "_q_pivot_indicator_to_height", toH );
 
-    QRect indicator( qRound( drawLeft ), qRound( drawTop ), qRound( drawW ), qRound( drawH ) );
+    QRect indicator( qRound( indicatorRectF.left() ),
+                     qRound( indicatorRectF.top() ),
+                     qRound( indicatorRectF.width() ),
+                     qRound( indicatorRectF.height() ) );
     painter->setPen( Qt::NoPen );
     painter->setBrush( calculateAccentColor( tab ) );
     painter->drawRoundedRect( indicator, indicatorHeight / 2.0, indicatorHeight / 2.0 );
@@ -4929,7 +5031,10 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         {
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             contentSize.setHeight( 32 );
-            contentSize.setWidth( contentSize.width() + 30 );
+            if (widget && widget->property(TabBarStyleProperty).toInt() == TabBarStyle::Capsule)
+            {
+                contentSize.setWidth( contentSize.width() + 30 );
+            }
         }
         break;
         default :
@@ -5208,6 +5313,25 @@ QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* optio
 #endif
     {
         QIcon icon = fluentIcon( QChar( 0xE894 ) );
+        if ( sp == SP_TitleBarCloseButton )
+        {
+            QIcon icon = fluentIcon( QChar( 0xE894 ) );
+                QFont f( assetFont );
+                f.setPixelSize( 27 );
+
+                QPixmap pix( 30, 30 );
+              pix.fill( Qt::transparent );
+
+              QPainter p( &pix );
+              p.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
+
+              p.setFont( f );
+              p.setPen( widget->palette().color(QPalette::Window) );
+               p.drawText( pix.rect(), Qt::AlignCenter, QChar( 0xE894 ) );
+
+               icon.addPixmap( pix , QIcon::Active);
+               return icon;
+        }
         return icon;
     }
     if ( sp == SP_TitleBarNormalButton )
