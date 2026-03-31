@@ -26,6 +26,9 @@ RESOURCES += \
 INCLUDEPATH += $$PWD/fluentui3style
 include($$PWD/fluentui3style/fluentui3style.pri)
 
+INCLUDEPATH += $$PWD/customcontrol/SlidingStackedWidget
+include($$PWD/customcontrol/SlidingStackedWidget/SlidingStackedWidget.pri)
+
 
 
 

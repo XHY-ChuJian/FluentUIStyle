@@ -29,7 +29,8 @@ enum TabBarStyle
 {
     Capsule = 1,
     Pivot_Grow,
-    Pivot_Slide
+    Pivot_Slide,
+    Pivot_Stretch
 };
 
 class FluentUI3Style : public QProxyStyle
@@ -89,8 +90,13 @@ private:
     void drawTabBarTabShape( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
     void drawCapsuleTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPivotStretchingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+
     void drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
+
+    void drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
+    void drawTreeViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
 
     QPen borderPenControlAlt( const QStyleOption* option ) const;
 

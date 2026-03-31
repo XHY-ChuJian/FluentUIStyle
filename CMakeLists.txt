@@ -32,6 +32,8 @@ set(PROJECT_SOURCES
     fluentui3style/qstylehelper.cpp
     fluentui3style/qstylehelper_p.h
     fluentui3style/resource.qrc
+    customcontrol/SlidingStackedWidget/slidingstackedwidget.cpp
+    customcontrol/SlidingStackedWidget/slidingstackedwidget.h
 )
 
 if(WIN32)
@@ -45,6 +47,7 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_standard_project_setup()
 
     qt_add_executable(fluentw3uistyle
+        WIN32
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
@@ -56,6 +59,7 @@ endif()
 
 target_include_directories(fluentw3uistyle PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/fluentui3style
+    ${CMAKE_CURRENT_SOURCE_DIR}/customcontrol/SlidingStackedWidget
 )
 
 target_link_libraries(fluentw3uistyle PRIVATE
@@ -68,6 +72,10 @@ target_link_libraries(fluentw3uistyle PRIVATE
 set_target_properties(fluentw3uistyle PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
+
+if(MSVC)
+    target_compile_options(fluentw3uistyle PRIVATE /utf-8)
+endif()
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_finalize_executable(fluentw3uistyle)

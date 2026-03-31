@@ -23,8 +23,8 @@
 #include <QString>
 #include <QStyleHints>
 #include <QSysInfo>
-#include <QTableView>
 #include <QTabBar>
+#include <QTableView>
 #include <QTextEdit>
 #include <QTextLayout>
 #include <QToolButton>
@@ -2167,6 +2167,12 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             break;
         case PE_IndicatorBranch :
         {
+            if ( const QTreeView* treeView = qobject_cast<const QTreeView*>( widget );
+                 treeView && treeView->property( "navigationViewIndicator" ).toBool() )
+            {
+                break;
+            }
+
             if ( option->state & State_Children )
             {
                 const bool isReverse = option->direction == Qt::RightToLeft;
@@ -2502,73 +2508,69 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 {
                     // keep in sync with CE_ItemViewItem QListView indicator
                     // painting
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 5, 0 )
-                    const auto col = option->palette.accent().color();
-#else
-                    const auto col = option->palette.color( QPalette::Highlight );
-#endif
-
-                    painter->setBrush( col );
-                    painter->setPen( col );
-                    const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
-                    const auto yOfs = rect.height() / 4.;
-                    QRectF r( QPointF( xPos, rect.y() + yOfs ), QPointF( xPos + 1, rect.y() + rect.height() - yOfs ) );
-                    painter->drawRoundedRect( r, 1, 1 );
-                }
-
-                const bool isTreeDecoration = /*vopt->features.testFlag(
-                    QStyleOptionViewItem::IsDecorationForRootColumn)*/
-                    false;
-                if ( isTreeDecoration && ( ( vopt->state & ( State_Selected | State_MouseOver ) ) != 0 ) && vopt->showDecorationSelected )
-                {
-                    const bool onlyOne = vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
-                                         || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
-                    bool isFirst = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
-                    bool isLast  = vopt->viewItemPosition == QStyleOptionViewItem::End;
-
-                    if ( onlyOne )
+                    if ( auto treeView = qobject_cast<const QTreeView*>( widget ) )
                     {
-                        isFirst = true;
+                        if ( treeView->property( "navigationViewIndicator" ).toBool() == false )
+                        {
+                            drawTreeViewIndicator( vopt, painter, widget );
+                        }
                     }
 
-                    if ( isRtl )
+                    const bool isTreeDecoration = /*vopt->features.testFlag(
+                        QStyleOptionViewItem::IsDecorationForRootColumn)*/
+                        false;
+                    if ( isTreeDecoration && ( ( vopt->state & ( State_Selected | State_MouseOver ) ) != 0 )
+                         && vopt->showDecorationSelected )
                     {
-                        isFirst = !isFirst;
-                        isLast  = !isLast;
-                    }
+                        const bool onlyOne = vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
+                                             || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
+                        bool isFirst = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
+                        bool isLast  = vopt->viewItemPosition == QStyleOptionViewItem::End;
 
-                    const QAbstractItemView* view = qobject_cast<const QAbstractItemView*>( widget );
-                    painter->setBrush( view->alternatingRowColors() ? vopt->palette.highlight()
-                                                                    : WINUI3Colors[ colorSchemeIndex ][ subtleHighlightColor ] );
-                    painter->setPen( Qt::NoPen );
-                    if ( isFirst )
-                    {
-                        painter->save();
-                        painter->setClipRect( rect );
-                        painter->drawRoundedRect( rect.marginsRemoved( QMargins( 2, 2, -secondLevelRoundingRadius, 2 ) ),
-                                                  secondLevelRoundingRadius,
-                                                  secondLevelRoundingRadius );
-                        painter->restore();
-                    }
-                    else if ( isLast )
-                    {
-                        painter->save();
-                        painter->setClipRect( rect );
-                        painter->drawRoundedRect( rect.marginsRemoved( QMargins( -secondLevelRoundingRadius, 2, 2, 2 ) ),
-                                                  secondLevelRoundingRadius,
-                                                  secondLevelRoundingRadius );
-                        painter->restore();
-                    }
-                    else
-                    {
-                        painter->drawRect( vopt->rect.marginsRemoved( QMargins( 0, 2, 0, 2 ) ) );
+                        if ( onlyOne )
+                        {
+                            isFirst = true;
+                        }
+
+                        if ( isRtl )
+                        {
+                            isFirst = !isFirst;
+                            isLast  = !isLast;
+                        }
+
+                        const QAbstractItemView* view = qobject_cast<const QAbstractItemView*>( widget );
+                        painter->setBrush( view->alternatingRowColors() ? vopt->palette.highlight()
+                                                                        : WINUI3Colors[ colorSchemeIndex ][ subtleHighlightColor ] );
+                        painter->setPen( Qt::NoPen );
+                        if ( isFirst )
+                        {
+                            painter->save();
+                            painter->setClipRect( rect );
+                            painter->drawRoundedRect( rect.marginsRemoved( QMargins( 2, 2, -secondLevelRoundingRadius, 2 ) ),
+                                                      secondLevelRoundingRadius,
+                                                      secondLevelRoundingRadius );
+                            painter->restore();
+                        }
+                        else if ( isLast )
+                        {
+                            painter->save();
+                            painter->setClipRect( rect );
+                            painter->drawRoundedRect( rect.marginsRemoved( QMargins( -secondLevelRoundingRadius, 2, 2, 2 ) ),
+                                                      secondLevelRoundingRadius,
+                                                      secondLevelRoundingRadius );
+                            painter->restore();
+                        }
+                        else
+                        {
+                            painter->drawRect( vopt->rect.marginsRemoved( QMargins( 0, 2, 0, 2 ) ) );
+                        }
                     }
                 }
             }
             break;
         case PE_Widget :
         {
-            if ( widget->property( "fluentBorder" ).toBool() )
+            if (widget &&  widget->property( "fluentBorder" ).toBool() )
             {
                 painter->save();
                 painter->setRenderHint( QPainter::Antialiasing );
@@ -2732,7 +2734,7 @@ QRect FluentUI3Style::subElementRect( SubElement element, const QStyleOption* op
                 }
             }
             // Add left margin for QTreeView
-            else if ( [[maybe_unused]] const QTreeView* tv = qobject_cast<const QTreeView*>( widget ) )
+            else if ( const QTreeView* tv = qobject_cast<const QTreeView*>( widget ) )
             {
                 const int xOfs   = contentHMargin;
                 const bool isRtl = option->direction == Qt::RightToLeft;
@@ -3111,6 +3113,10 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
         {
             drawPivotGrowingTab( tab, painter, widget );
         }
+        else if ( tabBarStyle == TabBarStyle::Pivot_Stretch )
+        {
+            drawPivotStretchingTab( tab, painter, widget );
+        }
         else if ( tabBarStyle == TabBarStyle::Pivot_Slide )
         {
             drawPivotSlidingTab( tab, painter, widget );
@@ -3142,10 +3148,8 @@ void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* paint
 
         const int arcLength = 14;
         QList<QPointF> pts;
-        pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() )
-            << tabRect.bottomLeft() << tabRect.topLeft()
-            << tabRect.topRight() << tabRect.bottomRight()
-            << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
+        pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft() << tabRect.topLeft()
+            << tabRect.topRight() << tabRect.bottomRight() << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
 
         QPainterPath path = buildRoundedPolyline( pts, radius );
         painter->fillPath( path, painter->brush() );
@@ -3155,10 +3159,7 @@ void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* paint
         painter->setBrush( winUI3Color( tabBarHoverBackground ) );
 
         QList<QPointF> pts;
-        pts << tabRect.bottomLeft()
-            << tabRect.topLeft()
-            << tabRect.topRight()
-            << tabRect.bottomRight();
+        pts << tabRect.bottomLeft() << tabRect.topLeft() << tabRect.topRight() << tabRect.bottomRight();
 
         QPainterPath path = buildRoundedPolyline( pts, radius );
         pts << tabRect.bottomLeft();
@@ -3170,8 +3171,7 @@ void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* paint
     }
 
     painter->setBrush( Qt::NoBrush );
-    painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color()
-                                               : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
+    painter->setPen( highContrastTheme == true ? tab->palette.buttonText().color() : WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
 #endif  // QT_CONFIG(tabbar)
 }
 
@@ -3193,7 +3193,7 @@ void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* 
     constexpr int indicatorMargin   = 15;
     const QByteArray animKey        = "_q_pivot_indicator_grow";
 
-    const QRect r = tab->rect;
+    const QRect r   = tab->rect;
     int targetWidth = r.width() - indicatorMargin * 2;
     if ( targetWidth < 0 )
     {
@@ -3209,9 +3209,9 @@ void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* 
     const int previousTabIndex = styleObject->property( "_q_pivot_grow_selected_tab_index" ).toInt();
 
     bool isMovingTab = false;
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
     isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
-#endif
+#    endif
 
     bool selectionChanged = ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex );
     if ( isMovingTab )
@@ -3257,7 +3257,7 @@ void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* 
 #endif
 }
 
-void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
 {
 #if QT_CONFIG( tabbar )
     if ( !tab || !tab->state.testFlag( QStyle::State_Selected ) )
@@ -3276,22 +3276,26 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
     const QByteArray animKey        = "_q_pivot_indicator_slide";
     const auto clamp01              = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
     const auto lerp                 = []( qreal a, qreal b, qreal t ) { return a + ( b - a ) * t; };
-    const auto smoothStep           = [&]( qreal t ) {
+    const auto smoothStep           = [ & ]( qreal t )
+    {
         const qreal clamped = clamp01( t );
         return clamped * clamped * ( 3.0 - 2.0 * clamped );
     };
-    const auto easeOutCubic = [&]( qreal t ) {
+    const auto easeOutCubic = [ & ]( qreal t )
+    {
         const qreal clamped = clamp01( t );
         const qreal inv     = 1.0 - clamped;
         return 1.0 - inv * inv * inv;
     };
-    const auto easeOutBack = [&]( qreal t ) {
+    const auto easeOutBack = [ & ]( qreal t )
+    {
         const qreal clamped = clamp01( t );
         const qreal x       = clamped - 1.0;
         constexpr qreal s   = 1.15;
         return 1.0 + ( s + 1.0 ) * x * x * x + s * x * x;
     };
-    const auto delayedProgress = [&]( qreal t, qreal delayPortion ) {
+    const auto delayedProgress = [ & ]( qreal t, qreal delayPortion )
+    {
         const qreal clamped = clamp01( t );
         if ( clamped <= delayPortion )
         {
@@ -3300,7 +3304,8 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 
         return clamp01( ( clamped - delayPortion ) / ( 1.0 - delayPortion ) );
     };
-    const auto releaseProgress = [&]( qreal t, qreal delayPortion ) {
+    const auto releaseProgress = [ & ]( qreal t, qreal delayPortion )
+    {
         const qreal delayed = delayedProgress( t, delayPortion );
         if ( delayed <= 0.0 )
         {
@@ -3309,7 +3314,8 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 
         return easeOutCubic( delayed * delayed );
     };
-    const auto settleProgress = [&]( qreal t, qreal delayPortion ) {
+    const auto settleProgress = [ & ]( qreal t, qreal delayPortion )
+    {
         const qreal delayed = delayedProgress( t, delayPortion );
         if ( delayed <= 0.0 )
         {
@@ -3320,26 +3326,27 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         return smoothStep( shaped );
     };
 
-    const QRect r = tab->rect;
+    const QRect r   = tab->rect;
     int targetWidth = r.width() - indicatorMargin * 2;
     if ( targetWidth < 0 )
     {
         targetWidth = 0;
     }
 
-    const qreal targetLeft  = r.left() + indicatorMargin;
-    const qreal targetTop   = r.bottom() - indicatorHeight;
-    const qreal targetW     = targetWidth;
-    const qreal targetH     = indicatorHeight;
-    const auto indicatorRect = [&]( qreal startLeft,
-                                    qreal startTop,
-                                    qreal startWidth,
-                                    qreal startHeight,
-                                    qreal endLeft,
-                                    qreal endTop,
-                                    qreal endWidth,
-                                    qreal endHeight,
-                                    qreal progressValue ) {
+    const qreal targetLeft   = r.left() + indicatorMargin;
+    const qreal targetTop    = r.bottom() - indicatorHeight;
+    const qreal targetW      = targetWidth;
+    const qreal targetH      = indicatorHeight;
+    const auto indicatorRect = [ & ]( qreal startLeft,
+                                      qreal startTop,
+                                      qreal startWidth,
+                                      qreal startHeight,
+                                      qreal endLeft,
+                                      qreal endTop,
+                                      qreal endWidth,
+                                      qreal endHeight,
+                                      qreal progressValue )
+    {
         const qreal p          = clamp01( progressValue );
         const qreal startRight = startLeft + startWidth;
         const qreal endRight   = endLeft + endWidth;
@@ -3413,9 +3420,9 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 
     const int previousTabIndex = styleObject->property( "_q_pivot_selected_tab_index" ).toInt();
     bool isMovingTab           = false;
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
     isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
-#endif
+#    endif
 
     qreal fromLeft = styleObject->property( "_q_pivot_indicator_from_left" ).toReal();
     qreal fromTop  = styleObject->property( "_q_pivot_indicator_from_top" ).toReal();
@@ -3458,7 +3465,7 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
-        t->setDuration( 300 );
+        t->setDuration( 400 );
         startAnimationEx( t, styleObject, animKey );
     }
     else if ( currentTabIndex < 0 || previousTabIndex < 0 )
@@ -3500,6 +3507,220 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 #endif
 }
 
+void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab || !tab->state.testFlag( QStyle::State_Selected ) )
+    {
+        return;
+    }
+
+    QObject* styleObject = tab->styleObject;
+    if ( !styleObject )
+    {
+        return;
+    }
+
+    constexpr qreal indicatorHeight = 3.0;
+    constexpr int indicatorMargin   = 15;
+    const QByteArray animKey        = "_q_pivot_indicator_slide_tab";
+    const auto clamp01              = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+    const auto lerp                 = []( qreal a, qreal b, qreal t ) { return a + ( b - a ) * t; };
+    const auto smoothStep           = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        return clamped * clamped * ( 3.0 - 2.0 * clamped );
+    };
+    const auto easeOutCubic = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        const qreal inv     = 1.0 - clamped;
+        return 1.0 - inv * inv * inv;
+    };
+    const auto easeInOutCubic = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        if ( clamped < 0.5 )
+        {
+            return 4.0 * clamped * clamped * clamped;
+        }
+
+        const qreal inv = -2.0 * clamped + 2.0;
+        return 1.0 - ( inv * inv * inv ) / 2.0;
+    };
+    const auto easeOutBack = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        const qreal x       = clamped - 1.0;
+        constexpr qreal s   = 0.72;
+        return 1.0 + ( s + 1.0 ) * x * x * x + s * x * x;
+    };
+    const auto delayedProgress = [ & ]( qreal t, qreal delayPortion )
+    {
+        const qreal clamped = clamp01( t );
+        if ( clamped <= delayPortion )
+        {
+            return 0.0;
+        }
+
+        return clamp01( ( clamped - delayPortion ) / ( 1.0 - delayPortion ) );
+    };
+
+    const QRect r   = tab->rect;
+    int targetWidth = r.width() - indicatorMargin * 2;
+    if ( targetWidth < 0 )
+    {
+        targetWidth = 0;
+    }
+
+    const qreal targetLeft  = r.left() + indicatorMargin;
+    const qreal targetTop   = r.bottom() - indicatorHeight;
+    const qreal targetRight = targetLeft + targetWidth;
+    const qreal fullTabLeft  = r.left();
+    const qreal fullTabRight = r.left() + r.width();
+    const qreal fullTabWidth = qMax( 0.0, qreal( r.width() ) );
+
+    int currentTabIndex = -1;
+    if ( const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget ) )
+    {
+        currentTabIndex = tabBar->tabAt( r.center() );
+    }
+
+    const int previousTabIndex = styleObject->property( "_q_pivot_slide_selected_tab_index" ).toInt();
+    bool isMovingTab           = false;
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
+#    endif
+
+    qreal fromLeft  = styleObject->property( "_q_pivot_slide_from_left" ).toReal();
+    qreal fromRight = styleObject->property( "_q_pivot_slide_from_right" ).toReal();
+    qreal fromTop   = styleObject->property( "_q_pivot_slide_from_top" ).toReal();
+    qreal toLeft    = styleObject->property( "_q_pivot_slide_to_left" ).toReal();
+    qreal toRight   = styleObject->property( "_q_pivot_slide_to_right" ).toReal();
+    qreal toTop     = styleObject->property( "_q_pivot_slide_to_top" ).toReal();
+
+    if ( toRight <= toLeft )
+    {
+        fromLeft  = targetLeft;
+        fromRight = targetRight;
+        fromTop   = targetTop;
+        toLeft    = targetLeft;
+        toRight   = targetRight;
+        toTop     = targetTop;
+    }
+
+    bool selectionChanged = ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex );
+    if ( isMovingTab )
+    {
+        selectionChanged = false;
+    }
+
+    if ( selectionChanged )
+    {
+        fromLeft  = toLeft;
+        fromRight = toRight;
+        fromTop   = toTop;
+        toLeft    = targetLeft;
+        toRight   = targetRight;
+        toTop     = targetTop;
+
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 200 );
+        startAnimationEx( t, styleObject, animKey );
+    }
+    else if ( currentTabIndex < 0 || previousTabIndex < 0 )
+    {
+        fromLeft  = targetLeft;
+        fromRight = targetRight;
+        fromTop   = targetTop;
+        toLeft    = targetLeft;
+        toRight   = targetRight;
+        toTop     = targetTop;
+    }
+
+    const qreal progress     = clamp01( animationValue( styleObject, animKey, 1.0f ) );
+    const qreal fromWidth    = qMax( 0.0, fromRight - fromLeft );
+    const qreal toWidth      = qMax( 0.0, toRight - toLeft );
+    const qreal fromCenter   = fromLeft + fromWidth / 2.0;
+    const qreal toCenter     = toLeft + toWidth / 2.0;
+    const qreal distance     = qAbs( toCenter - fromCenter );
+    const bool movingRight       = toCenter >= fromCenter;
+    const qreal moveT            = easeOutCubic( progress );
+    const qreal edgeSettleT      = easeOutBack( delayedProgress( progress, 0.50 ) );
+    const qreal widthBaseT       = easeInOutCubic( progress );
+    const qreal widthPulseT      = qSin( progress * 3.14159265358979323846 );
+    const qreal shrinkT          = easeOutCubic( delayedProgress( progress, 0.60 ) );
+    const qreal leadingOvershoot = qMin( 6.2, 2.1 + distance * 0.026 );
+    const qreal expandedWidth    = qMax( qMax( fromWidth, toWidth ), fullTabWidth );
+    const qreal widthStretch     = leadingOvershoot * widthPulseT * ( 1.0 - shrinkT * 0.75 );
+    const qreal stretchWidth     = lerp( lerp( fromWidth, toWidth, widthBaseT ),
+                                         expandedWidth,
+                                         widthPulseT * ( 1.0 - shrinkT * 0.72 ) );
+    const qreal currentWidth     = stretchWidth + widthStretch * 0.35;
+
+    qreal center = lerp( fromCenter, toCenter, moveT );
+    center        = lerp( center, toCenter, edgeSettleT * 0.18 );
+
+    qreal drawLeft  = center - currentWidth / 2.0;
+    qreal drawRight = center + currentWidth / 2.0;
+
+    if ( movingRight )
+    {
+        const qreal anchoredRight = lerp( drawRight, toRight + widthStretch, edgeSettleT * 0.96 );
+        drawRight                = lerp( anchoredRight, toRight, shrinkT );
+        drawLeft                 = drawRight - currentWidth;
+        drawLeft                 = lerp( drawLeft, toLeft, shrinkT );
+
+        if ( drawRight >= toRight || center >= toCenter )
+        {
+            drawRight = toRight;
+            drawLeft  = drawRight - currentWidth;
+        }
+    }
+    else
+    {
+        const qreal anchoredLeft = lerp( drawLeft, toLeft - widthStretch, edgeSettleT * 0.96 );
+        drawLeft                = lerp( anchoredLeft, toLeft, shrinkT );
+        drawRight               = drawLeft + currentWidth;
+        drawRight               = lerp( drawRight, toRight, shrinkT );
+
+        if ( drawLeft <= toLeft || center <= toCenter )
+        {
+            drawLeft  = toLeft;
+            drawRight = drawLeft + currentWidth;
+        }
+    }
+
+    if ( drawRight < drawLeft )
+    {
+        qSwap( drawLeft, drawRight );
+    }
+
+    const QRectF indicatorRectF( drawLeft,
+                                 lerp( fromTop, toTop, smoothStep( progress ) ),
+                                 qMax( 0.0, drawRight - drawLeft ),
+                                 indicatorHeight );
+
+    styleObject->setProperty( "_q_pivot_slide_selected_tab_index", currentTabIndex );
+    styleObject->setProperty( "_q_pivot_slide_from_left", fromLeft );
+    styleObject->setProperty( "_q_pivot_slide_from_right", fromRight );
+    styleObject->setProperty( "_q_pivot_slide_from_top", fromTop );
+    styleObject->setProperty( "_q_pivot_slide_to_left", toLeft );
+    styleObject->setProperty( "_q_pivot_slide_to_right", toRight );
+    styleObject->setProperty( "_q_pivot_slide_to_top", toTop );
+
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( calculateAccentColor( tab ) );
+    painter->drawRoundedRect( indicatorRectF, indicatorHeight / 2.0, indicatorHeight / 2.0 );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
 void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
 {
     if ( !option || !painter || highContrastTheme )
@@ -3524,7 +3745,7 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
         return;
     }
 
-    QObject* stateObject = lv->viewport() ? static_cast<QObject*>( lv->viewport() ) : const_cast<QListView*>( lv );
+    QObject* stateObject     = lv->viewport() ? static_cast<QObject*>( lv->viewport() ) : const_cast<QListView*>( lv );
     const QByteArray animKey = "_q_list_indicator_grow";
     const int currentRow     = option->index.row();
     const int storedRow      = stateObject->property( "_q_list_indicator_selected_row" ).toInt();
@@ -3547,8 +3768,7 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
     const qreal xPos        = isRtl ? option->rect.right() - 4.5f : option->rect.left() + 3.5f;
     const qreal halfHeight  = ( option->rect.height() - normalInset * 2.0 ) * progress * 0.5;
     const qreal centerY     = option->rect.center().y() + 0.5;
-    const QRectF indicatorRect( QPointF( xPos, centerY - halfHeight ),
-                                QPointF( xPos + markerWidth, centerY + halfHeight ) );
+    const QRectF indicatorRect( QPointF( xPos, centerY - halfHeight ), QPointF( xPos + markerWidth, centerY + halfHeight ) );
 
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
     const QColor col = option->palette.accent().color();
@@ -3559,6 +3779,245 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
     painter->setBrush( col );
     painter->setPen( col );
     painter->drawRoundedRect( indicatorRect, 1.0, 1.0 );
+}
+
+void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
+{
+    if ( !option || !painter || highContrastTheme )
+    {
+        return;
+    }
+
+    const QTreeView* treeView = qobject_cast<const QTreeView*>( widget );
+    if ( !treeView || qobject_cast<const QTableView*>( widget ) )
+    {
+        return;
+    }
+
+    const auto clamp01    = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+    const auto lerp       = []( qreal a, qreal b, qreal t ) { return a + ( b - a ) * t; };
+    const auto smoothStep = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        return clamped * clamped * ( 3.0 - 2.0 * clamped );
+    };
+    const auto easeOutCubic = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        const qreal inv     = 1.0 - clamped;
+        return 1.0 - inv * inv * inv;
+    };
+    const auto easeOutBack = [ & ]( qreal t )
+    {
+        const qreal clamped = clamp01( t );
+        const qreal x       = clamped - 1.0;
+        constexpr qreal s   = 1.15;
+        return 1.0 + ( s + 1.0 ) * x * x * x + s * x * x;
+    };
+    const auto delayedProgress = [ & ]( qreal t, qreal delayPortion )
+    {
+        const qreal clamped = clamp01( t );
+        if ( clamped <= delayPortion )
+        {
+            return 0.0;
+        }
+
+        return clamp01( ( clamped - delayPortion ) / ( 1.0 - delayPortion ) );
+    };
+    const auto releaseProgress = [ & ]( qreal t, qreal delayPortion )
+    {
+        const qreal delayed = delayedProgress( t, delayPortion );
+        if ( delayed <= 0.0 )
+        {
+            return 0.0;
+        }
+
+        return easeOutCubic( delayed * delayed );
+    };
+    const auto settleProgress = [ & ]( qreal t, qreal delayPortion )
+    {
+        const qreal delayed = delayedProgress( t, delayPortion );
+        if ( delayed <= 0.0 )
+        {
+            return 0.0;
+        }
+
+        const qreal shaped = delayed * delayed * delayed;
+        return smoothStep( shaped );
+    };
+
+    const QRect rect = option->rect;
+    if ( rect.width() <= 0 || rect.height() <= 0 )
+    {
+        return;
+    }
+
+    QObject* stateObject     = treeView->viewport() ? static_cast<QObject*>( treeView->viewport() ) : const_cast<QTreeView*>( treeView );
+    const QByteArray animKey = "_q_tree_indicator_slide";
+
+    const bool isRtl        = option->direction == Qt::RightToLeft;
+    const qreal targetX     = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
+    const qreal normalInset = rect.height() / 3.5f;
+    const qreal targetTop   = rect.top() + normalInset;
+    const qreal targetH     = rect.height() - normalInset * 2.0;
+    const qreal targetW     = 2.0;
+
+    qreal fromX   = stateObject->property( "_q_tree_indicator_from_x" ).toReal();
+    qreal fromTop = stateObject->property( "_q_tree_indicator_from_top" ).toReal();
+    qreal fromH   = stateObject->property( "_q_tree_indicator_from_height" ).toReal();
+    qreal toX     = stateObject->property( "_q_tree_indicator_to_x" ).toReal();
+    qreal toTop   = stateObject->property( "_q_tree_indicator_to_top" ).toReal();
+    qreal toH     = stateObject->property( "_q_tree_indicator_to_height" ).toReal();
+    QModelIndex fromIndex = stateObject->property( "_q_tree_indicator_from_index" ).toModelIndex();
+    QModelIndex toIndex   = stateObject->property( "_q_tree_indicator_to_index" ).toModelIndex();
+
+    if ( toH <= 0.0 )
+    {
+        fromX   = targetX;
+        fromTop = targetTop;
+        fromH   = targetH;
+        toX     = targetX;
+        toTop   = targetTop;
+        toH     = targetH;
+        fromIndex = option->index;
+        toIndex   = option->index;
+    }
+
+    if ( option->state & State_Selected )
+    {
+        const bool selectionChanged = qAbs( targetX - toX ) > 0.5 || qAbs( targetTop - toTop ) > 0.5 || qAbs( targetH - toH ) > 0.5;
+        if ( selectionChanged )
+        {
+            fromX   = toX;
+            fromTop = toTop;
+            fromH   = toH;
+            toX     = targetX;
+            toTop   = targetTop;
+            toH     = targetH;
+            fromIndex = toIndex;
+            toIndex   = option->index;
+
+            QNumberStyleAnimation* t = new QNumberStyleAnimation( stateObject );
+            t->setStartValue( 0.0 );
+            t->setEndValue( 1.0 );
+            t->setDuration( 500 );
+            startAnimationEx( t, stateObject, animKey );
+        }
+        else if ( !toIndex.isValid() )
+        {
+            toIndex = option->index;
+        }
+    }
+
+    const qreal progress      = clamp01( animationValue( stateObject, animKey, 1.0f ) );
+    const qreal drawX         = progress < 0.66 ? fromX : toX;
+    const bool movingDown     = toTop >= fromTop;
+    const qreal fromBottom    = fromTop + fromH;
+    const qreal toBottom      = toTop + toH;
+    const qreal fromRowTop    = fromTop - normalInset;
+    const qreal fromRowBottom = fromBottom + normalInset;
+
+    qreal drawTop    = toTop;
+    qreal drawBottom = toBottom;
+
+    if ( qAbs( toTop - fromTop ) < 0.5 )
+    {
+        const qreal t = smoothStep( progress );
+        drawTop       = lerp( fromTop, toTop, t );
+        drawBottom    = lerp( fromBottom, toBottom, t );
+    }
+    else if ( progress < 0.66 )
+    {
+        const qreal stretchT = releaseProgress( progress / 0.66, 0.34 );
+        if ( movingDown )
+        {
+            drawTop    = fromTop;
+            drawBottom = lerp( fromBottom, fromRowBottom, stretchT );
+        }
+        else
+        {
+            drawTop    = lerp( fromTop, fromRowTop, stretchT );
+            drawBottom = fromBottom;
+        }
+    }
+    else
+    {
+        const qreal settleT     = settleProgress( ( progress - 0.66 ) / 0.34, 0.04 );
+        const qreal heightT     = easeOutCubic( settleT );
+        const qreal settleBackT = easeOutBack( settleT );
+        const qreal retractSpan = qMin( toH * 0.32, qreal( 20.0 ) );
+        const qreal microBounce = qSin( settleT * 3.14159265358979323846 ) * ( 1.0 - settleT ) * 0.9;
+
+        if ( movingDown )
+        {
+            drawTop    = lerp( toTop - retractSpan, toTop, heightT );
+            drawBottom = lerp( toBottom + microBounce, toBottom, settleBackT );
+        }
+        else
+        {
+            drawTop    = lerp( toTop - microBounce, toTop, settleBackT );
+            drawBottom = lerp( toBottom + retractSpan, toBottom, heightT );
+        }
+    }
+
+    const QRectF mark( QPointF( drawX, drawTop ), QPointF( drawX + targetW, drawBottom ) );
+    const bool isFromItem = fromIndex.isValid() && option->index == fromIndex;
+    const bool isToItem   = toIndex.isValid() && option->index == toIndex;
+    if ( !isFromItem && !isToItem )
+    {
+        return;
+    }
+
+    stateObject->setProperty( "_q_tree_indicator_from_x", fromX );
+    stateObject->setProperty( "_q_tree_indicator_from_top", fromTop );
+    stateObject->setProperty( "_q_tree_indicator_from_height", fromH );
+    stateObject->setProperty( "_q_tree_indicator_to_x", toX );
+    stateObject->setProperty( "_q_tree_indicator_to_top", toTop );
+    stateObject->setProperty( "_q_tree_indicator_to_height", toH );
+    stateObject->setProperty( "_q_tree_indicator_from_index", fromIndex );
+    stateObject->setProperty( "_q_tree_indicator_to_index", toIndex );
+
+    painter->setBrush( calculateAccentColor( option ) );
+    painter->setPen( calculateAccentColor( option ) );
+    painter->drawRoundedRect( mark, 1.0, 1.0 );
+}
+
+void FluentUI3Style::drawTreeViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
+{
+    if ( !option || !painter || highContrastTheme )
+    {
+        return;
+    }
+
+    const QTreeView* treeView = qobject_cast<const QTreeView*>( widget );
+    if ( !treeView || qobject_cast<const QTableView*>( widget ) )
+    {
+        return;
+    }
+
+    if ( option->state & State_Selected )
+    {
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 5, 0 )
+        const QColor col = option->palette.accent().color();
+#else
+        const QColor col = option->palette.color( QPalette::Highlight );
+#endif
+
+        const QRect rect = option->rect;
+        if ( rect.width() <= 0 || rect.height() <= 0 )
+        {
+            return;
+        }
+
+        const bool isRtl = option->direction == Qt::RightToLeft;
+        const qreal xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
+        const qreal yOfs = rect.height() / 4.0;
+        const QRectF mark( QPointF( xPos, rect.y() + yOfs ), QPointF( xPos + 1.0, rect.y() + rect.height() - yOfs ) );
+
+        painter->setBrush( col );
+        painter->setPen( col );
+        painter->drawRoundedRect( mark, 1.0, 1.0 );
+    }
 }
 
 // From QCommonStyle::drawControl, but only for CE_TabBarTabLabel, and with some adjustments for FluentUI3
@@ -4460,6 +4919,13 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 QRect checkRect = p->subElementRect( SE_ItemViewItemCheckIndicator, vopt, widget );
                 QRect iconRect  = p->subElementRect( SE_ItemViewItemDecoration, vopt, widget );
                 QRect textRect  = p->subElementRect( SE_ItemViewItemText, vopt, widget );
+                const bool isNavigationTreeView = qobject_cast<const QTreeView*>( widget )
+                                               && widget->property( "navigationViewIndicator" ).toBool();
+
+                if ( isNavigationTreeView && ( vopt->state & State_Children ) )
+                {
+                    textRect.adjust( 0, 0, -20, 0 );
+                }
 
                 // draw the background
                 proxy()->drawPrimitive( PE_PanelItemViewItem, option, painter, widget );
@@ -4565,7 +5031,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             option.state |= QStyle::State_On;
                             break;
                     }
-                    proxy()->drawPrimitive( QStyle::PE_IndicatorItemViewItemCheck, &option, painter, widget );
+                    proxy()->drawPrimitive( PE_IndicatorItemViewItemCheck, &option, painter, widget );
                 }
 
                 // draw the icon
@@ -4588,6 +5054,28 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 viewItemDrawText( painter, vopt, textRect );
 
                 drawListViewIndicator( vopt, painter, widget );
+                if ( const QTreeView* treeView = qobject_cast<const QTreeView*>( widget ) )
+                {
+                    if ( treeView->property( "navigationViewIndicator" ).toBool() )
+                    {
+                        if ( vopt->state & State_Children )
+                        {
+                            const bool isReverse = option->direction == Qt::RightToLeft;
+                            const bool isOpen    = vopt->state & State_Open;
+                            QFont f( assetFont );
+                            f.setPointSize( 10 );
+                            painter->setFont( f );
+                            painter->setPen( vopt->palette.text().color() );
+
+                            QRect arrowRect = rect.adjusted( isReverse ? 6 : rect.width() - 22, 0,
+                                                             isReverse ? -( rect.width() - 22 ) : -6, 0 );
+                            painter->drawText( arrowRect,
+                                               Qt::AlignCenter,
+                                               isOpen ? ChevronDownMed : ( isReverse ? ChevronLeftMed : ChevronRightMed ) );
+                        }
+                        drawNavigationViewIndicator( vopt, painter, widget );
+                    }
+                }
             }
             break;
         }
@@ -5074,7 +5562,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         {
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             contentSize.setHeight( 32 );
-            if (widget && widget->property(TabBarStyleProperty).toInt() == TabBarStyle::Capsule)
+            if ( widget && widget->property( TabBarStyleProperty ).toInt() <= TabBarStyle::Capsule )
             {
                 contentSize.setWidth( contentSize.width() + 30 );
             }
@@ -5359,21 +5847,21 @@ QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* optio
         if ( sp == SP_TitleBarCloseButton )
         {
             QIcon icon = fluentIcon( QChar( 0xE894 ) );
-                QFont f( assetFont );
-                f.setPixelSize( 27 );
+            QFont f( assetFont );
+            f.setPixelSize( 27 );
 
-                QPixmap pix( 30, 30 );
-              pix.fill( Qt::transparent );
+            QPixmap pix( 30, 30 );
+            pix.fill( Qt::transparent );
 
-              QPainter p( &pix );
-              p.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
+            QPainter p( &pix );
+            p.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
 
-              p.setFont( f );
-              p.setPen( widget->palette().color(QPalette::Window) );
-               p.drawText( pix.rect(), Qt::AlignCenter, QChar( 0xE894 ) );
+            p.setFont( f );
+            p.setPen( widget->palette().color( QPalette::Window ) );
+            p.drawText( pix.rect(), Qt::AlignCenter, QChar( 0xE894 ) );
 
-               icon.addPixmap( pix , QIcon::Active);
-               return icon;
+            icon.addPixmap( pix, QIcon::Active );
+            return icon;
         }
         return icon;
     }
