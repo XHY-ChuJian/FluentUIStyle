@@ -36,7 +36,7 @@ private:
     void init();
     void initNavigationView();
     void initMenuAndToolBar();
-    void setupAnimatedCapsuleTabs();
+    void setupTabs();
 
     void updateActionIcons();
     void loadChangelog();
@@ -45,12 +45,6 @@ private:
     Ui::MainWindow *ui;
 
     QToolBar* m_toolBar{nullptr};
+
     QTabBar* m_capsuleTabBar{nullptr};
-    SlidingStackedWidget* m_capsuleStack{nullptr};
-    QTabBar* m_growTabBar{nullptr};
-    SlidingStackedWidget* m_growStack{nullptr};
-    QTabBar* m_slideTabBar{nullptr};
-    SlidingStackedWidget* m_slideStack{nullptr};
-    QTabBar* m_stretchTabBar{nullptr};
-    SlidingStackedWidget* m_stretchStack{nullptr};
 };

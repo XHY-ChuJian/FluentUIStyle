@@ -105,7 +105,7 @@ MainWindow::MainWindow( QWidget* parent )
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
     QList<QWidget*> widgetList;
     widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7 << ui->widget_8
-               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_15 << ui->widget_14 << ui->widget_17 << ui->widget_18;
+               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13;
     for ( QWidget* w : widgetList )
     {
         // draw border in style
@@ -130,9 +130,6 @@ MainWindow::MainWindow( QWidget* parent )
 #endif
 
     loadChangelog();
-
-    // adjustSize();
-
     updateActionIcons();
 }
 
@@ -427,133 +424,150 @@ void MainWindow::initMenuAndToolBar()
     toolBar->addWidget( themeComboBox );
 }
 
-void MainWindow::setupAnimatedCapsuleTabs()
+void MainWindow::setupTabs()
 {
-    const auto populatePages = []( SlidingStackedWidget* stack, QTabBar* tabBar, const QString& prefix )
+    // 主布局
+    QVBoxLayout* mainLayout = new QVBoxLayout(ui->page_4);
+    mainLayout->setContentsMargins(10, 10, 10, 10);
+    mainLayout->setSpacing(15);
+
+    // ============ 第1个Widget: CapsuleTabBar + SlidingStackedWidget ============
+    QWidget* capsuleWidget = new QWidget();
+    capsuleWidget->setProperty("fluentBorder", true);
+    capsuleWidget->setAttribute(Qt::WA_StyledBackground);
+
+    QVBoxLayout* capsuleLayout = new QVBoxLayout(capsuleWidget);
+    capsuleLayout->setContentsMargins(10, 10, 10, 10);
+    capsuleLayout->setSpacing(2);
+
+    QLabel* capsuleLabel = new QLabel("Capsule TabBar");
+    capsuleLabel->setStyleSheet("font-weight: bold; font-size: 14px; ");
+    capsuleLayout->addWidget(capsuleLabel);
+
+    m_capsuleTabBar = new QTabBar();
+    m_capsuleTabBar->setAttribute(Qt::WA_StyledBackground, true);
+    m_capsuleTabBar->setAutoFillBackground(false);
+    m_capsuleTabBar->setExpanding(false);
+    m_capsuleTabBar->setTabsClosable(true);
+    m_capsuleTabBar->setMovable(true);
+    m_capsuleTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
+    m_capsuleTabBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Capsule));
+    m_capsuleTabBar->addTab("Home");
+    m_capsuleTabBar->addTab("Search");
+    m_capsuleTabBar->addTab("Settings");
+    m_capsuleTabBar->addTab("Help");
+    m_capsuleTabBar->addTab("About");
+    capsuleLayout->addWidget(m_capsuleTabBar);
+
+    SlidingStackedWidget* capsuleSlidingWidget = new SlidingStackedWidget();
+    QStringList pageNames = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
+    QList<QColor> pageColors = { QColor(255, 228, 225), QColor(224, 255, 255), QColor(240, 255, 240), QColor(255, 250, 205), QColor(230, 230, 250) };
+    for ( int i = 0; i < pageNames.size(); ++i )
     {
-        while ( tabBar->count() > 0 )
-        {
-            tabBar->removeTab( 0 );
-        }
-        while ( stack->count() > 0 )
-        {
-            QWidget* page = stack->widget( 0 );
-            stack->removeWidget( page );
-            if ( page )
-            {
-                page->deleteLater();
-            }
-        }
+        QLabel* page = new QLabel( pageNames[ i ] );
+        page->setAlignment( Qt::AlignCenter );
+        page->setStyleSheet( QString( "background-color: %1;color:black;" ).arg( pageColors[ i ].name() ) );
+        capsuleSlidingWidget->addWidget( page );
+    }
 
-        for ( int var = 0; var < 5; ++var )
-        {
-            auto* lab = new QLabel;
-            lab->setAlignment( Qt::AlignCenter );
-            QPalette pal = lab->palette();
-            switch ( var )
-            {
-                case 0:
-                    pal.setColor( QPalette::Window, QColor( 255, 179, 186 ) );
-                    break;
-                case 1:
-                    pal.setColor( QPalette::Window, QColor( 255, 223, 186 ) );
-                    break;
-                case 2:
-                    pal.setColor( QPalette::Window, QColor( 255, 255, 186 ) );
-                    break;
-                case 3:
-                    pal.setColor( QPalette::Window, QColor( 186, 255, 201 ) );
-                    break;
-                case 4:
-                    pal.setColor( QPalette::Window, QColor( 186, 225, 255 ) );
-                    break;
-            }
-            lab->setAutoFillBackground( true );
-            lab->setPalette( pal );
+    connect(m_capsuleTabBar, QOverload<int>::of(&QTabBar::currentChanged),
+            capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex);
+    //补充一下，如果TabBar支持拖动调整顺序，那么还需要连接tabMoved信号以保持内容页同步
+    connect(m_capsuleTabBar, &QTabBar::tabMoved, this, [
+        capsuleSlidingWidget
+    ](int from, int to) {
+        QWidget* widget = capsuleSlidingWidget->widget(from);
+        capsuleSlidingWidget->removeWidget(widget);
+        capsuleSlidingWidget->insertWidget(to, widget);
+    });
 
-            stack->addWidget( lab );
-            tabBar->addTab( QString( "%1%2" ).arg( prefix ).arg( var + 1 ) );
-        }
+    capsuleLayout->addWidget(capsuleSlidingWidget, 1);
+    mainLayout->addWidget(capsuleWidget, 1);
 
-        tabBar->setCurrentIndex( 0 );
-    };
+    // ============ 第2个Widget: 多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
+    QWidget* pivotWidget = new QWidget();
+    pivotWidget->setProperty("fluentBorder", true);
+    pivotWidget->setAttribute(Qt::WA_StyledBackground);
 
-    const auto ensureGroup = [ this, &populatePages ]( QWidget* hostWidget,
-                                       QTabWidget* oldTabWidget,
-                                       QTabBar*& tabBar,
-                                       SlidingStackedWidget*& stack,
-                                       TabBarStyle style,
-                                       bool closable,
-                                       bool movable,
-                                       const QString& titlePrefix,
-                                       Qt::Alignment textAlign )
-    {
-        if ( !tabBar || !stack )
-        {
-            auto* hostLayout = qobject_cast<QGridLayout*>( hostWidget->layout() );
-            if ( !hostLayout )
-            {
-                return;
-            }
+    QVBoxLayout* pivotLayout = new QVBoxLayout(pivotWidget);
+    pivotLayout->setContentsMargins(10, 10, 10, 10);
+    pivotLayout->setSpacing(20);
 
-            auto* container = new QWidget( hostWidget );
-            auto* layout    = new QVBoxLayout( container );
-            layout->setContentsMargins( 0, 0, 0, 0 );
-            layout->setSpacing( 0 );
+    // Pivot_Grow
+    QLabel* pivotGrowLabel = new QLabel("Pivot Grow TabBar");
+    pivotGrowLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
+    pivotLayout->addWidget(pivotGrowLabel);
 
-            tabBar = new QTabBar( container );
-            tabBar->setExpanding(false);
-            tabBar->setDrawBase( false );
-            tabBar->setUsesScrollButtons( true );
-            tabBar->setDocumentMode( true );
-            tabBar->setMovable( movable );
-            tabBar->setTabsClosable( closable );
-            tabBar->setProperty( TabBarStyleProperty, style );
-            tabBar->setProperty( "TextAlign", int( textAlign ) );
+    QTabBar* pivotGrowBar = new QTabBar();
+    pivotGrowBar->setExpanding(false);
+    pivotGrowBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Grow));
+    pivotGrowBar->addTab("Page 1");
+    pivotGrowBar->addTab("Page 2");
+    pivotGrowBar->addTab("Page 3");
+    pivotGrowBar->addTab("Page 4");
+    pivotGrowBar->addTab("Page 5");
+    pivotLayout->addWidget(pivotGrowBar);
 
-            stack = new SlidingStackedWidget( container );
-            stack->setAnimation( QEasingCurve::OutCubic );
-            stack->setSpeed( 300 );
+    // Pivot_Slide
+    QLabel* pivotSlideLabel = new QLabel("Pivot Slide TabBar");
+    pivotSlideLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
+    pivotLayout->addWidget(pivotSlideLabel);
 
-            layout->addWidget( tabBar );
-            layout->addWidget( stack, 1 );
+    QTabBar* pivotSlideBar = new QTabBar();
+    pivotSlideBar->setExpanding(false);
+    pivotSlideBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Slide));
+    pivotSlideBar->addTab("Page 1");
+    pivotSlideBar->addTab("Page 2");
+    pivotSlideBar->addTab("Page 3");
+    pivotSlideBar->addTab("Page 4");
+    pivotSlideBar->addTab("Page 5");
+    pivotLayout->addWidget(pivotSlideBar);
 
-            hostLayout->removeWidget( oldTabWidget );
-            oldTabWidget->hide();
-            hostLayout->addWidget( container, 1, 0 );
+    // Pivot_Stretch
+    QLabel* pivotStretchLabel = new QLabel("Pivot Stretch TabBar");
+    pivotStretchLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
+    pivotLayout->addWidget(pivotStretchLabel);
 
-            connect( tabBar, &QTabBar::currentChanged, stack, &SlidingStackedWidget::setCurrentIndex );
-            connect( tabBar,
-                     &QTabBar::tabCloseRequested,
-                     this,
-                     [ tabBar, stack ]( int index )
-                     {
-                         if ( !tabBar || !stack || !tabBar->tabsClosable() || tabBar->count() <= 1 )
-                         {
-                             return;
-                         }
+    QTabBar* pivotStretchBar = new QTabBar();
+    pivotStretchBar->setExpanding(false);
+    pivotStretchBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Stretch));
+    pivotStretchBar->addTab("Page 1");
+    pivotStretchBar->addTab("Page 2");
+    pivotStretchBar->addTab("Page 3");
+    pivotStretchBar->addTab("Page 4");
+    pivotStretchBar->addTab("Page 5");
 
-                         QWidget* page = stack->widget( index );
-                         tabBar->removeTab( index );
-                         stack->removeWidget( page );
-                         if ( page )
-                         {
-                             page->deleteLater();
-                         }
-                     } );
-        }
+    pivotLayout->addWidget(pivotStretchBar);
 
-        populatePages( stack, tabBar, titlePrefix );
-    };
+    pivotLayout->addStretch();
+    mainLayout->addWidget(pivotWidget, 1);
 
-    ensureGroup( ui->widget_14, ui->tabWidget, m_capsuleTabBar, m_capsuleStack,
-                 TabBarStyle::Capsule, true, true, "Tab", Qt::AlignVCenter | Qt::AlignLeft );
-    ensureGroup( ui->widget_15, ui->tabGrowPivot, m_growTabBar, m_growStack,
-                 TabBarStyle::Pivot_Grow, false, false, "Page", Qt::AlignCenter );
-    ensureGroup( ui->widget_17, ui->tabSlidePivot, m_slideTabBar, m_slideStack,
-                 TabBarStyle::Pivot_Slide, false, false, "Page", Qt::AlignCenter );
-    ensureGroup( ui->widget_18, ui->tabStretchPivot, m_stretchTabBar, m_stretchStack,
-                 TabBarStyle::Pivot_Stretch, false, false, "Page", Qt::AlignCenter );
+    // ============ 第3个Widget: Segmented TabBar ============
+    QWidget* segmentedWidget = new QWidget();
+    segmentedWidget->setProperty("fluentBorder", true);
+    segmentedWidget->setAttribute(Qt::WA_StyledBackground);
+
+    QVBoxLayout* segmentedLayout = new QVBoxLayout(segmentedWidget);
+    segmentedLayout->setContentsMargins(10, 10, 10, 10);
+    segmentedLayout->setSpacing(10);
+
+    QLabel* segmentedLabel = new QLabel("Segmented TabBar");
+    segmentedLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
+    segmentedLayout->addWidget(segmentedLabel);
+
+    QTabBar* segmentedBar = new QTabBar();
+    segmentedBar->setTabsClosable(true);
+    segmentedBar->setExpanding(false);
+    segmentedBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Segmented));
+    segmentedBar->addTab("Page 1");
+    segmentedBar->addTab("Page 2");
+    segmentedBar->addTab("Page 3");
+    segmentedBar->addTab("Page 4");
+    segmentedBar->addTab("Page 5");
+    segmentedLayout->addWidget(segmentedBar);
+
+    segmentedLayout->addStretch();
+    mainLayout->addWidget(segmentedWidget, 1);
 }
 
 void MainWindow::updateActionIcons()
@@ -626,7 +640,7 @@ void MainWindow::updateActionIcons()
 void MainWindow::init()
 {
     ui->stackedWidget->setVerticalMode(true);
-    ui->stackedWidget->setAnimation(QEasingCurve::Type::OutCubic);
+    ui->stackedWidget->setAnimation(QEasingCurve::Type::InOutSine);
     ui->stackedWidget->setSpeed(300);
 
     initMenuAndToolBar();
@@ -653,16 +667,8 @@ void MainWindow::init()
     ui->treeWidget->setProperty("ItemHeight", 32);
 
     {
-        setupAnimatedCapsuleTabs();
+        setupTabs();
     }
-
-    //设置前面三个TAbBar的字体，大两号
-    QFont tabFont = m_capsuleTabBar->font();
-    tabFont.setPixelSize( tabFont.pixelSize() + 1 );
-    m_capsuleTabBar->setFont( tabFont );
-    m_growTabBar->setFont( tabFont );
-    m_slideTabBar->setFont( tabFont );
-    m_stretchTabBar->setFont( tabFont );
 
 
     {
@@ -774,7 +780,7 @@ void MainWindow::initNavigationView()
      treeItem->setData( 0, Qt::UserRole + 1, "\uED28" );
 
      QTreeWidgetItem* tabItem = new QTreeWidgetItem( ui->navView );
-     tabItem->setText( 0, "标签控件" );
+     tabItem->setText( 0, "导航控件" );
      tabItem->setData( 0, Qt::UserRole, 3 );
      tabItem->setData( 0, Qt::UserRole + 1, "\uE8B0" );
 

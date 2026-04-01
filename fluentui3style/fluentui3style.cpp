@@ -2417,26 +2417,10 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
 
                 if ( isComboPopup )
                 {
-                    // 绘制阴影（外层）
                     drawFluentShadow( painter, rect.toRect(), cBShadowBorderWidth, cBRoundingRadius );
-
-                    // 先填充整个外层矩形，避免由于 mask/透明背景导致的“透明边”可见
-                    painter->setPen( Qt::NoPen );
                     painter->setBrush( winUI3Color( menuPanelFill ) );
-                    painter->drawRect( rect );
-
-                    // 内部保留圆角并绘制填充和边框，使用样式中的边框颜色而不是默认黑色
                     auto pRect = QRectF( rect ).marginsRemoved( QMarginsF(
                         cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
-
-                    // 填充内圆角
-                    painter->setBrush( winUI3Color( menuPanelFill ) );
-                    painter->setPen( Qt::NoPen );
-                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
-
-                    // 绘制圆角边框（细线，使用 theme 色）
-                    painter->setBrush( Qt::NoBrush );
-                    painter->setPen( WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
                     painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
                 }
                 else
