@@ -29,6 +29,7 @@
 #include <QTextLayout>
 #include <QToolButton>
 #include <QTreeView>
+#include <QtMath>
 
 #include <array>
 
@@ -50,11 +51,14 @@
 #    include "palettemanager.h"
 #endif
 
-static constexpr int topLevelRoundingRadius    = 8;      // Radius for toplevel items like popups for round corners
-static constexpr int secondLevelRoundingRadius = 4;      // Radius for second level items like hovered menu item round corners
+static constexpr int topLevelRoundingRadius    = 6;      // Radius for toplevel items like popups for round corners
+static constexpr int secondLevelRoundingRadius = 3;      // Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin        = 4;      // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin            = 2 * 3;  // margin between rounded border and content (= rounded border
                                                          // margin * 3)
+
+static constexpr int cBShadowBorderWidth = 2;
+static constexpr int cBRoundingRadius = 3;
 
 enum
 {
@@ -1536,7 +1540,9 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
         {
             if ( const QStyleOptionComboBox* combobox = qstyleoption_cast<const QStyleOptionComboBox*>( option ) )
             {
-                QRectF rect = option->rect;  // 不再 shrink
+                QRectF rect = option->rect.marginsRemoved( QMargins( cBShadowBorderWidth - 1, 0, cBShadowBorderWidth, 0 ) );
+
+                // drawFluentShadow( painter, option->rect, cBShadowBorderWidth, cBRoundingRadius );
 
                 const bool hasFocus = state & State_HasFocus;
 
@@ -1545,7 +1551,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 
                 painter->setPen( Qt::NoPen );
                 painter->setBrush( controlFillBrush( &opt, ControlType::Control ) );
-                painter->drawRoundedRect( rect, 6, 6 );
+                painter->drawRoundedRect( rect, cBRoundingRadius, cBRoundingRadius );
 
                 if ( combobox->frame )
                 {
@@ -2061,7 +2067,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     t->setStartValue( animationValue( styleObject, "_q_thumb_pos", oldState & State_On ? 1.0f : 0.0f ) );
                     t->setEndValue( state & State_On ? 1.0f : 0.0f );
                     t->setDuration( 150 );
-                    // t->setEasingCurve( QEasingCurve::InOutCubic );
+                    t->setEasingCurve( QEasingCurve::InOutSine );
                     startAnimationEx( t, styleObject, "_q_thumb_pos" );
                 }
                 if ( ( state & State_MouseOver ) != ( oldState & State_MouseOver ) )
@@ -2100,9 +2106,12 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         }
         case PE_PanelTipLabel :
         {
+            // QProxyStyle::drawPrimitive( element, option, painter, widget );
+            // return;
             const auto rect = QRectF( option->rect ).marginsRemoved( QMarginsF( 0.5, 0.5, 0.5, 0.5 ) );
             const auto pen  = highContrastTheme ? option->palette.buttonText().color() : winUI3Color( frameColorLight );
-            drawRoundedRect( painter, rect, pen, option->palette.toolTipBase() );
+            // drawRoundedRect( painter, rect, pen, option->palette.toolTipBase() );
+            painter->drawRect( option->rect );
             break;
         }
         case PE_FrameTabWidget :
@@ -2396,7 +2405,6 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             break;
         }
-#if 1
         case PE_Frame :
         {
             if ( const auto* frame = qstyleoption_cast<const QStyleOptionFrame*>( option ) )
@@ -2409,9 +2417,27 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
 
                 if ( isComboPopup )
                 {
-                    QBrush c = WINUI3Colors[ colorSchemeIndex ][ menuPanelFill ];
-                    painter->setBrush( c );
-                    painter->drawRoundedRect( rect, 6, 6 );
+                    // 绘制阴影（外层）
+                    drawFluentShadow( painter, rect.toRect(), cBShadowBorderWidth, cBRoundingRadius );
+
+                    // 先填充整个外层矩形，避免由于 mask/透明背景导致的“透明边”可见
+                    painter->setPen( Qt::NoPen );
+                    painter->setBrush( winUI3Color( menuPanelFill ) );
+                    painter->drawRect( rect );
+
+                    // 内部保留圆角并绘制填充和边框，使用样式中的边框颜色而不是默认黑色
+                    auto pRect = QRectF( rect ).marginsRemoved( QMarginsF(
+                        cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
+
+                    // 填充内圆角
+                    painter->setBrush( winUI3Color( menuPanelFill ) );
+                    painter->setPen( Qt::NoPen );
+                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
+
+                    // 绘制圆角边框（细线，使用 theme 色）
+                    painter->setBrush( Qt::NoBrush );
+                    painter->setPen( WINUI3Colors[ colorSchemeIndex ][ frameColorLight ] );
+                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
                 }
                 else
                 {
@@ -2429,44 +2455,6 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             break;
         }
-#else
-        case PE_Frame :
-        {
-            if ( const auto* frame = qstyleoption_cast<const QStyleOptionFrame*>( option ) )
-            {
-                const auto rect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
-
-                const bool isComboPopup = widget && widget->inherits( "QComboBoxPrivateContainer" );
-                if ( isComboPopup )
-                {
-                    QPen pen;
-                    if ( highContrastTheme )
-                    {
-                        pen = QPen( option->palette.windowText().color(), 2 );
-                    }
-                    else
-                    {
-                        pen = Qt::NoPen;
-                    }
-
-                    QColor c = WINUI3Colors[ colorSchemeIndex ][ menuPanelFill ];
-                    drawRoundedRect( painter, rect, pen, c );
-                }
-                else
-                {
-                    drawRoundedRect( painter, rect, Qt::NoPen, option->palette.brush( QPalette::Base ) );
-                }
-
-                if ( frame->frameShape == QFrame::NoFrame )
-                {
-                    break;
-                }
-
-                drawLineEditFrame( painter, rect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr );
-            }
-            break;
-        }
-#endif
         case PE_PanelItemViewItem :
             if ( const QStyleOptionViewItem* vopt = qstyleoption_cast<const QStyleOptionViewItem*>( option ) )
             {
@@ -2474,7 +2462,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 {
                     PainterStateGuard psg( painter );
                     painter->setBrushOrigin( vopt->rect.topLeft() );
-                    painter->fillRect( vopt->rect, vopt->backgroundBrush );
+
+                    auto rect = vopt->rect;
+                    painter->fillRect( rect, vopt->backgroundBrush );
                 }
             }
             break;
@@ -2570,7 +2560,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             break;
         case PE_Widget :
         {
-            if (widget &&  widget->property( "fluentBorder" ).toBool() )
+            if ( widget && widget->property( "fluentBorder" ).toBool() )
             {
                 painter->save();
                 painter->setRenderHint( QPainter::Antialiasing );
@@ -3125,6 +3115,10 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
         {
             drawCapsuleTab( tab, painter, widget );
         }
+        else if ( tabBarStyle == TabBarStyle::Segmented )
+        {
+            drawSegmentedTab( tab, painter, widget );
+        }
         else
         {
             drawCapsuleTab( tab, painter, widget );
@@ -3352,10 +3346,10 @@ void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainte
         const qreal endRight   = endLeft + endWidth;
         const bool movingRight = endLeft >= startLeft;
 
-        const qreal startTabLeft  = startLeft - indicatorMargin;
-        const qreal startTabRight = startRight + indicatorMargin;
-        const qreal endTabLeft    = endLeft - indicatorMargin;
-        const qreal endTabRight   = endRight + indicatorMargin;
+        const qreal startTabLeft                 = startLeft - indicatorMargin;
+        const qreal startTabRight                = startRight + indicatorMargin;
+        [[maybe_unused]] const qreal endTabLeft  = endLeft - indicatorMargin;
+        [[maybe_unused]] const qreal endTabRight = endRight + indicatorMargin;
 
         qreal drawLeft  = startLeft;
         qreal drawRight = startRight;
@@ -3387,7 +3381,7 @@ void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainte
             const qreal widthT      = easeOutCubic( settleT );
             const qreal settleBackT = easeOutBack( settleT );
             const qreal retractSpan = qMin( endWidth * 0.32, qreal( 20.0 ) );
-            const qreal microBounce = qSin( settleT * 3.14159265358979323846 ) * ( 1.0 - settleT ) * 0.9;
+            const qreal microBounce = qSin( settleT * M_PI ) * ( 1.0 - settleT ) * 0.9;
 
             if ( movingRight )
             {
@@ -3465,7 +3459,7 @@ void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainte
         QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
-        t->setDuration( 400 );
+        t->setDuration( 450 );
         startAnimationEx( t, styleObject, animKey );
     }
     else if ( currentTabIndex < 0 || previousTabIndex < 0 )
@@ -3573,12 +3567,12 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         targetWidth = 0;
     }
 
-    const qreal targetLeft  = r.left() + indicatorMargin;
-    const qreal targetTop   = r.bottom() - indicatorHeight;
-    const qreal targetRight = targetLeft + targetWidth;
-    const qreal fullTabLeft  = r.left();
-    const qreal fullTabRight = r.left() + r.width();
-    const qreal fullTabWidth = qMax( 0.0, qreal( r.width() ) );
+    const qreal targetLeft                    = r.left() + indicatorMargin;
+    const qreal targetTop                     = r.bottom() - indicatorHeight;
+    const qreal targetRight                   = targetLeft + targetWidth;
+    [[maybe_unused]] const qreal fullTabLeft  = r.left();
+    [[maybe_unused]] const qreal fullTabRight = r.left() + r.width();
+    [[maybe_unused]] const qreal fullTabWidth = qMax( 0.0, qreal( r.width() ) );
 
     int currentTabIndex = -1;
     if ( const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget ) )
@@ -3640,28 +3634,26 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         toTop     = targetTop;
     }
 
-    const qreal progress     = clamp01( animationValue( styleObject, animKey, 1.0f ) );
-    const qreal fromWidth    = qMax( 0.0, fromRight - fromLeft );
-    const qreal toWidth      = qMax( 0.0, toRight - toLeft );
-    const qreal fromCenter   = fromLeft + fromWidth / 2.0;
-    const qreal toCenter     = toLeft + toWidth / 2.0;
-    const qreal distance     = qAbs( toCenter - fromCenter );
+    const qreal progress         = clamp01( animationValue( styleObject, animKey, 1.0f ) );
+    const qreal fromWidth        = qMax( 0.0, fromRight - fromLeft );
+    const qreal toWidth          = qMax( 0.0, toRight - toLeft );
+    const qreal fromCenter       = fromLeft + fromWidth / 2.0;
+    const qreal toCenter         = toLeft + toWidth / 2.0;
+    const qreal distance         = qAbs( toCenter - fromCenter );
     const bool movingRight       = toCenter >= fromCenter;
     const qreal moveT            = easeOutCubic( progress );
     const qreal edgeSettleT      = easeOutBack( delayedProgress( progress, 0.50 ) );
     const qreal widthBaseT       = easeInOutCubic( progress );
-    const qreal widthPulseT      = qSin( progress * 3.14159265358979323846 );
+    const qreal widthPulseT      = qSin( progress * M_PI );
     const qreal shrinkT          = easeOutCubic( delayedProgress( progress, 0.60 ) );
     const qreal leadingOvershoot = qMin( 6.2, 2.1 + distance * 0.026 );
     const qreal expandedWidth    = qMax( qMax( fromWidth, toWidth ), fullTabWidth );
     const qreal widthStretch     = leadingOvershoot * widthPulseT * ( 1.0 - shrinkT * 0.75 );
-    const qreal stretchWidth     = lerp( lerp( fromWidth, toWidth, widthBaseT ),
-                                         expandedWidth,
-                                         widthPulseT * ( 1.0 - shrinkT * 0.72 ) );
+    const qreal stretchWidth     = lerp( lerp( fromWidth, toWidth, widthBaseT ), expandedWidth, widthPulseT * ( 1.0 - shrinkT * 0.72 ) );
     const qreal currentWidth     = stretchWidth + widthStretch * 0.35;
 
     qreal center = lerp( fromCenter, toCenter, moveT );
-    center        = lerp( center, toCenter, edgeSettleT * 0.18 );
+    center       = lerp( center, toCenter, edgeSettleT * 0.18 );
 
     qreal drawLeft  = center - currentWidth / 2.0;
     qreal drawRight = center + currentWidth / 2.0;
@@ -3669,9 +3661,9 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
     if ( movingRight )
     {
         const qreal anchoredRight = lerp( drawRight, toRight + widthStretch, edgeSettleT * 0.96 );
-        drawRight                = lerp( anchoredRight, toRight, shrinkT );
-        drawLeft                 = drawRight - currentWidth;
-        drawLeft                 = lerp( drawLeft, toLeft, shrinkT );
+        drawRight                 = lerp( anchoredRight, toRight, shrinkT );
+        drawLeft                  = drawRight - currentWidth;
+        drawLeft                  = lerp( drawLeft, toLeft, shrinkT );
 
         if ( drawRight >= toRight || center >= toCenter )
         {
@@ -3682,9 +3674,9 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
     else
     {
         const qreal anchoredLeft = lerp( drawLeft, toLeft - widthStretch, edgeSettleT * 0.96 );
-        drawLeft                = lerp( anchoredLeft, toLeft, shrinkT );
-        drawRight               = drawLeft + currentWidth;
-        drawRight               = lerp( drawRight, toRight, shrinkT );
+        drawLeft                 = lerp( anchoredLeft, toLeft, shrinkT );
+        drawRight                = drawLeft + currentWidth;
+        drawRight                = lerp( drawRight, toRight, shrinkT );
 
         if ( drawLeft <= toLeft || center <= toCenter )
         {
@@ -3698,10 +3690,8 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         qSwap( drawLeft, drawRight );
     }
 
-    const QRectF indicatorRectF( drawLeft,
-                                 lerp( fromTop, toTop, smoothStep( progress ) ),
-                                 qMax( 0.0, drawRight - drawLeft ),
-                                 indicatorHeight );
+    const QRectF indicatorRectF(
+        drawLeft, lerp( fromTop, toTop, smoothStep( progress ) ), qMax( 0.0, drawRight - drawLeft ), indicatorHeight );
 
     styleObject->setProperty( "_q_pivot_slide_selected_tab_index", currentTabIndex );
     styleObject->setProperty( "_q_pivot_slide_from_left", fromLeft );
@@ -3714,6 +3704,30 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
     painter->setPen( Qt::NoPen );
     painter->setBrush( calculateAccentColor( tab ) );
     painter->drawRoundedRect( indicatorRectF, indicatorHeight / 2.0, indicatorHeight / 2.0 );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+void FluentUI3Style::drawSegmentedTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+    Q_UNUSED( widget )
+#if QT_CONFIG( tabbar )
+    const bool isSelected                 = tab->state.testFlag( QStyle::State_Selected );
+    const bool isHover                    = tab->state.testFlag( QStyle::State_MouseOver );
+    [[maybe_unused]] const bool isEnabled = tab->state.testFlag( QStyle::State_Enabled );
+    const QRectF tabRect                  = tab->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
+    const qreal radius                    = 2;
+
+    QColor hoverColor    = winUI3Color( tabBarHoverBackground );
+    QColor selectedColor = winUI3Color( tabBarSelectedBackground );
+    QColor fillColor     = isSelected ? selectedColor : ( isHover ? hoverColor : tab->palette.window().color() );
+
+    painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokePrimary ] );
+    painter->setBrush( fillColor );
+    painter->drawRoundedRect( tabRect, radius, radius );
 #else
     Q_UNUSED( tab )
     Q_UNUSED( painter )
@@ -3862,23 +3876,23 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
     const qreal targetH     = rect.height() - normalInset * 2.0;
     const qreal targetW     = 2.0;
 
-    qreal fromX   = stateObject->property( "_q_tree_indicator_from_x" ).toReal();
-    qreal fromTop = stateObject->property( "_q_tree_indicator_from_top" ).toReal();
-    qreal fromH   = stateObject->property( "_q_tree_indicator_from_height" ).toReal();
-    qreal toX     = stateObject->property( "_q_tree_indicator_to_x" ).toReal();
-    qreal toTop   = stateObject->property( "_q_tree_indicator_to_top" ).toReal();
-    qreal toH     = stateObject->property( "_q_tree_indicator_to_height" ).toReal();
+    qreal fromX           = stateObject->property( "_q_tree_indicator_from_x" ).toReal();
+    qreal fromTop         = stateObject->property( "_q_tree_indicator_from_top" ).toReal();
+    qreal fromH           = stateObject->property( "_q_tree_indicator_from_height" ).toReal();
+    qreal toX             = stateObject->property( "_q_tree_indicator_to_x" ).toReal();
+    qreal toTop           = stateObject->property( "_q_tree_indicator_to_top" ).toReal();
+    qreal toH             = stateObject->property( "_q_tree_indicator_to_height" ).toReal();
     QModelIndex fromIndex = stateObject->property( "_q_tree_indicator_from_index" ).toModelIndex();
     QModelIndex toIndex   = stateObject->property( "_q_tree_indicator_to_index" ).toModelIndex();
 
     if ( toH <= 0.0 )
     {
-        fromX   = targetX;
-        fromTop = targetTop;
-        fromH   = targetH;
-        toX     = targetX;
-        toTop   = targetTop;
-        toH     = targetH;
+        fromX     = targetX;
+        fromTop   = targetTop;
+        fromH     = targetH;
+        toX       = targetX;
+        toTop     = targetTop;
+        toH       = targetH;
         fromIndex = option->index;
         toIndex   = option->index;
     }
@@ -3888,12 +3902,12 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
         const bool selectionChanged = qAbs( targetX - toX ) > 0.5 || qAbs( targetTop - toTop ) > 0.5 || qAbs( targetH - toH ) > 0.5;
         if ( selectionChanged )
         {
-            fromX   = toX;
-            fromTop = toTop;
-            fromH   = toH;
-            toX     = targetX;
-            toTop   = targetTop;
-            toH     = targetH;
+            fromX     = toX;
+            fromTop   = toTop;
+            fromH     = toH;
+            toX       = targetX;
+            toTop     = targetTop;
+            toH       = targetH;
             fromIndex = toIndex;
             toIndex   = option->index;
 
@@ -3946,7 +3960,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
         const qreal heightT     = easeOutCubic( settleT );
         const qreal settleBackT = easeOutBack( settleT );
         const qreal retractSpan = qMin( toH * 0.32, qreal( 20.0 ) );
-        const qreal microBounce = qSin( settleT * 3.14159265358979323846 ) * ( 1.0 - settleT ) * 0.9;
+        const qreal microBounce = qSin( settleT * M_PI ) * ( 1.0 - settleT ) * 0.9;
 
         if ( movingDown )
         {
@@ -4067,7 +4081,6 @@ void FluentUI3Style::drawTabBarTabLabel( const QStyleOption* option, QPainter* p
             painter->drawPixmap( iconRect.x(), iconRect.y(), tabIcon );
         }
 
-        // 选中或悬停：使用更高对比度文本色；普通状态：使用更柔和的边框浅色文本
         QPalette textPalette = tab->palette;
         const bool isEnabled = tab->state & State_Enabled;
         const bool isHot     = tab->state & ( State_Selected | State_MouseOver );
@@ -4291,6 +4304,18 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
         case CE_ShapedFrame :
             if ( const QStyleOptionFrame* f = qstyleoption_cast<const QStyleOptionFrame*>( option ) )
             {
+                const bool isComboPopup = widget && widget->inherits( "QComboBoxPrivateContainer" );
+                if ( isComboPopup )
+                {
+                    painter->setPen( highContrastTheme ? QPen( option->palette.windowText().color(), 1 ) : winUI3Color( frameColorLight ) );
+                    drawFluentShadow( painter, option->rect, cBShadowBorderWidth, cBRoundingRadius );
+                    painter->setBrush( winUI3Color( menuPanelFill ) );
+                    auto pRect = QRectF( option->rect ).marginsRemoved( QMarginsF(
+                        cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
+                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
+                    break;
+                }
+
                 int frameShape  = f->frameShape;
                 int frameShadow = QFrame::Plain;
                 if ( f->state & QStyle::State_Sunken )
@@ -4516,7 +4541,15 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 auto vTextRect = visualRect( btn->direction, btn->rect, textRect );
                 bool accent    = widget && widget->property( "accent" ).toBool();
-                if ( accent )
+
+                bool checkable = false, checked = false;
+                if ( const auto* button = qobject_cast<const QPushButton*>( widget ) )
+                {
+                    checkable = button->isCheckable();
+                    checked   = button->isChecked();
+                }
+
+                if ( accent || ( checkable && checked ) )
                 {
                     painter->setPen( WINUI3Colors[ colorSchemeIndex ][ textOnAccentPrimary ] );
                 }
@@ -4524,8 +4557,6 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 {
                     painter->setPen( controlTextColor( option ) );
                 }
-
-                // painter->setPen( controlTextColor( option, QPalette::ButtonText, widget ) );
                 proxy()->drawItemText( painter, vTextRect, tf, option->palette, isEnabled, btn->text );
             }
             break;
@@ -4537,6 +4568,14 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
                 QRectF rect = btn->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
                 painter->setPen( Qt::NoPen );
+
+                bool checkable = false, checked = false;
+                if ( const auto* button = qobject_cast<const QPushButton*>( widget ) )
+                {
+                    checkable = button->isCheckable();
+                    checked   = button->isChecked();
+                }
+
                 if ( btn->features.testFlag( QStyleOptionButton::Flat ) )
                 {
                     painter->setBrush( btn->palette.button() );
@@ -4564,6 +4603,11 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         painter->setBrush( controlFillBrush( option, ControlType::Control ) );
                     }
 
+                    if ( checkable && checked )
+                    {
+                        painter->setBrush( calculateAccentColor( option ) );
+                    }
+
                     painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
                     rect.adjust( 0.5, 0.5, -0.5, -0.5 );
@@ -4583,6 +4627,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     painter->setPen( defaultButton ? WINUI3Colors[ colorSchemeIndex ][ controlStrokeOnAccentSecondary ]
                                                    : WINUI3Colors[ colorSchemeIndex ][ controlStrokeSecondary ] );
                 }
+
                 if ( btn->features.testFlag( QStyleOptionButton::HasMenu ) )
                 {
                     PainterStateGuard psg( painter );
@@ -4919,8 +4964,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 QRect checkRect = p->subElementRect( SE_ItemViewItemCheckIndicator, vopt, widget );
                 QRect iconRect  = p->subElementRect( SE_ItemViewItemDecoration, vopt, widget );
                 QRect textRect  = p->subElementRect( SE_ItemViewItemText, vopt, widget );
-                const bool isNavigationTreeView = qobject_cast<const QTreeView*>( widget )
-                                               && widget->property( "navigationViewIndicator" ).toBool();
+                const bool isNavigationTreeView =
+                    qobject_cast<const QTreeView*>( widget ) && widget->property( "navigationViewIndicator" ).toBool();
 
                 if ( isNavigationTreeView && ( vopt->state & State_Children ) )
                 {
@@ -5042,10 +5087,10 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     {
                         mode = QIcon::Disabled;
                     }
-                    else if ( vopt->state & QStyle::State_Selected )
-                    {
-                        mode = QIcon::Selected;
-                    }
+                    // else if ( vopt->state & QStyle::State_Selected )
+                    // {
+                    //     mode = QIcon::Selected;
+                    // }
                     QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
                     vopt->icon.paint( painter, iconRect, vopt->decorationAlignment, mode, state );
                 }
@@ -5067,11 +5112,10 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             painter->setFont( f );
                             painter->setPen( vopt->palette.text().color() );
 
-                            QRect arrowRect = rect.adjusted( isReverse ? 6 : rect.width() - 22, 0,
-                                                             isReverse ? -( rect.width() - 22 ) : -6, 0 );
-                            painter->drawText( arrowRect,
-                                               Qt::AlignCenter,
-                                               isOpen ? ChevronDownMed : ( isReverse ? ChevronLeftMed : ChevronRightMed ) );
+                            QRect arrowRect =
+                                rect.adjusted( isReverse ? 6 : rect.width() - 22, 0, isReverse ? -( rect.width() - 22 ) : -6, 0 );
+                            painter->drawText(
+                                arrowRect, Qt::AlignCenter, isOpen ? ChevronDownMed : ( isReverse ? ChevronLeftMed : ChevronRightMed ) );
                         }
                         drawNavigationViewIndicator( vopt, painter, widget );
                     }
@@ -5241,6 +5285,13 @@ void FluentUI3Style::polish( QWidget* widget )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::polish( widget );
 
+    if ( widget->inherits( "QRollEffect" ) )
+    {
+        widget->setAttribute( Qt::WA_TranslucentBackground );
+        widget->setWindowFlag( Qt::FramelessWindowHint );
+        widget->setAttribute( Qt::WA_NoSystemBackground, false );
+    }
+
     // 没有动态更新主题的需求，可屏蔽
     if ( auto le = qobject_cast<QLineEdit*>( widget ) )
     {
@@ -5282,7 +5333,6 @@ void FluentUI3Style::polish( QWidget* widget )
         bool layoutDirection = widget->testAttribute( Qt::WA_RightToLeft );
 
         widget->setAttribute( Qt::WA_OpaquePaintEvent, false );
-
         widget->setAttribute( Qt::WA_TranslucentBackground );
         widget->setWindowFlag( Qt::FramelessWindowHint );
         widget->setWindowFlag( Qt::Popup );
@@ -5292,6 +5342,21 @@ void FluentUI3Style::polish( QWidget* widget )
         widget->setAttribute( Qt::WA_RightToLeft, layoutDirection );
         widget->setAttribute( Qt::WA_WState_Created, wasCreated );
     }
+    // else if ( isToolTip )
+    // {
+    //     // FluentUI ToolTip styling
+    //     bool wasCreated      = widget->testAttribute( Qt::WA_WState_Created );
+    //     bool layoutDirection = widget->testAttribute( Qt::WA_RightToLeft );
+
+    //     widget->setAttribute( Qt::WA_OpaquePaintEvent, false );
+    //     widget->setAttribute( Qt::WA_TranslucentBackground );
+    //     widget->setWindowFlag( Qt::FramelessWindowHint );
+    //     widget->setWindowFlag( Qt::ToolTip );
+    //     widget->setWindowFlag( Qt::NoDropShadowWindowHint );
+
+    //     widget->setAttribute( Qt::WA_RightToLeft, layoutDirection );
+    //     widget->setAttribute( Qt::WA_WState_Created, wasCreated );
+    // }
     else if ( QComboBox* cb = qobject_cast<QComboBox*>( widget ) )
     {
         if ( cb->isEditable() )
@@ -5582,9 +5647,9 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         case CT_ComboBox :
         case CT_LineEdit :
         case CT_SpinBox :
-            if ( contentSize.height() < 31 )
+            if ( contentSize.height() < 32 )
             {
-                contentSize.setHeight( 31 );
+                contentSize.setHeight( 32 );
             }
             break;
         default :
@@ -5673,7 +5738,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             }
             if ( isComboBoxPopup( const_cast<QWidget*>( widget ) ) )
             {
-                res = 2;
+                res = 2 + cBShadowBorderWidth;
             }
         }
         break;
