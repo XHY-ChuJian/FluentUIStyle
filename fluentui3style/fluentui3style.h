@@ -110,7 +110,7 @@ private:
 
     QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
 
-    void drawLineEditFrame( QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable = true ) const;
+    void drawLineEditFrame( QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable = true ,int roundingRadius = 4) const;
     QColor winUI3Color( WINUI3Color col ) const;
 
     QIcon fluentIcon( const QChar& ch ) const;

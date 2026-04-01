@@ -52,13 +52,13 @@
 #endif
 
 static constexpr int topLevelRoundingRadius    = 6;      // Radius for toplevel items like popups for round corners
-static constexpr int secondLevelRoundingRadius = 3;      // Radius for second level items like hovered menu item round corners
+static constexpr int secondLevelRoundingRadius = 4;      // Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin        = 4;      // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin            = 2 * 3;  // margin between rounded border and content (= rounded border
                                                          // margin * 3)
 
 static constexpr int cBShadowBorderWidth = 2;
-static constexpr int cBRoundingRadius = 3;
+static constexpr int cBRoundingRadius = 4;
 
 enum
 {
@@ -1540,7 +1540,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
         {
             if ( const QStyleOptionComboBox* combobox = qstyleoption_cast<const QStyleOptionComboBox*>( option ) )
             {
-                QRectF rect = option->rect.marginsRemoved( QMargins( cBShadowBorderWidth - 1, 0, cBShadowBorderWidth, 0 ) );
+                QRectF rect = option->rect.marginsRemoved( QMargins( cBShadowBorderWidth, 0, cBShadowBorderWidth - 1, 0 ) );
 
                 // drawFluentShadow( painter, option->rect, cBShadowBorderWidth, cBRoundingRadius );
 
@@ -1556,7 +1556,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 if ( combobox->frame )
                 {
                     QRectF borderRect = rect.adjusted( 0.5, 0.5, -0.5, -0.5 );
-                    drawLineEditFrame( painter, borderRect, combobox, combobox->editable );
+                    drawLineEditFrame( painter, borderRect, combobox, combobox->editable, cBRoundingRadius);
                 }
 
                 if ( sub & SC_ComboBoxArrow )
@@ -6197,7 +6197,7 @@ void drawBottomUnderline( QPainter* p, const QRectF& rect, const QStyleOption* o
     p->restore();
 }
 
-void FluentUI3Style::drawLineEditFrame( QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable ) const
+void FluentUI3Style::drawLineEditFrame(QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable, int roundingRadius ) const
 {
     const bool isHovered = o->state & State_MouseOver;
     const auto frameCol  = highContrastTheme
@@ -6208,7 +6208,9 @@ void FluentUI3Style::drawLineEditFrame( QPainter* p, const QRectF& rect, const Q
 #endif
                               : winUI3Color( frameColorLight );
 
-    drawRoundedRect( p, rect, frameCol, Qt::NoBrush );
+    p->setPen( frameCol );
+    p->setBrush( Qt::NoBrush );
+    p->drawRoundedRect( rect, roundingRadius, roundingRadius );
 
     if ( !isEditable )
     {
@@ -6229,7 +6231,33 @@ void FluentUI3Style::drawLineEditFrame( QPainter* p, const QRectF& rect, const Q
     const auto penUnderline = QPen( underlineCol, hasFocus ? 2 : 1 );
     if ( qobject_cast<QLineEdit*>( o->styleObject ) )
     {
-        drawRoundedRect( p, rect, penUnderline, Qt::NoBrush );
+        QObject* styleObject = o->styleObject;
+        if ( styleObject )
+        {
+            int state = o->state;
+            int oldState         = styleObject->property( "_q_stylestate" ).toInt();
+            styleObject->setProperty( "_q_stylestate", state );
+            if ( !(oldState & State_HasFocus) && state & State_HasFocus )
+            {
+                QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                t->setStartValue( 0 );
+                t->setEndValue( 1 );
+                t->setDuration( 300 );
+                t->setEasingCurve( QEasingCurve::InOutSine );
+                startAnimation( t );
+            }
+        }
+
+        qreal progress = 1.0f;
+        QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject) );
+        if ( animation )
+        {
+            progress = animation->currentValue();
+        }
+        const qreal width = rect.width() * progress;
+        const qreal left  = rect.left() + ( rect.width() - width ) / 2.0;
+        const QRectF animRect( left, rect.top(), width, rect.height() );
+        drawRoundedRect( p, animRect, penUnderline, Qt::NoBrush );
     }
     else
     {
