@@ -1,3 +1,11 @@
+【更新内容2026-4-2】
+1.QComboBox修改下拉黑框，新增阴影和箭头动画
+2.QTreeView新增FluentUI导航控件样式
+3.QTabBar新增多种 Pivot FluentUI导航样式
+4.QListView新增选中指示器动画
+5.QLineEdit底边线新增动画
+6.其他特性和修复问题
+
 【更新内容2026-3-20】
 1. 菜单新增阴影
 2. SpinBox新增多种按钮布局
