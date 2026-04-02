@@ -33,7 +33,7 @@
     <item row="0" column="1">
      <widget class="SlidingStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -621,8 +621,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </property>
              <property name="iconSize">
               <size>
-               <width>24</width>
-               <height>24</height>
+               <width>20</width>
+               <height>20</height>
               </size>
              </property>
              <property name="autoRaise">

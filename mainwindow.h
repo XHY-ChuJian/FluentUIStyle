@@ -21,11 +21,7 @@ public:
     ~MainWindow();
 
 private slots:
-    // void on_horizonalBtn_clicked();
-    // void on_verticalBtn_clicked();
-
     void on_checkBox_4_clicked(bool checked);
-    void on_checkBox_5_checkStateChanged(Qt::CheckState state);
     void on_checkBox_5_stateChanged(int arg1);
     void on_radioButton_7_clicked();
     void on_radioButton_4_clicked();
