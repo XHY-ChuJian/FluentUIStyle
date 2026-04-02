@@ -47,7 +47,6 @@ protected:
             if (auto menu = qobject_cast<QMenu*>(obj))
             {
                 auto menuParent =  menu->parentWidget();
-                qDebug()<< menu->menuAction()->parentWidget();
                 if (menuParent && menuParent->inherits("QMenuBar") )
                 {
                     QPoint pos = menu->pos();
@@ -838,11 +837,6 @@ void MainWindow::on_checkBox_4_clicked( bool checked )
     {
         cb->setChecked( checked );
     }
-}
-
-void MainWindow::on_checkBox_5_checkStateChanged(Qt::CheckState state)
-{
-    ui->checkBox_5->setText( state == Qt::Checked ? "On" : "Off" );
 }
 
 

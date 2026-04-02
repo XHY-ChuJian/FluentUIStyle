@@ -98,7 +98,6 @@ private:
     void drawSegmentedTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
 
     void drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
-
     void drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
     void drawTreeViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
 
@@ -107,10 +106,11 @@ private:
     QColor calculateAccentColor( const QStyleOption* option ) const;
 
     QBrush controlFillBrush( const QStyleOption* option, ControlType controlType ) const;
+    QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
 
     QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
 
-    void drawLineEditFrame( QPainter* p, const QRectF& rect, const QStyleOption* o, bool isEditable = true ,int roundingRadius = 4) const;
+    void drawLineEditFrame( QPainter* painter, const QRectF& rect, const QStyleOption* option, bool isEditable = true ,int roundingRadius = 4) const;
     QColor winUI3Color( WINUI3Color col ) const;
 
     QIcon fluentIcon( const QChar& ch ) const;
