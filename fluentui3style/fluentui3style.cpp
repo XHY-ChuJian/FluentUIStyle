@@ -119,8 +119,54 @@ static inline void tabLayout( const QStyle* proxyStyle,
     Q_ASSERT( textRect );
     Q_ASSERT( iconRect );
     QRect tr          = opt->rect;
+    const bool isNavigationStyle = widget && widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Navigation;
+    const bool isVerticalNavigation =
+        isNavigationStyle
+        && ( opt->shape == QTabBar::RoundedEast || opt->shape == QTabBar::RoundedWest || opt->shape == QTabBar::TriangularEast
+             || opt->shape == QTabBar::TriangularWest );
     bool verticalTabs = opt->shape == QTabBar::RoundedEast || opt->shape == QTabBar::RoundedWest || opt->shape == QTabBar::TriangularEast
                         || opt->shape == QTabBar::TriangularWest;
+    if ( isVerticalNavigation )
+    {
+        constexpr int listItemHorizontalMargin = 8;
+        constexpr int listItemVerticalMargin   = 4;
+        constexpr int indicatorContentGap      = 2;
+        constexpr int iconTextSpacing          = 8;
+
+        tr.adjust( listItemHorizontalMargin + indicatorContentGap, listItemVerticalMargin, -listItemHorizontalMargin, -listItemVerticalMargin );
+
+        if ( !opt->leftButtonSize.isEmpty() )
+        {
+            tr.setLeft( tr.left() + 4 + opt->leftButtonSize.width() );
+        }
+        if ( !opt->rightButtonSize.isEmpty() )
+        {
+            tr.setRight( tr.right() - 4 - opt->rightButtonSize.width() );
+        }
+
+        if ( !opt->icon.isNull() )
+        {
+            QSize iconSize = opt->iconSize;
+            if ( !iconSize.isValid() )
+            {
+                const int iconExtent = proxyStyle->pixelMetric( QStyle::PM_SmallIconSize, opt, widget );
+                iconSize             = QSize( iconExtent, iconExtent );
+            }
+            QSize tabIconSize = opt->icon.actualSize( iconSize,
+                                                      ( opt->state & QStyle::State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
+                                                      ( opt->state & QStyle::State_Selected ) ? QIcon::On : QIcon::Off );
+            tabIconSize = QSize( qMin( tabIconSize.width(), iconSize.width() ), qMin( tabIconSize.height(), iconSize.height() ) );
+
+            const int offsetX = ( iconSize.width() - tabIconSize.width() ) / 2;
+            *iconRect = QRect( tr.left() + offsetX, tr.center().y() - tabIconSize.height() / 2, tabIconSize.width(), tabIconSize.height() );
+            *iconRect = QStyle::visualRect( opt->direction, opt->rect, *iconRect );
+            tr.setLeft( tr.left() + tabIconSize.width() + iconTextSpacing );
+        }
+
+        *textRect = QStyle::visualRect( opt->direction, opt->rect, tr );
+        return;
+    }
+
     if ( verticalTabs )
     {
         tr.setRect( 0, 0, tr.height(), tr.width() );  // 0, 0 as we will have a translate transform
@@ -1197,7 +1243,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
     }
 
     painter->save();
-    painter->setRenderHint( QPainter::Antialiasing );
+    painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
     if ( transitionsEnabled() && option->styleObject )
     {
         if ( control == CC_Slider )
@@ -1271,7 +1317,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 t->setStartValue( start );
                 t->setEndValue( end );
                 t->setDuration( 120 );
-                t->setFrameRate(QStyleAnimation::DefaultFps);
+                t->setFrameRate( QStyleAnimation::DefaultFps );
                 startAnimation( t );
             }
         }
@@ -1290,7 +1336,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             obj->setProperty( "_q_stylestate", state );
 
             bool doTransition = ( state & State_On ) != ( oldState & State_On );
-            if ( doTransition && ( state & State_Enabled ) )  // combox视觉效果，好像是先弹窗后，状态才改变，所以暂时先不加动画
+            if ( doTransition && ( state & State_Enabled ) )
             {
                 QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
                 // t->setEasingCurve( QEasingCurve::InOutSine );
@@ -1298,7 +1344,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 qreal end   = ( state & State_On ) ? 180.0 : 0.0;
                 t->setStartValue( start );
                 t->setEndValue( end );
-                t->setFrameRate(QStyleAnimation::DefaultFps);
+                t->setFrameRate( QStyleAnimation::DefaultFps );
                 t->setDuration( 120 );
                 startAnimation( t );
             }
@@ -1575,9 +1621,10 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     painter->setBrush( Qt::NoBrush );
                     painter->drawRoundedRect( frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
-                    if (combobox->editable)
+                    if ( combobox->editable )
                     {
-                        const qreal penWidth = option->state & State_HasFocus ? 2.0 : 1.0;
+                        const bool hasFocus  = option->state & State_HasFocus;
+                        const qreal penWidth = hasFocus ? 2.0 : 1.0;
                         const qreal halfPen  = penWidth / 2.0;
 
                         auto pRect = pFrameRect;
@@ -1586,16 +1633,16 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         PainterStateGuard guard( painter );
                         painter->setClipRect( underlineClip );
 
-                        const auto underlineCol = option->state & State_HasFocus
+                        const auto underlineCol = hasFocus
                                                       ?
-    #    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
                                                       option->palette.color( QPalette::Accent )
-    #    else
+#    else
                             ? option->palette.color( QPalette::Highlight )  // Qt5/Qt6.5 fallback
-    #    endif
+#    endif
                                                       : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
 
-                        const auto penUnderline = QPen( underlineCol, option->state & State_HasFocus ? 2 : 1 );
+                        const auto penUnderline = QPen( underlineCol, hasFocus ? 2 : 1 );
 
                         QPen pen( underlineCol, penWidth );
                         painter->setPen( pen );
@@ -1607,7 +1654,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 if ( sub & SC_ComboBoxArrow )
                 {
                     QRectF arrowRect = proxy()->subControlRect( CC_ComboBox, option, SC_ComboBoxArrow, widget ).adjusted( 4, 0, -4, 0 );
-                    qDebug()<< "arrowRect" << arrowRect;
                     painter->setFont( assetFont );
                     painter->setPen( controlTextColor( option ) );
                     QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
@@ -2354,7 +2400,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             else
             {
-                painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokePrimary ] );
+                painter->setPen( winUI3Color( controlStrokePrimary ) );
             }
 
             drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
@@ -2364,7 +2410,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             if ( isRaised )
             {
                 const qreal sublineOffset = secondLevelRoundingRadius - 0.5;
-                painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokeSecondary ] );
+                painter->setPen( winUI3Color( controlStrokeSecondary ) );
                 painter->drawLine( rect.bottomLeft() + QPointF( sublineOffset, 0.5 ), rect.bottomRight() + QPointF( -sublineOffset, 0.5 ) );
             }
         }
@@ -3179,9 +3225,21 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
         {
             drawCapsuleTab( tab, painter, widget );
         }
-        else if ( tabBarStyle == TabBarStyle::Segmented )
+        else if ( tabBarStyle == TabBarStyle::PillTabs )
         {
-            drawSegmentedTab( tab, painter, widget );
+            drawPillTab( tab, painter, widget );
+        }
+        else if ( tabBarStyle == TabBarStyle::Segmented_Slide )
+        {
+            drawSegmentedSlideTab( tab, painter, widget );
+        }
+        else if ( tabBarStyle == TabBarStyle::Segmented_Fade )
+        {
+            drawSegmentedFadeTab( tab, painter, widget );
+        }
+        else if ( tabBarStyle == TabBarStyle::Navigation )
+        {
+            drawNavigationTab( tab, painter, widget );
         }
         else
         {
@@ -3775,7 +3833,7 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 #endif
 }
 
-void FluentUI3Style::drawSegmentedTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+void FluentUI3Style::drawPillTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
 {
     Q_UNUSED( widget )
 #if QT_CONFIG( tabbar )
@@ -3792,6 +3850,377 @@ void FluentUI3Style::drawSegmentedTab( const QStyleOptionTab* tab, QPainter* pai
     painter->setPen( WINUI3Colors[ colorSchemeIndex ][ controlStrokePrimary ] );
     painter->setBrush( fillColor );
     painter->drawRoundedRect( tabRect, radius, radius );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+void FluentUI3Style::drawSegmentedSlideTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab || !painter )
+    {
+        return;
+    }
+
+    QObject* styleObject = tab->styleObject;
+    if ( !styleObject )
+    {
+        return;
+    }
+
+    const auto clamp01 = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+    const auto lerp    = []( qreal a, qreal b, qreal t ) { return a + ( b - a ) * t; };
+    const auto lerpRect = [ & ]( const QRectF& from, const QRectF& to, qreal t )
+    {
+        return QRectF( lerp( from.left(), to.left(), t ),
+                       lerp( from.top(), to.top(), t ),
+                       lerp( from.width(), to.width(), t ),
+                       lerp( from.height(), to.height(), t ) );
+    };
+
+    const bool isSelected     = tab->state.testFlag( QStyle::State_Selected );
+    const bool isHover        = tab->state.testFlag( QStyle::State_MouseOver ) && !isSelected;
+    const bool isFirstSegment = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
+    const bool isLastSegment  = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
+    constexpr int selectionOuterMarginH = 4;
+    constexpr int selectionInnerSpacingH = 4;
+    constexpr int selectionMarginV = 4;
+
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing, true );
+
+    auto beginRect = styleObject->property( "BeginRect" ).toRect();
+    if ( isFirstSegment && beginRect != tab->rect )
+    {
+        styleObject->setProperty( "BeginRect", tab->rect );
+    }
+
+    auto endRect = styleObject->property( "EndRect" ).toRect();
+    if ( isLastSegment && endRect != tab->rect )
+    {
+        styleObject->setProperty( "EndRect", tab->rect );
+    }
+
+    const int leftInset = isFirstSegment ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const int rightInset = isLastSegment ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const QRect adjustedTabRect = tab->rect.adjusted( leftInset, selectionMarginV, -rightInset, -selectionMarginV );
+
+    if ( isLastSegment )
+    {
+        beginRect      = styleObject->property( "BeginRect" ).toRect();
+        QRect fullRect = beginRect.united( tab->rect ).adjusted( 1, 1, -1, -1 );
+
+        painter->setPen( QPen( winUI3Color( frameColorStrongDisabled ), 1 ) );
+        painter->drawRoundedRect( fullRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+    }
+
+    painter->setPen( Qt::NoPen );
+    if ( isHover )
+    {
+        painter->setBrush( winUI3Color( tabBarHoverBackground ) );
+        painter->drawRoundedRect( adjustedTabRect,
+                                  secondLevelRoundingRadius,
+                                  secondLevelRoundingRadius );
+    }
+
+    const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget );
+    if ( !tabBar )
+    {
+        return;
+    }
+
+    const int currentTabIndex = tabBar->currentIndex();
+    const int previousTabIndex = styleObject->property( "_q_segmented_selected_tab_index" ).toInt();
+    if ( currentTabIndex < 0 )
+    {
+        return;
+    }
+
+    const bool targetIsFirst = currentTabIndex == 0;
+    const bool targetIsLast = currentTabIndex == tabBar->count() - 1;
+    const int targetLeftInset = targetIsFirst ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const int targetRightInset = targetIsLast ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const QRect targetRect = tabBar->tabRect( currentTabIndex )
+                                 .adjusted( targetLeftInset, selectionMarginV, -targetRightInset, -selectionMarginV );
+    QRect previousRect     = styleObject->property( "_q_segmented_previous_selected_rect" ).toRect();
+    QRect currentRect      = styleObject->property( "_q_segmented_current_selected_rect" ).toRect();
+    const QByteArray animKey   = "_q_segmented_slide_rect";
+
+    if ( !currentRect.isValid() )
+    {
+        currentRect = targetRect;
+    }
+    if ( !previousRect.isValid() )
+    {
+        previousRect = currentRect;
+    }
+
+    bool selectionChanged = ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex );
+    if ( selectionChanged )
+    {
+        previousRect = currentRect;
+        currentRect  = targetRect;
+
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 300 );
+        t->setEasingCurve( QEasingCurve::InOutCubic );
+        startAnimationEx( t, styleObject, animKey );
+    }
+    else if ( previousTabIndex < 0 )
+    {
+        previousRect = targetRect;
+        currentRect  = targetRect;
+    }
+    else
+    {
+        currentRect = targetRect;
+    }
+
+    const qreal progress = clamp01( animationValue( styleObject, animKey, 1.0f ) );
+    const QRectF drawRect = lerpRect( QRectF( previousRect ), QRectF( currentRect ), progress );
+    const bool isAnimating = progress < 0.999;
+
+    styleObject->setProperty( "_q_segmented_selected_tab_index", currentTabIndex );
+    styleObject->setProperty( "_q_segmented_previous_selected_rect", previousRect );
+    styleObject->setProperty( "_q_segmented_current_selected_rect", currentRect );
+
+    QColor selectedBrush = winUI3Color( tabBarSelectedBackground );
+    if ( isAnimating )
+    {
+        selectedBrush.setAlpha( qRound( selectedBrush.alpha() * 0.35 ) );
+    }
+
+    painter->setBrush( selectedBrush );
+    painter->drawRoundedRect( drawRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+void FluentUI3Style::drawSegmentedFadeTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab || !painter )
+    {
+        return;
+    }
+
+    QObject* styleObject = tab->styleObject;
+    if ( !styleObject )
+    {
+        return;
+    }
+
+    const auto clamp01 = []( qreal value ) { return qBound( 0.0, value, 1.0 ); };
+
+    const bool isSelected     = tab->state.testFlag( QStyle::State_Selected );
+    const bool isHover        = tab->state.testFlag( QStyle::State_MouseOver ) && !isSelected;
+    const bool isFirstSegment = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
+    const bool isLastSegment  = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
+    constexpr int selectionOuterMarginH = 4;
+    constexpr int selectionInnerSpacingH = 4;
+    constexpr int selectionMarginV = 4;
+
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing, true );
+
+    auto beginRect = styleObject->property( "BeginRect" ).toRect();
+    if ( isFirstSegment && beginRect != tab->rect )
+    {
+        styleObject->setProperty( "BeginRect", tab->rect );
+    }
+
+    auto endRect = styleObject->property( "EndRect" ).toRect();
+    if ( isLastSegment && endRect != tab->rect )
+    {
+        styleObject->setProperty( "EndRect", tab->rect );
+    }
+
+    const int leftInset = isFirstSegment ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const int rightInset = isLastSegment ? selectionOuterMarginH : selectionInnerSpacingH / 2;
+    const QRect adjustedTabRect = tab->rect.adjusted( leftInset, selectionMarginV, -rightInset, -selectionMarginV );
+
+    if ( isLastSegment )
+    {
+        beginRect      = styleObject->property( "BeginRect" ).toRect();
+        QRect fullRect = beginRect.united( tab->rect ).adjusted( 1, 1, -1, -1 );
+
+        painter->setPen( QPen( winUI3Color( frameColorStrongDisabled ), 1 ) );
+        painter->drawRoundedRect( fullRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+    }
+
+    painter->setPen( Qt::NoPen );
+    if ( isHover )
+    {
+        painter->setBrush( winUI3Color( tabBarHoverBackground ) );
+        painter->drawRoundedRect( adjustedTabRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+    }
+
+    const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget );
+    const int tabIndex = tabBar ? tabBar->tabAt( tab->rect.center() ) : -1;
+    const int currentTabIndex = tabBar ? tabBar->currentIndex() : -1;
+    int selectedTabIndex = styleObject->property( "_q_segmented_fade_selected_tab_index" ).toInt();
+    int fadingFromIndex = styleObject->property( "_q_segmented_fade_from_index" ).toInt();
+    const QByteArray animKey = "_q_segmented_fade_fill";
+
+    if ( isSelected && currentTabIndex >= 0 && selectedTabIndex < 0 )
+    {
+        selectedTabIndex = currentTabIndex;
+        fadingFromIndex = -1;
+    }
+    else if ( isSelected && currentTabIndex >= 0 && selectedTabIndex >= 0 && currentTabIndex != selectedTabIndex )
+    {
+        fadingFromIndex = selectedTabIndex;
+        selectedTabIndex = currentTabIndex;
+
+        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        t->setStartValue( 0.0 );
+        t->setEndValue( 1.0 );
+        t->setDuration( 300 );
+        t->setFrameRate(QStyleAnimation::DefaultFps );
+        t->setEasingCurve( QEasingCurve::InOutCubic );
+        startAnimationEx( t, styleObject, animKey );
+    }
+
+    const qreal progress = clamp01( animationValue( styleObject, animKey, 1.0f ) );
+    const bool isFadingBetweenTabs = fadingFromIndex >= 0 && progress < 0.999;
+
+    bool shouldDrawSelectedFill = false;
+    qreal opacity = 1.0;
+
+    if ( tabIndex == selectedTabIndex )
+    {
+        shouldDrawSelectedFill = true;
+        opacity = isFadingBetweenTabs ? progress : 1.0;
+    }
+    else if ( tabIndex == fadingFromIndex && isFadingBetweenTabs )
+    {
+        shouldDrawSelectedFill = true;
+        opacity = 1.0 - progress;
+    }
+
+    if ( !shouldDrawSelectedFill )
+    {
+        if ( !isFadingBetweenTabs )
+        {
+            styleObject->setProperty( "_q_segmented_fade_from_index", -1 );
+        }
+        styleObject->setProperty( "_q_segmented_fade_selected_tab_index", selectedTabIndex );
+        return;
+    }
+
+    QColor selectedBrush = winUI3Color( tabBarSelectedBackground );
+    styleObject->setProperty( "_q_segmented_fade_selected_tab_index", selectedTabIndex );
+    if ( !isFadingBetweenTabs )
+    {
+        styleObject->setProperty( "_q_segmented_fade_from_index", -1 );
+    }
+    else
+    {
+        styleObject->setProperty( "_q_segmented_fade_from_index", fadingFromIndex );
+    }
+
+    painter->setOpacity( opacity );
+    painter->setBrush( selectedBrush );
+    painter->drawRoundedRect( adjustedTabRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+#else
+    Q_UNUSED( tab )
+    Q_UNUSED( painter )
+    Q_UNUSED( widget )
+#endif
+}
+
+void FluentUI3Style::drawNavigationTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const
+{
+#if QT_CONFIG( tabbar )
+    if ( !tab || !painter )
+    {
+        return;
+    }
+
+    const bool isSelected = tab->state.testFlag( QStyle::State_Selected );
+    const bool isHover    = tab->state.testFlag( QStyle::State_MouseOver ) && !isSelected;
+    const bool isWest     = tab->shape == QTabBar::RoundedWest || tab->shape == QTabBar::TriangularWest;
+    const bool isEast     = tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularEast;
+    const QTabBar* tabBar = qobject_cast<const QTabBar*>( widget );
+    const bool isFirstTab = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
+    const bool isLastTab  = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
+
+    if ( !isWest && !isEast )
+    {
+        drawPillTab( tab, painter, widget );
+        return;
+    }
+
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing, true );
+    painter->setPen( Qt::NoPen );
+
+    constexpr int navigationOuterMarginV = 0;
+    constexpr int navigationSpacingV = 4;
+    constexpr int navigationInsetH = 0;
+    const int topInset = isFirstTab ? navigationOuterMarginV : navigationSpacingV / 2;
+    const int bottomInset = isLastTab ? navigationOuterMarginV : navigationSpacingV / 2;
+    const QRectF itemRect = QRectF( tab->rect ).adjusted( navigationInsetH, topInset, -navigationInsetH, -bottomInset );
+    if ( isSelected )
+    {
+        painter->setBrush( winUI3Color( tabBarSelectedBackground ) );
+        painter->drawRoundedRect( itemRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+    }
+    else if ( isHover )
+    {
+        painter->setBrush( winUI3Color( tabBarHoverBackground ) );
+        painter->drawRoundedRect( itemRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+    }
+
+    if ( !isSelected )
+    {
+        return;
+    }
+
+    constexpr qreal indicatorWidth = 3.0;
+    constexpr qreal indicatorInset = 8.0;
+    const qreal indicatorX = isEast ? itemRect.right() - indicatorWidth : itemRect.left();
+    qreal indicatorTop = itemRect.top() + indicatorInset;
+    qreal indicatorHeight = qMax( 0.0, itemRect.height() - indicatorInset * 2.0 );
+
+    if ( tabBar && tab->styleObject )
+    {
+        const int currentTabIndex = tabBar->currentIndex();
+        const int tabIndex = tabBar->tabAt( tab->rect.center() );
+        const int previousTabIndex = tab->styleObject->property( "_q_navigation_selected_tab_index" ).toInt();
+        const QByteArray animKey = "_q_tab_navigation_indicator_grow";
+
+        if ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex && tabIndex == currentTabIndex )
+        {
+            QNumberStyleAnimation* t = new QNumberStyleAnimation( tab->styleObject );
+            t->setStartValue( 0.0 );
+            t->setEndValue( 1.0 );
+            t->setDuration( 160 );
+            t->setEasingCurve( QEasingCurve::OutCubic );
+            startAnimationEx( t, tab->styleObject, animKey );
+        }
+
+        const qreal progress = previousTabIndex < 0 ? 1.0 : qBound( 0.0, qreal( animationValue( tab->styleObject, animKey, 1.0f ) ), 1.0 );
+        const qreal fullHeight = indicatorHeight;
+        indicatorHeight = fullHeight * progress;
+        indicatorTop = itemRect.top() + indicatorInset + ( fullHeight - indicatorHeight ) / 2.0;
+
+        tab->styleObject->setProperty( "_q_navigation_selected_tab_index", currentTabIndex );
+    }
+
+    const QRectF indicatorRect( indicatorX, indicatorTop, indicatorWidth, indicatorHeight );
+
+    const QColor accent = calculateAccentColor( tab );
+    painter->setBrush( accent );
+    painter->drawRoundedRect( indicatorRect, indicatorWidth / 2.0, indicatorWidth / 2.0 );
 #else
     Q_UNUSED( tab )
     Q_UNUSED( painter )
@@ -3978,7 +4407,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
             QNumberStyleAnimation* t = new QNumberStyleAnimation( stateObject );
             t->setStartValue( 0.0 );
             t->setEndValue( 1.0 );
-            t->setDuration( 600 );
+            t->setDuration( 500 );
             startAnimationEx( t, stateObject, animKey );
         }
         else if ( !toIndex.isValid() )
@@ -4103,6 +4532,10 @@ void FluentUI3Style::drawTabBarTabLabel( const QStyleOption* option, QPainter* p
 {
     if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
     {
+        const bool isVerticalNavigation = widget && widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Navigation
+                                          && ( tab->shape == QTabBar::RoundedWest || tab->shape == QTabBar::RoundedEast
+                                               || tab->shape == QTabBar::TriangularWest || tab->shape == QTabBar::TriangularEast );
+
         QRect tr      = tab->rect;
         int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
         if ( widget )
@@ -4122,12 +4555,23 @@ void FluentUI3Style::drawTabBarTabLabel( const QStyleOption* option, QPainter* p
         QRect iconRect;
         tabLayout( proxy(), tab, widget, &tr, &iconRect );
 
-        // compute tr again, unless tab is moving, because the style may override subElementRect
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
-        if ( tab->position != QStyleOptionTab::TabPosition::Moving )
-#endif
+        if ( isVerticalNavigation )
         {
-            tr = proxy()->subElementRect( SE_TabBarTabText, option, widget );
+            alignment = Qt::AlignVCenter | Qt::AlignLeft | Qt::TextShowMnemonic;
+            if ( !proxy()->styleHint( SH_UnderlineShortcut, option, widget ) )
+            {
+                alignment |= Qt::TextHideMnemonic;
+            }
+        }
+        else
+        {
+            // compute tr again, unless tab is moving, because the style may override subElementRect
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+            if ( tab->position != QStyleOptionTab::TabPosition::Moving )
+#endif
+            {
+                tr = proxy()->subElementRect( SE_TabBarTabText, option, widget );
+            }
         }
 
         if ( !tab->icon.isNull() )
@@ -5293,6 +5737,12 @@ int FluentUI3Style::styleHint( StyleHint hint, const QStyleOption* opt, const QW
             return 0;
         case SH_ItemView_ShowDecorationSelected :
             return 1;
+        case SH_TabBar_Alignment :
+            if ( widget && widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Navigation )
+            {
+                return Qt::AlignLeft;
+            }
+            break;
         case SH_Slider_AbsoluteSetButtons :
             return Qt::LeftButton;
         case SH_Slider_PageSetButtons :
@@ -5300,8 +5750,9 @@ int FluentUI3Style::styleHint( StyleHint hint, const QStyleOption* opt, const QW
         case SH_DockWidget_ButtonsHaveFrame :
             return 1;
         default :
-            return QProxyStyle::styleHint( hint, opt, widget, returnData );
+            break;
     }
+    return QProxyStyle::styleHint( hint, opt, widget, returnData );
 }
 
 static bool isComboBoxPopup( QWidget* w )
@@ -5692,9 +6143,95 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
         {
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             contentSize.setHeight( 32 );
-            if ( widget && widget->property( TabBarStyleProperty ).toInt() <= TabBarStyle::Capsule )
+
+            if ( widget && widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Capsule )
             {
                 contentSize.setWidth( contentSize.width() + 30 );
+            }
+            if ( widget && 
+                ( widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Segmented_Slide
+                  || widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Segmented_Fade
+                  ) )
+            {
+                contentSize.setHeight( contentSize.height() + 10 );
+            }
+
+            if ( widget && widget->property( TabBarStyleProperty ).toInt() == TabBarStyle::Navigation )
+            {
+                if ( const auto* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
+                {
+                    const bool isVerticalNavigation =
+                        tab->shape == QTabBar::RoundedWest || tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularWest
+                        || tab->shape == QTabBar::TriangularEast;
+                    if ( isVerticalNavigation )
+                    {
+                        constexpr int listItemHorizontalMargin = 8;
+                        constexpr int indicatorContentGap = 2;
+                        constexpr int iconTextSpacing = 8;
+
+                        if ( const auto* tabBar = qobject_cast<const QTabBar*>( widget ) )
+                        {
+                            QStringList cacheParts;
+                            cacheParts.reserve( tabBar->count() + 2 );
+                            cacheParts << QString::number( tabBar->count() ) << tabBar->font().toString();
+                            for ( int i = 0; i < tabBar->count(); ++i )
+                            {
+                                cacheParts << tabBar->tabText( i );
+                                cacheParts << QString::number( tabBar->tabIcon( i ).cacheKey() );
+                            }
+                            const QString cacheKey = cacheParts.join( u'|' );
+                            const QString storedCacheKey = tabBar->property( "_q_navigation_tab_width_cache_key" ).toString();
+
+                            int cachedTextWidth = tabBar->property( "_q_navigation_longest_text_width" ).toInt();
+                            int cachedIconWidth = tabBar->property( "_q_navigation_widest_icon_width" ).toInt();
+
+                            if ( storedCacheKey != cacheKey || cachedTextWidth <= 0 )
+                            {
+                                int longestTextWidth = 0;
+                                int widestIconWidth = 0;
+                                QSize iconSize = tab->iconSize;
+                                if ( !iconSize.isValid() )
+                                {
+                                    const int iconExtent = proxy()->pixelMetric( QStyle::PM_SmallIconSize, option, widget );
+                                    iconSize             = QSize( iconExtent, iconExtent );
+                                }
+
+                                for ( int i = 0; i < tabBar->count(); ++i )
+                                {
+                                    longestTextWidth = qMax( longestTextWidth, tab->fontMetrics.horizontalAdvance( tabBar->tabText( i ) ) );
+
+                                    const QIcon icon = tabBar->tabIcon( i );
+                                    if ( !icon.isNull() )
+                                    {
+                                        const QSize actualIconSize = icon.actualSize( iconSize, QIcon::Normal, QIcon::Off );
+                                        widestIconWidth = qMax( widestIconWidth, qMax( 16, actualIconSize.width() ) );
+                                    }
+                                }
+
+                                const_cast<QTabBar*>( tabBar )->setProperty( "_q_navigation_tab_width_cache_key", cacheKey );
+                                const_cast<QTabBar*>( tabBar )->setProperty( "_q_navigation_longest_text_width", longestTextWidth );
+                                const_cast<QTabBar*>( tabBar )->setProperty( "_q_navigation_widest_icon_width", widestIconWidth );
+                                cachedTextWidth = longestTextWidth;
+                                cachedIconWidth = widestIconWidth;
+                            }
+
+                            const int contentWidth =
+                                listItemHorizontalMargin + indicatorContentGap + cachedIconWidth
+                                + ( cachedIconWidth > 0 ? iconTextSpacing : 0 ) + cachedTextWidth + listItemHorizontalMargin;
+                            contentSize.setWidth( contentWidth );
+                        }
+                        else
+                        {
+                            const int iconWidth = tab->icon.isNull() ? 0 : qMax( 16, tab->iconSize.width() );
+                            const int textWidth = tab->fontMetrics.horizontalAdvance( tab->text );
+                            const int contentWidth =
+                                listItemHorizontalMargin + indicatorContentGap + iconWidth + ( iconWidth > 0 ? iconTextSpacing : 0 )
+                                + textWidth + listItemHorizontalMargin;
+                            contentSize.setWidth( contentWidth );
+                        }
+                        contentSize.setHeight( qMax( 40, contentSize.height() ) );
+                    }
+                }
             }
         }
         break;
@@ -6328,7 +6865,11 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
     }
 
     PainterStateGuard psg( painter );
-    painter->setClipRect( rect.marginsRemoved( QMarginsF( 0, rect.height() - 0.5, 0, -1 ) ) );
+    // painter->setClipRect( rect.marginsRemoved( QMarginsF( 0, rect.height() - 0.5, 0, -1 ) ) );
+    const qreal h = 1;
+    QRectF underlineClip( rect.left(), rect.bottom() - 1, rect.width(), h + 2.0 );
+
+    painter->setClipRect( underlineClip );
 
     const bool hasFocus = option->state & State_HasFocus;
 

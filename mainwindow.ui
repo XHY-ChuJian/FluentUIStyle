@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1322</width>
-    <height>804</height>
+    <height>884</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,7 @@
     <item row="0" column="1">
      <widget class="SlidingStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -64,7 +64,7 @@
              <item>
               <widget class="QSlider" name="horizontalSlider_2">
                <property name="orientation">
-                <enum>Qt::Vertical</enum>
+                <enum>Qt::Orientation::Vertical</enum>
                </property>
               </widget>
              </item>
@@ -74,14 +74,14 @@
                 <number>24</number>
                </property>
                <property name="orientation">
-                <enum>Qt::Vertical</enum>
+                <enum>Qt::Orientation::Vertical</enum>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QScrollBar" name="horizontalScrollBar_2">
                <property name="orientation">
-                <enum>Qt::Vertical</enum>
+                <enum>Qt::Orientation::Vertical</enum>
                </property>
               </widget>
              </item>
@@ -154,7 +154,7 @@
            <item row="0" column="1">
             <spacer name="horizontalSpacer_6">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -164,7 +164,7 @@
              </property>
             </spacer>
            </item>
-           <item row="0" column="2">
+           <item row="0" column="3">
             <widget class="QLineEdit" name="lineEdit">
              <property name="minimumSize">
               <size>
@@ -179,6 +179,9 @@
               <bool>true</bool>
              </property>
             </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="lineEditSerach"/>
            </item>
           </layout>
          </widget>
@@ -196,7 +199,7 @@
            <item row="0" column="1">
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -267,7 +270,7 @@
            <item row="0" column="1">
             <spacer name="horizontalSpacer_4">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -358,7 +361,7 @@
            <item row="0" column="1">
             <spacer name="horizontalSpacer_7">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -384,7 +387,7 @@
            <item row="0" column="1">
             <spacer name="horizontalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -485,17 +488,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="6" column="0">
             <widget class="QScrollBar" name="horizontalScrollBar">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QSlider" name="horizontalSlider_3">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="tickPosition">
-              <enum>QSlider::TicksBothSides</enum>
+              <enum>QSlider::TickPosition::TicksBothSides</enum>
              </property>
              <property name="tickInterval">
               <number>9</number>
@@ -505,7 +508,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="4" column="0">
             <widget class="QSlider" name="horizontalSlider">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
             </widget>
            </item>
@@ -535,7 +538,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="0" column="1">
             <spacer name="horizontalSpacer">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -594,10 +597,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
               <string>...</string>
              </property>
              <property name="toolButtonStyle">
-              <enum>Qt::ToolButtonTextBesideIcon</enum>
+              <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
              </property>
              <property name="arrowType">
-              <enum>Qt::NoArrow</enum>
+              <enum>Qt::ArrowType::NoArrow</enum>
              </property>
             </widget>
            </item>
@@ -607,7 +610,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
               <string>...</string>
              </property>
              <property name="popupMode">
-              <enum>QToolButton::InstantPopup</enum>
+              <enum>QToolButton::ToolButtonPopupMode::InstantPopup</enum>
              </property>
             </widget>
            </item>
@@ -681,14 +684,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </size>
              </property>
              <property name="buttonSymbols">
-              <enum>QAbstractSpinBox::PlusMinus</enum>
+              <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
              </property>
             </widget>
            </item>
            <item>
             <spacer name="horizontalSpacer_5">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -771,7 +774,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <item row="0" column="2">
             <spacer name="horizontalSpacer_8">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -972,8 +975,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>1018</height>
+             <width>871</width>
+             <height>1022</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -1036,7 +1039,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <x>0</x>
      <y>0</y>
      <width>1322</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
@@ -1068,7 +1071,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <item row="0" column="0">
       <widget class="QTextEdit" name="log">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
       </widget>
      </item>

@@ -43,4 +43,8 @@ private:
     QToolBar* m_toolBar{nullptr};
 
     QTabBar* m_capsuleTabBar{nullptr};
+    QTabBar* m_segmentedBar{nullptr};
+    QTabBar* m_segmentedFadeBar{nullptr};
+    QTabBar* m_navigationTabBar{nullptr};
+    QAction* m_searchAction{nullptr};
 };

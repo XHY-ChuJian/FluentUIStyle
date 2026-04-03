@@ -24,14 +24,17 @@ enum SpinBoxButtonLayout
     PlusMinusHorizontalSides
 };
 
-constexpr const char* TabBarStyleProperty = "tabBarStyle";
+[[maybe_unused]] constexpr const char* TabBarStyleProperty = "tabBarStyle";
 enum TabBarStyle
 {
     Capsule = 1,
     Pivot_Grow,
     Pivot_Slide,
     Pivot_Stretch,
-    Segmented
+    PillTabs,
+    Segmented_Slide,
+    Segmented_Fade,
+    Navigation
 };
 
 
@@ -95,28 +98,28 @@ private:
     void drawPivotStretchingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
 
-    void drawSegmentedTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawPillTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawSegmentedSlideTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawSegmentedFadeTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+    void drawNavigationTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
 
     void drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
     void drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
     void drawTreeViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
 
-    QPen borderPenControlAlt( const QStyleOption* option ) const;
-
-    QColor calculateAccentColor( const QStyleOption* option ) const;
-
-    QBrush controlFillBrush( const QStyleOption* option, ControlType controlType ) const;
-    QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
-
-    QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
-
     void drawLineEditFrame( QPainter* painter, const QRectF& rect, const QStyleOption* option, bool isEditable = true ,int roundingRadius = 4) const;
-    QColor winUI3Color( WINUI3Color col ) const;
-
-    QIcon fluentIcon( const QChar& ch ) const;
 
     void drawFluentShadow( QPainter* painter, QRect rect, int shadowWidth, int radius ) const;
     void drawEffectShadow( QPainter* painter, QRect widgetRect, int shadowBorderWidth, int borderRadius ) const;
+
+    QPen borderPenControlAlt( const QStyleOption* option ) const;
+    QColor calculateAccentColor( const QStyleOption* option ) const;
+    QBrush controlFillBrush( const QStyleOption* option, ControlType controlType ) const;
+    QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
+    QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
+    QColor winUI3Color( WINUI3Color col ) const;
+
+    QIcon fluentIcon( const QChar& ch ) const;
 
 private:
     mutable QFont assetFont;

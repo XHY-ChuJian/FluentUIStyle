@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QFile>
+#include <QGridLayout>
 #include <QKeySequence>
 #include <QLabel>
 #include <QMdiArea>
@@ -12,7 +13,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QGridLayout>
+#include <QScrollArea>
 #include <QStatusBar>
 #include <QStyle>
 #include <QStyleFactory>
@@ -35,27 +36,28 @@
 class MenuOffsetFilter : public QObject
 {
 public:
-    explicit MenuOffsetFilter(QObject* parent = nullptr)
-        : QObject(parent)
-    {}
+    explicit MenuOffsetFilter( QObject* parent = nullptr )
+        : QObject( parent )
+    {
+    }
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* event) override
+    bool eventFilter( QObject* obj, QEvent* event ) override
     {
-        if (event->type() == QEvent::Show)
+        if ( event->type() == QEvent::Show )
         {
-            if (auto menu = qobject_cast<QMenu*>(obj))
+            if ( auto menu = qobject_cast<QMenu*>( obj ) )
             {
-                auto menuParent =  menu->parentWidget();
-                if (menuParent && menuParent->inherits("QMenuBar") )
+                auto menuParent = menu->parentWidget();
+                if ( menuParent && menuParent->inherits( "QMenuBar" ) )
                 {
                     QPoint pos = menu->pos();
-                    menu->move(pos + QPoint(2, 0));
+                    menu->move( pos + QPoint( 2, 0 ) );
                 }
             }
         }
 
-        return QObject::eventFilter(obj, event);
+        return QObject::eventFilter( obj, event );
     }
 };
 
@@ -99,7 +101,7 @@ MainWindow::MainWindow( QWidget* parent )
 {
     setAttribute( Qt::WA_StyledBackground );
     ui->setupUi( this );
-    qApp->installEventFilter(new MenuOffsetFilter(qApp));
+    qApp->installEventFilter( new MenuOffsetFilter( qApp ) );
 
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
     QList<QWidget*> widgetList;
@@ -145,7 +147,7 @@ void MainWindow::loadChangelog()
         QString content = in.readAll();
         file.close();
         QStringList lines = content.split( "\n" );
-        for ( const QString& line : std::as_const(lines) )
+        for ( const QString& line : std::as_const( lines ) )
         {
             ui->log->append( line );
         }
@@ -396,7 +398,7 @@ void MainWindow::initMenuAndToolBar()
     // ================= 其他控件 =================
     // 添加禁用按钮
     QCheckBox* cb = new QCheckBox( "禁用", this );
-    cb->setProperty("isSwitchButton", true);
+    cb->setProperty( "isSwitchButton", true );
     connect( cb, &QCheckBox::clicked, this, [ = ]( bool checked ) { centralWidget()->setEnabled( !checked ); } );
     toolBar->addWidget( cb );
     toolBar->addSeparator();
@@ -425,42 +427,57 @@ void MainWindow::initMenuAndToolBar()
 
 void MainWindow::setupTabs()
 {
-    // 主布局
-    QVBoxLayout* mainLayout = new QVBoxLayout(ui->page_4);
-    mainLayout->setContentsMargins(10, 10, 10, 10);
-    mainLayout->setSpacing(15);
+    QVBoxLayout* pageLayout = new QVBoxLayout( ui->page_4 );
+    pageLayout->setContentsMargins( 0, 0, 0, 0 );
+    pageLayout->setSpacing( 0 );
+
+    QScrollArea* scrollArea = new QScrollArea( ui->page_4 );
+    scrollArea->setWidgetResizable( true );
+    scrollArea->setFrameShape( QFrame::NoFrame );
+    scrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+
+    QWidget* contentWidget = new QWidget();
+    QVBoxLayout* mainLayout = new QVBoxLayout( contentWidget );
+    mainLayout->setContentsMargins( 10, 10, 10, 10 );
+    mainLayout->setSpacing( 15 );
+
+    scrollArea->setWidget( contentWidget );
+    pageLayout->addWidget( scrollArea );
 
     // ============ 第1个Widget: CapsuleTabBar + SlidingStackedWidget ============
     QWidget* capsuleWidget = new QWidget();
-    capsuleWidget->setProperty("fluentBorder", true);
-    capsuleWidget->setAttribute(Qt::WA_StyledBackground);
+    capsuleWidget->setProperty( "fluentBorder", true );
+    capsuleWidget->setAttribute( Qt::WA_StyledBackground );
 
-    QVBoxLayout* capsuleLayout = new QVBoxLayout(capsuleWidget);
-    capsuleLayout->setContentsMargins(10, 10, 10, 10);
-    capsuleLayout->setSpacing(2);
+    QVBoxLayout* capsuleLayout = new QVBoxLayout( capsuleWidget );
+    capsuleLayout->setContentsMargins( 10, 10, 10, 10 );
+    capsuleLayout->setSpacing( 2 );
 
-    QLabel* capsuleLabel = new QLabel("Capsule TabBar");
-    capsuleLabel->setStyleSheet("font-weight: bold; font-size: 14px; ");
-    capsuleLayout->addWidget(capsuleLabel);
+    QLabel* capsuleLabel = new QLabel( "Capsule TabBar" );
+    capsuleLabel->setStyleSheet( "font-weight: bold; font-size: 14px; " );
+    capsuleLayout->addWidget( capsuleLabel );
 
     m_capsuleTabBar = new QTabBar();
-    m_capsuleTabBar->setAttribute(Qt::WA_StyledBackground, true);
-    m_capsuleTabBar->setAutoFillBackground(false);
-    m_capsuleTabBar->setExpanding(false);
-    m_capsuleTabBar->setTabsClosable(true);
-    m_capsuleTabBar->setMovable(true);
-    m_capsuleTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
-    m_capsuleTabBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Capsule));
-    m_capsuleTabBar->addTab("Home");
-    m_capsuleTabBar->addTab("Search");
-    m_capsuleTabBar->addTab("Settings");
-    m_capsuleTabBar->addTab("Help");
-    m_capsuleTabBar->addTab("About");
-    capsuleLayout->addWidget(m_capsuleTabBar);
+    m_capsuleTabBar->setAttribute( Qt::WA_StyledBackground, true );
+    m_capsuleTabBar->setAutoFillBackground( false );
+    m_capsuleTabBar->setExpanding( false );
+    m_capsuleTabBar->setTabsClosable( true );
+    m_capsuleTabBar->setMovable( true );
+    m_capsuleTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+    m_capsuleTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Capsule ) );
+    m_capsuleTabBar->addTab( "Home" );
+    m_capsuleTabBar->addTab( "Search" );
+    m_capsuleTabBar->addTab( "Settings" );
+    m_capsuleTabBar->addTab( "Help" );
+    m_capsuleTabBar->addTab( "About" );
+    capsuleLayout->addWidget( m_capsuleTabBar );
 
     SlidingStackedWidget* capsuleSlidingWidget = new SlidingStackedWidget();
-    QStringList pageNames = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
-    QList<QColor> pageColors = { QColor(255, 228, 225), QColor(224, 255, 255), QColor(240, 255, 240), QColor(255, 250, 205), QColor(230, 230, 250) };
+    capsuleSlidingWidget->setMinimumHeight(200);
+    QStringList pageNames                      = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
+    QList<QColor> pageColors                   = {
+        QColor( 255, 228, 225 ), QColor( 224, 255, 255 ), QColor( 240, 255, 240 ), QColor( 255, 250, 205 ), QColor( 230, 230, 250 )
+    };
     for ( int i = 0; i < pageNames.size(); ++i )
     {
         QLabel* page = new QLabel( pageNames[ i ] );
@@ -469,108 +486,228 @@ void MainWindow::setupTabs()
         capsuleSlidingWidget->addWidget( page );
     }
 
-    connect(m_capsuleTabBar, QOverload<int>::of(&QTabBar::currentChanged),
-            capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex);
-    //补充一下，如果TabBar支持拖动调整顺序，那么还需要连接tabMoved信号以保持内容页同步
-    connect(m_capsuleTabBar, &QTabBar::tabMoved, this, [
-        capsuleSlidingWidget
-    ](int from, int to) {
-        QWidget* widget = capsuleSlidingWidget->widget(from);
-        capsuleSlidingWidget->removeWidget(widget);
-        capsuleSlidingWidget->insertWidget(to, widget);
-    });
+    connect(
+        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex );
+    connect( m_capsuleTabBar,
+             &QTabBar::tabMoved,
+             this,
+             [ capsuleSlidingWidget ]( int from, int to )
+             {
+                 QWidget* widget = capsuleSlidingWidget->widget( from );
+                 capsuleSlidingWidget->removeWidget( widget );
+                 capsuleSlidingWidget->insertWidget( to, widget );
+             } );
 
-    capsuleLayout->addWidget(capsuleSlidingWidget, 1);
-    mainLayout->addWidget(capsuleWidget, 1);
+    capsuleLayout->addWidget( capsuleSlidingWidget, 1 );
+    mainLayout->addWidget( capsuleWidget, 1 );
 
-    // ============ 第2个Widget: 多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
+    // ============ 第2个Widget: Navigation TabBar + SlidingStackedWidget ============
+    {
+        QWidget* navigationWidget = new QWidget();
+        navigationWidget->setProperty( "fluentBorder", true );
+        navigationWidget->setAttribute( Qt::WA_StyledBackground );
+
+        QVBoxLayout* navigationLayout = new QVBoxLayout( navigationWidget );
+        navigationLayout->setContentsMargins( 10, 10, 10, 10 );
+        navigationLayout->setSpacing( 10 );
+
+        QLabel* navigationLabel = new QLabel( "Navigation TabBar" );
+        navigationLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        navigationLayout->addWidget( navigationLabel );
+
+        QHBoxLayout* bodyLayout = new QHBoxLayout();
+        bodyLayout->setContentsMargins( 0, 0, 0, 0 );
+        bodyLayout->setSpacing( 2 );
+
+        m_navigationTabBar = new QTabBar();
+        m_navigationTabBar->setAttribute( Qt::WA_StyledBackground, true );
+        m_navigationTabBar->setShape( QTabBar::RoundedWest );
+        m_navigationTabBar->setDrawBase( false );
+        m_navigationTabBar->setMovable( false );
+        m_navigationTabBar->setExpanding( false );
+        m_navigationTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+        m_navigationTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Navigation ) );
+        m_navigationTabBar->addTab( "Overview" );
+        m_navigationTabBar->addTab( "Files" );
+        m_navigationTabBar->addTab( "History" );
+        m_navigationTabBar->addTab( "Insights" );
+        m_navigationTabBar->addTab( "Settings" );
+
+        QVBoxLayout* navigationTabBarLayout = new QVBoxLayout();
+        navigationTabBarLayout->setContentsMargins( 0, 0, 0, 0 );
+        navigationTabBarLayout->setSpacing( 0 );
+        navigationTabBarLayout->addWidget( m_navigationTabBar, 0, Qt::AlignTop );
+        navigationTabBarLayout->addStretch();
+        bodyLayout->addLayout( navigationTabBarLayout );
+
+        SlidingStackedWidget* navigationSlidingWidget = new SlidingStackedWidget();
+        navigationSlidingWidget->setVerticalMode( true );
+        navigationSlidingWidget->setSpeed( 220 );
+        navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
+        navigationSlidingWidget->setMinimumHeight(300);
+
+        const QStringList navPageNames = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
+        const QList<QColor> navPageColors = {
+            QColor( 244, 248, 255 ), QColor( 240, 251, 246 ), QColor( 255, 248, 238 ), QColor( 248, 243, 255 ), QColor( 245, 245, 245 )
+        };
+        for ( int i = 0; i < navPageNames.size(); ++i )
+        {
+            QLabel* page = new QLabel( navPageNames[ i ] );
+            page->setAlignment( Qt::AlignCenter );
+            page->setMinimumHeight( 220 );
+            page->setStyleSheet( QString( "background-color:%1;color:black;" ).arg( navPageColors[ i ].name() ) );
+            navigationSlidingWidget->addWidget( page );
+        }
+
+        connect( m_navigationTabBar,
+                 QOverload<int>::of( &QTabBar::currentChanged ),
+                 navigationSlidingWidget,
+                 &SlidingStackedWidget::setCurrentIndex );
+
+        bodyLayout->addWidget( navigationSlidingWidget, 1 );
+        navigationLayout->addLayout( bodyLayout );
+        mainLayout->addWidget( navigationWidget, 1 );
+    }
+
+    // ============ 第3个Widget: 多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
     QWidget* pivotWidget = new QWidget();
-    pivotWidget->setProperty("fluentBorder", true);
-    pivotWidget->setAttribute(Qt::WA_StyledBackground);
+    pivotWidget->setProperty( "fluentBorder", true );
+    pivotWidget->setAttribute( Qt::WA_StyledBackground );
 
-    QVBoxLayout* pivotLayout = new QVBoxLayout(pivotWidget);
-    pivotLayout->setContentsMargins(10, 10, 10, 10);
-    pivotLayout->setSpacing(20);
+    QVBoxLayout* pivotLayout = new QVBoxLayout( pivotWidget );
+    pivotLayout->setContentsMargins( 10, 10, 10, 10 );
+    pivotLayout->setSpacing( 20 );
 
     // Pivot_Grow
-    QLabel* pivotGrowLabel = new QLabel("Pivot Grow TabBar");
-    pivotGrowLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    pivotLayout->addWidget(pivotGrowLabel);
+    QLabel* pivotGrowLabel = new QLabel( "Pivot Grow TabBar" );
+    pivotGrowLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    pivotLayout->addWidget( pivotGrowLabel );
 
     QTabBar* pivotGrowBar = new QTabBar();
-    pivotGrowBar->setExpanding(false);
-    pivotGrowBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Grow));
-    pivotGrowBar->addTab("Page 1");
-    pivotGrowBar->addTab("Page 2");
-    pivotGrowBar->addTab("Page 3");
-    pivotGrowBar->addTab("Page 4");
-    pivotGrowBar->addTab("Page 5");
-    pivotLayout->addWidget(pivotGrowBar);
+    pivotGrowBar->setExpanding( false );
+    pivotGrowBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Grow ) );
+    pivotGrowBar->addTab( "Home" );
+    pivotGrowBar->addTab( "Search" );
+    pivotGrowBar->addTab( "Settings" );
+    pivotGrowBar->addTab( "Help" );
+    pivotGrowBar->addTab( "About" );
+    pivotLayout->addWidget( pivotGrowBar );
 
     // Pivot_Slide
-    QLabel* pivotSlideLabel = new QLabel("Pivot Slide TabBar");
-    pivotSlideLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    pivotLayout->addWidget(pivotSlideLabel);
+    QLabel* pivotSlideLabel = new QLabel( "Pivot Slide TabBar" );
+    pivotSlideLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    pivotLayout->addWidget( pivotSlideLabel );
 
     QTabBar* pivotSlideBar = new QTabBar();
-    pivotSlideBar->setExpanding(false);
-    pivotSlideBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Slide));
-    pivotSlideBar->addTab("Page 1");
-    pivotSlideBar->addTab("Page 2");
-    pivotSlideBar->addTab("Page 3");
-    pivotSlideBar->addTab("Page 4");
-    pivotSlideBar->addTab("Page 5");
-    pivotLayout->addWidget(pivotSlideBar);
+    pivotSlideBar->setExpanding( false );
+    pivotSlideBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Slide ) );
+    pivotSlideBar->addTab( "Home" );
+    pivotSlideBar->addTab( "Search" );
+    pivotSlideBar->addTab( "Settings" );
+    pivotSlideBar->addTab( "Help" );
+    pivotSlideBar->addTab( "About" );
+    pivotLayout->addWidget( pivotSlideBar );
 
     // Pivot_Stretch
-    QLabel* pivotStretchLabel = new QLabel("Pivot Stretch TabBar");
-    pivotStretchLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    pivotLayout->addWidget(pivotStretchLabel);
+    QLabel* pivotStretchLabel = new QLabel( "Pivot Stretch TabBar" );
+    pivotStretchLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    pivotLayout->addWidget( pivotStretchLabel );
 
     QTabBar* pivotStretchBar = new QTabBar();
-    pivotStretchBar->setExpanding(false);
-    pivotStretchBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Pivot_Stretch));
-    pivotStretchBar->addTab("Page 1");
-    pivotStretchBar->addTab("Page 2");
-    pivotStretchBar->addTab("Page 3");
-    pivotStretchBar->addTab("Page 4");
-    pivotStretchBar->addTab("Page 5");
+    pivotStretchBar->setExpanding( false );
+    pivotStretchBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Stretch ) );
+    pivotStretchBar->addTab( "Home" );
+    pivotStretchBar->addTab( "Search" );
+    pivotStretchBar->addTab( "Settings" );
+    pivotStretchBar->addTab( "Help" );
+    pivotStretchBar->addTab( "About" );
 
-    pivotLayout->addWidget(pivotStretchBar);
+    pivotLayout->addWidget( pivotStretchBar );
 
     pivotLayout->addStretch();
-    mainLayout->addWidget(pivotWidget, 1);
+    mainLayout->addWidget( pivotWidget, 1 );
 
-    // ============ 第3个Widget: Segmented TabBar ============
-    QWidget* segmentedWidget = new QWidget();
-    segmentedWidget->setProperty("fluentBorder", true);
-    segmentedWidget->setAttribute(Qt::WA_StyledBackground);
+    // ============ 第4个Widget: Segmented TabBar ============
+    {
+        QWidget* segmentedWidget = new QWidget();
+        segmentedWidget->setProperty( "fluentBorder", true );
+        segmentedWidget->setAttribute( Qt::WA_StyledBackground );
 
-    QVBoxLayout* segmentedLayout = new QVBoxLayout(segmentedWidget);
-    segmentedLayout->setContentsMargins(10, 10, 10, 10);
-    segmentedLayout->setSpacing(10);
+        QVBoxLayout* segmentedLayout = new QVBoxLayout( segmentedWidget );
+        segmentedLayout->setContentsMargins( 10, 10, 10, 10 );
+        segmentedLayout->setSpacing( 10 );
 
-    QLabel* segmentedLabel = new QLabel("Segmented TabBar");
-    segmentedLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    segmentedLayout->addWidget(segmentedLabel);
+        QLabel* segmentedLabel = new QLabel( "Segmented Slide TabBar" );
+        segmentedLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        segmentedLayout->addWidget( segmentedLabel );
 
-    QTabBar* segmentedBar = new QTabBar();
-    segmentedBar->setTabsClosable(true);
-    segmentedBar->setExpanding(false);
-    segmentedBar->setProperty("tabBarStyle", static_cast<int>(TabBarStyle::Segmented));
-    segmentedBar->addTab("Page 1");
-    segmentedBar->addTab("Page 2");
-    segmentedBar->addTab("Page 3");
-    segmentedBar->addTab("Page 4");
-    segmentedBar->addTab("Page 5");
-    segmentedLayout->addWidget(segmentedBar);
+        m_segmentedBar = new QTabBar();
+        m_segmentedBar->setTabsClosable( false );
+        m_segmentedBar->setMovable( false );
+        m_segmentedBar->setExpanding( false );
+        m_segmentedBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Segmented_Slide ) );
+        m_segmentedBar->addTab( "Home" );
+        m_segmentedBar->addTab( "Search" );
+        m_segmentedBar->addTab( "Settings" );
+        m_segmentedBar->addTab( "Help" );
+        m_segmentedBar->addTab( "About" );
+        segmentedLayout->addWidget( m_segmentedBar );
 
-    segmentedLayout->addStretch();
-    mainLayout->addWidget(segmentedWidget, 1);
+        QLabel* segmentedFadeLabel = new QLabel( "Segmented Fade TabBar" );
+        segmentedFadeLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        segmentedLayout->addWidget( segmentedFadeLabel );
+
+        m_segmentedFadeBar = new QTabBar();
+        m_segmentedFadeBar->setTabsClosable( false );
+        m_segmentedFadeBar->setMovable( true );
+        m_segmentedFadeBar->setExpanding( false );
+        m_segmentedFadeBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Segmented_Fade ) );
+        m_segmentedFadeBar->addTab( "Home" );
+        m_segmentedFadeBar->addTab( "Search" );
+        m_segmentedFadeBar->addTab( "Settings" );
+        m_segmentedFadeBar->addTab( "Help" );
+        m_segmentedFadeBar->addTab( "About" );
+        segmentedLayout->addWidget( m_segmentedFadeBar );
+
+        segmentedLayout->addStretch();
+        mainLayout->addWidget( segmentedWidget, 1 );
+    }
+    //========第5个Widget: PillTabs===========
+    {
+        QWidget* pillWidget = new QWidget();
+        pillWidget->setProperty( "fluentBorder", true );
+        pillWidget->setAttribute( Qt::WA_StyledBackground );
+
+        QVBoxLayout* pillLayout = new QVBoxLayout( pillWidget );
+        pillLayout->setContentsMargins( 10, 10, 10, 10 );
+        pillLayout->setSpacing( 10 );
+
+        QLabel* pillLabel = new QLabel( "Pill TabBar" );
+        pillLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        pillLayout->addWidget( pillLabel );
+
+        QTabBar* pillBar = new QTabBar();
+        pillBar->setTabsClosable( true );
+        pillBar->setExpanding( false );
+        pillBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::PillTabs ) );
+        pillBar->addTab( "Home" );
+        pillBar->addTab( "Search" );
+        pillBar->addTab( "Settings" );
+        pillBar->addTab( "Help" );
+        pillBar->addTab( "About" );
+        pillLayout->addWidget( pillBar );
+
+        pillLayout->addStretch();
+        mainLayout->addWidget( pillWidget, 1 );
+    }
+
+    mainLayout->addStretch();
 }
 
 void MainWindow::updateActionIcons()
 {
+    ui->lineEditSerach->removeAction( m_searchAction );
+    m_searchAction = ui->lineEditSerach->addAction( createFluentIcon( "\ue721" ), QLineEdit::TrailingPosition );
     {
         if ( m_capsuleTabBar )
         {
@@ -579,6 +716,31 @@ void MainWindow::updateActionIcons()
             m_capsuleTabBar->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
             m_capsuleTabBar->setTabIcon( 3, createFluentIcon( "\uE836" ) );
             m_capsuleTabBar->setTabIcon( 4, createFluentIcon( "\uE9F5" ) );
+        }
+
+        if ( m_segmentedBar )
+        {
+            m_segmentedBar->setTabIcon( 0, createFluentIcon( "\uEC64" ) );
+            m_segmentedBar->setTabIcon( 1, createFluentIcon( "\uEF58" ) );
+            m_segmentedBar->setTabIcon( 2, createFluentIcon( "\uE99A" ) );
+            m_segmentedBar->setTabIcon( 3, createFluentIcon( "\uE7ED" ) );
+            m_segmentedBar->setTabIcon( 4, createFluentIcon( "\uF163" ) );
+        }
+        if ( m_segmentedFadeBar )
+        {
+            m_segmentedFadeBar->setTabIcon( 0, createFluentIcon( "\uEC64" ) );
+            m_segmentedFadeBar->setTabIcon( 1, createFluentIcon( "\uEF58" ) );
+            m_segmentedFadeBar->setTabIcon( 2, createFluentIcon( "\uE99A" ) );
+            m_segmentedFadeBar->setTabIcon( 3, createFluentIcon( "\uE7ED" ) );
+            m_segmentedFadeBar->setTabIcon( 4, createFluentIcon( "\uF163" ) );
+        }
+        if ( m_navigationTabBar )
+        {
+            m_navigationTabBar->setTabIcon( 0, createFluentIcon( "\uEC64" ) );
+            m_navigationTabBar->setTabIcon( 1, createFluentIcon( "\uE8B7" ) );
+            m_navigationTabBar->setTabIcon( 2, createFluentIcon( "\uE81C" ) );
+            m_navigationTabBar->setTabIcon( 3, createFluentIcon( "\uE9CE" ) );
+            m_navigationTabBar->setTabIcon( 4, createFluentIcon( "\uE713" ) );
         }
     }
 
@@ -612,7 +774,8 @@ void MainWindow::updateActionIcons()
         }
     }
 
-    const std::function<void( QTreeWidgetItem* )> updateNavItemIcons = [&]( QTreeWidgetItem* item ) {
+    const std::function<void( QTreeWidgetItem* )> updateNavItemIcons = [ & ]( QTreeWidgetItem* item )
+    {
         if ( !item )
         {
             return;
@@ -638,37 +801,42 @@ void MainWindow::updateActionIcons()
 
 void MainWindow::init()
 {
-    ui->stackedWidget->setVerticalMode(true);
-    ui->stackedWidget->setAnimation(QEasingCurve::Type::InOutSine);
-    ui->stackedWidget->setSpeed(300);
+    {
+        //ui->lineEditSerach 添加一个搜索图标
+        ui->lineEditSerach->setPlaceholderText( "搜索..." );
+        ui->lineEditSerach->setClearButtonEnabled( true );
+        m_searchAction = ui->lineEditSerach->addAction( createFluentIcon( "\ue721" ), QLineEdit::TrailingPosition );
+    }
+    ui->stackedWidget->setVerticalMode( true );
+    ui->stackedWidget->setAnimation( QEasingCurve::Type::InOutSine );
+    ui->stackedWidget->setSpeed( 300 );
 
     initMenuAndToolBar();
     initNavigationView();
 
     {
-        setProperty("MainBackground", true);
-        ui->centralwidget->setProperty("MainBackground", true);
+        setProperty( "MainBackground", true );
+        ui->centralwidget->setProperty( "MainBackground", true );
 
-        ui->centralwidget->setAttribute(Qt::WA_TranslucentBackground, true);
-        ui->centralwidget->setAttribute(Qt::WA_StyledBackground, true);
+        ui->centralwidget->setAttribute( Qt::WA_TranslucentBackground, true );
+        ui->centralwidget->setAttribute( Qt::WA_StyledBackground, true );
 
-        menuBar()->setAttribute(Qt::WA_TranslucentBackground, true);
-        menuBar()->setAttribute(Qt::WA_StyledBackground, false);
-        menuBar()->setAutoFillBackground(false);
+        menuBar()->setAttribute( Qt::WA_TranslucentBackground, true );
+        menuBar()->setAttribute( Qt::WA_StyledBackground, false );
+        menuBar()->setAutoFillBackground( false );
 
-        m_toolBar->setAttribute(Qt::WA_TranslucentBackground, true);
-        m_toolBar->setAttribute(Qt::WA_StyledBackground, false);
-        m_toolBar->setAutoFillBackground(false);
+        m_toolBar->setAttribute( Qt::WA_TranslucentBackground, true );
+        m_toolBar->setAttribute( Qt::WA_StyledBackground, false );
+        m_toolBar->setAutoFillBackground( false );
     }
 
     ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
-    ui->checkBox_5->setText("Off");
-    ui->treeWidget->setProperty("ItemHeight", 32);
+    ui->checkBox_5->setText( "Off" );
+    ui->treeWidget->setProperty( "ItemHeight", 32 );
 
     {
         setupTabs();
     }
-
 
     {
         ui->scrollAreaWidgetContents->setAutoFillBackground( false );
@@ -749,84 +917,85 @@ void MainWindow::init()
 
 void MainWindow::initNavigationView()
 {
-    //ui->navView 字号 + 1
+    // ui->navView 字号 + 1
     QFont navFont = ui->navView->font();
     navFont.setPixelSize( navFont.pixelSize() + 1 );
-    navFont.setHintingPreference(QFont::PreferFullHinting);
+    navFont.setHintingPreference( QFont::PreferFullHinting );
 
-    ui->navView->setIconSize(QSize(20,20));
+    ui->navView->setIconSize( QSize( 20, 20 ) );
 
     ui->navView->setFont( navFont );
-    ui->navView->setRootIsDecorated(false);
+    ui->navView->setRootIsDecorated( false );
     ui->navView->setFrameShape( QFrame::NoFrame );
     ui->navView->setStyleSheet( "#navView{background:transparent;}" );
 
     ui->navView->setProperty( "navigationViewIndicator", true );
-    //ui->navView 添加一级节点 {基础控件，List, Tree, TabWidget, SrollArea}
-     QTreeWidgetItem* basicItem = new QTreeWidgetItem( ui->navView );
-     basicItem->setText( 0, "基础控件" );
-     basicItem->setData( 0, Qt::UserRole, 0 );
-     basicItem->setData( 0, Qt::UserRole + 1, "\uE80F" );
+    // ui->navView 添加一级节点 {基础控件，List, Tree, TabWidget, SrollArea}
+    QTreeWidgetItem* basicItem = new QTreeWidgetItem( ui->navView );
+    basicItem->setText( 0, "基础控件" );
+    basicItem->setData( 0, Qt::UserRole, 0 );
+    basicItem->setData( 0, Qt::UserRole + 1, "\uE80F" );
 
-     QTreeWidgetItem* listItem = new QTreeWidgetItem( ui->navView );
-     listItem->setText( 0, "列表控件" );
-     listItem->setData( 0, Qt::UserRole, 1 );
-     listItem->setData( 0, Qt::UserRole + 1, "\uE71D" );
+    QTreeWidgetItem* listItem = new QTreeWidgetItem( ui->navView );
+    listItem->setText( 0, "列表控件" );
+    listItem->setData( 0, Qt::UserRole, 1 );
+    listItem->setData( 0, Qt::UserRole + 1, "\uE71D" );
 
-     QTreeWidgetItem* treeItem = new QTreeWidgetItem( ui->navView );
-     treeItem->setText( 0, "树形控件" );
-     treeItem->setData( 0, Qt::UserRole, 2 );
-     treeItem->setData( 0, Qt::UserRole + 1, "\uED28" );
+    QTreeWidgetItem* treeItem = new QTreeWidgetItem( ui->navView );
+    treeItem->setText( 0, "树形控件" );
+    treeItem->setData( 0, Qt::UserRole, 2 );
+    treeItem->setData( 0, Qt::UserRole + 1, "\uED28" );
 
-     QTreeWidgetItem* tabItem = new QTreeWidgetItem( ui->navView );
-     tabItem->setText( 0, "导航控件" );
-     tabItem->setData( 0, Qt::UserRole, 3 );
-     tabItem->setData( 0, Qt::UserRole + 1, "\uE8B0" );
+    QTreeWidgetItem* tabItem = new QTreeWidgetItem( ui->navView );
+    tabItem->setText( 0, "导航控件" );
+    tabItem->setData( 0, Qt::UserRole, 3 );
+    tabItem->setData( 0, Qt::UserRole + 1, "\uE8B0" );
 
-     QTreeWidgetItem* mdiItem = new QTreeWidgetItem( ui->navView );
-     mdiItem->setText( 0, "Mdi" );
-     mdiItem->setData( 0, Qt::UserRole, 4 );
-     mdiItem->setData( 0, Qt::UserRole + 1, "\uE9D9" );
+    QTreeWidgetItem* mdiItem = new QTreeWidgetItem( ui->navView );
+    mdiItem->setText( 0, "Mdi" );
+    mdiItem->setData( 0, Qt::UserRole, 4 );
+    mdiItem->setData( 0, Qt::UserRole + 1, "\uE9D9" );
 
-     QTreeWidgetItem* settingItem = new QTreeWidgetItem( ui->navView );
-     settingItem->setText( 0, "设置" );
-     settingItem->setData( 0, Qt::UserRole, 5 );
-     settingItem->setData( 0, Qt::UserRole + 1, "\uE9F5" );
+    QTreeWidgetItem* settingItem = new QTreeWidgetItem( ui->navView );
+    settingItem->setText( 0, "设置" );
+    settingItem->setData( 0, Qt::UserRole, 5 );
+    settingItem->setData( 0, Qt::UserRole + 1, "\uE9F5" );
 
-     connect( ui->navView,
-              &QTreeWidget::currentItemChanged,
-              this,
-              [this]( QTreeWidgetItem* current, QTreeWidgetItem* ) {
-                  if ( !current )
-                  {
-                      return;
-                  }
-                  const QVariant pageIndex = current->data( 0, Qt::UserRole );
-                  if ( pageIndex.isValid() )
-                  {
-                      ui->stackedWidget->setCurrentIndex( pageIndex.toInt() );
-                  }
-              } );
-     ui->navView->setCurrentItem( basicItem );
+    connect( ui->navView,
+             &QTreeWidget::currentItemChanged,
+             this,
+             [ this ]( QTreeWidgetItem* current, QTreeWidgetItem* )
+             {
+                 if ( !current )
+                 {
+                     return;
+                 }
+                 const QVariant pageIndex = current->data( 0, Qt::UserRole );
+                 if ( pageIndex.isValid() )
+                 {
+                     ui->stackedWidget->setCurrentIndex( pageIndex.toInt() );
+                 }
+             } );
+    ui->navView->setCurrentItem( basicItem );
 
-     //最后在添加一个节点，有很多测试子节点，嵌套3次
-        QTreeWidgetItem* testItem = new QTreeWidgetItem( ui->navView );
-        testItem->setText( 0, "测试节点" );
-        testItem->setData( 0, Qt::UserRole, 6 );
-        testItem->setData( 0, Qt::UserRole + 1, "\uE9F5" );
-        for ( int i = 0; i < 5; ++i )
+    // 最后在添加一个节点，有很多测试子节点，嵌套3次
+    QTreeWidgetItem* testItem = new QTreeWidgetItem( ui->navView );
+    testItem->setText( 0, "测试节点" );
+    testItem->setData( 0, Qt::UserRole, 6 );
+    testItem->setData( 0, Qt::UserRole + 1, "\uE9F5" );
+    for ( int i = 0; i < 5; ++i )
+    {
+        QTreeWidgetItem* child = new QTreeWidgetItem( testItem );
+        child->setText( 0, QString( "子节点%1" ).arg( i + 1 ) );
+        child->setData( 0, Qt::UserRole, 6 );
+
+        for ( int j = 0; j < 3; ++j )
         {
-            QTreeWidgetItem* child = new QTreeWidgetItem( testItem );
-            child->setText( 0, QString( "子节点%1" ).arg( i + 1 ) );
-            child->setData( 0, Qt::UserRole, 6 );
-
-            for ( int j = 0; j < 3; ++j )
-            {
-                QTreeWidgetItem* subChild = new QTreeWidgetItem( child );
-                subChild->setText( 0, QString( "子节点%1-%2" ).arg( i + 1 ).arg( j + 1 ) );
-                subChild->setData( 0, Qt::UserRole, 6 );
-            }
+            QTreeWidgetItem* subChild = new QTreeWidgetItem( child );
+            subChild->setText( 0, QString( "子节点%1-%2" ).arg( i + 1 ).arg( j + 1 ) );
+            subChild->setData( 0, Qt::UserRole, 6 );
         }
+    }
 }
 
 void MainWindow::on_checkBox_4_clicked( bool checked )
@@ -839,12 +1008,10 @@ void MainWindow::on_checkBox_4_clicked( bool checked )
     }
 }
 
-
-void MainWindow::on_checkBox_5_stateChanged(int arg1)
+void MainWindow::on_checkBox_5_stateChanged( int arg1 )
 {
     ui->checkBox_5->setText( arg1 == Qt::Checked ? "On" : "Off" );
 }
-
 
 void MainWindow::on_radioButton_7_clicked()
 {
@@ -852,13 +1019,11 @@ void MainWindow::on_radioButton_7_clicked()
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
-
 void MainWindow::on_radioButton_4_clicked()
 {
     ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
-
 
 void MainWindow::on_radioButton_5_clicked()
 {
@@ -866,10 +1031,8 @@ void MainWindow::on_radioButton_5_clicked()
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
-
 void MainWindow::on_radioButton_6_clicked()
 {
     ui->spinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
-
