@@ -128,12 +128,14 @@ static inline void tabLayout( const QStyle* proxyStyle,
                         || opt->shape == QTabBar::TriangularWest;
     if ( isVerticalNavigation )
     {
-        constexpr int listItemHorizontalMargin = 8;
+        constexpr int indicatorWidth = 3;
+        constexpr int indicatorContentGap = 2;
+        constexpr int contentLeadingInset = indicatorWidth + indicatorContentGap;
+        constexpr int contentTrailingInset = 8;
         constexpr int listItemVerticalMargin   = 4;
-        constexpr int indicatorContentGap      = 2;
         constexpr int iconTextSpacing          = 8;
 
-        tr.adjust( listItemHorizontalMargin + indicatorContentGap, listItemVerticalMargin, -listItemHorizontalMargin, -listItemVerticalMargin );
+        tr.adjust( contentLeadingInset, listItemVerticalMargin, -contentTrailingInset, -listItemVerticalMargin );
 
         if ( !opt->leftButtonSize.isEmpty() )
         {
@@ -6165,8 +6167,10 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                         || tab->shape == QTabBar::TriangularEast;
                     if ( isVerticalNavigation )
                     {
-                        constexpr int listItemHorizontalMargin = 8;
+                        constexpr int indicatorWidth = 3;
                         constexpr int indicatorContentGap = 2;
+                        constexpr int contentLeadingInset = indicatorWidth + indicatorContentGap;
+                        constexpr int contentTrailingInset = 8;
                         constexpr int iconTextSpacing = 8;
 
                         if ( const auto* tabBar = qobject_cast<const QTabBar*>( widget ) )
@@ -6216,8 +6220,8 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                             }
 
                             const int contentWidth =
-                                listItemHorizontalMargin + indicatorContentGap + cachedIconWidth
-                                + ( cachedIconWidth > 0 ? iconTextSpacing : 0 ) + cachedTextWidth + listItemHorizontalMargin;
+                                contentLeadingInset + cachedIconWidth + ( cachedIconWidth > 0 ? iconTextSpacing : 0 ) + cachedTextWidth
+                                + contentTrailingInset;
                             contentSize.setWidth( contentWidth );
                         }
                         else
@@ -6225,8 +6229,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                             const int iconWidth = tab->icon.isNull() ? 0 : qMax( 16, tab->iconSize.width() );
                             const int textWidth = tab->fontMetrics.horizontalAdvance( tab->text );
                             const int contentWidth =
-                                listItemHorizontalMargin + indicatorContentGap + iconWidth + ( iconWidth > 0 ? iconTextSpacing : 0 )
-                                + textWidth + listItemHorizontalMargin;
+                                contentLeadingInset + iconWidth + ( iconWidth > 0 ? iconTextSpacing : 0 ) + textWidth + contentTrailingInset;
                             contentSize.setWidth( contentWidth );
                         }
                         contentSize.setHeight( qMax( 40, contentSize.height() ) );

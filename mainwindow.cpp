@@ -444,131 +444,6 @@ void MainWindow::setupTabs()
     scrollArea->setWidget( contentWidget );
     pageLayout->addWidget( scrollArea );
 
-    // ============ 第1个Widget: CapsuleTabBar + SlidingStackedWidget ============
-    QWidget* capsuleWidget = new QWidget();
-    capsuleWidget->setProperty( "fluentBorder", true );
-    capsuleWidget->setAttribute( Qt::WA_StyledBackground );
-
-    QVBoxLayout* capsuleLayout = new QVBoxLayout( capsuleWidget );
-    capsuleLayout->setContentsMargins( 10, 10, 10, 10 );
-    capsuleLayout->setSpacing( 2 );
-
-    QLabel* capsuleLabel = new QLabel( "Capsule TabBar" );
-    capsuleLabel->setStyleSheet( "font-weight: bold; font-size: 14px; " );
-    capsuleLayout->addWidget( capsuleLabel );
-
-    m_capsuleTabBar = new QTabBar();
-    m_capsuleTabBar->setAttribute( Qt::WA_StyledBackground, true );
-    m_capsuleTabBar->setAutoFillBackground( false );
-    m_capsuleTabBar->setExpanding( false );
-    m_capsuleTabBar->setTabsClosable( true );
-    m_capsuleTabBar->setMovable( true );
-    m_capsuleTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-    m_capsuleTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Capsule ) );
-    m_capsuleTabBar->addTab( "Home" );
-    m_capsuleTabBar->addTab( "Search" );
-    m_capsuleTabBar->addTab( "Settings" );
-    m_capsuleTabBar->addTab( "Help" );
-    m_capsuleTabBar->addTab( "About" );
-    capsuleLayout->addWidget( m_capsuleTabBar );
-
-    SlidingStackedWidget* capsuleSlidingWidget = new SlidingStackedWidget();
-    capsuleSlidingWidget->setMinimumHeight(200);
-    QStringList pageNames                      = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
-    QList<QColor> pageColors                   = {
-        QColor( 255, 228, 225 ), QColor( 224, 255, 255 ), QColor( 240, 255, 240 ), QColor( 255, 250, 205 ), QColor( 230, 230, 250 )
-    };
-    for ( int i = 0; i < pageNames.size(); ++i )
-    {
-        QLabel* page = new QLabel( pageNames[ i ] );
-        page->setAlignment( Qt::AlignCenter );
-        page->setStyleSheet( QString( "background-color: %1;color:black;" ).arg( pageColors[ i ].name() ) );
-        capsuleSlidingWidget->addWidget( page );
-    }
-
-    connect(
-        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex );
-    connect( m_capsuleTabBar,
-             &QTabBar::tabMoved,
-             this,
-             [ capsuleSlidingWidget ]( int from, int to )
-             {
-                 QWidget* widget = capsuleSlidingWidget->widget( from );
-                 capsuleSlidingWidget->removeWidget( widget );
-                 capsuleSlidingWidget->insertWidget( to, widget );
-             } );
-
-    capsuleLayout->addWidget( capsuleSlidingWidget, 1 );
-    mainLayout->addWidget( capsuleWidget, 1 );
-
-    // ============ 第2个Widget: Navigation TabBar + SlidingStackedWidget ============
-    {
-        QWidget* navigationWidget = new QWidget();
-        navigationWidget->setProperty( "fluentBorder", true );
-        navigationWidget->setAttribute( Qt::WA_StyledBackground );
-
-        QVBoxLayout* navigationLayout = new QVBoxLayout( navigationWidget );
-        navigationLayout->setContentsMargins( 10, 10, 10, 10 );
-        navigationLayout->setSpacing( 10 );
-
-        QLabel* navigationLabel = new QLabel( "Navigation TabBar" );
-        navigationLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
-        navigationLayout->addWidget( navigationLabel );
-
-        QHBoxLayout* bodyLayout = new QHBoxLayout();
-        bodyLayout->setContentsMargins( 0, 0, 0, 0 );
-        bodyLayout->setSpacing( 2 );
-
-        m_navigationTabBar = new QTabBar();
-        m_navigationTabBar->setAttribute( Qt::WA_StyledBackground, true );
-        m_navigationTabBar->setShape( QTabBar::RoundedWest );
-        m_navigationTabBar->setDrawBase( false );
-        m_navigationTabBar->setMovable( false );
-        m_navigationTabBar->setExpanding( false );
-        m_navigationTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-        m_navigationTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Navigation ) );
-        m_navigationTabBar->addTab( "Overview" );
-        m_navigationTabBar->addTab( "Files" );
-        m_navigationTabBar->addTab( "History" );
-        m_navigationTabBar->addTab( "Insights" );
-        m_navigationTabBar->addTab( "Settings" );
-
-        QVBoxLayout* navigationTabBarLayout = new QVBoxLayout();
-        navigationTabBarLayout->setContentsMargins( 0, 0, 0, 0 );
-        navigationTabBarLayout->setSpacing( 0 );
-        navigationTabBarLayout->addWidget( m_navigationTabBar, 0, Qt::AlignTop );
-        navigationTabBarLayout->addStretch();
-        bodyLayout->addLayout( navigationTabBarLayout );
-
-        SlidingStackedWidget* navigationSlidingWidget = new SlidingStackedWidget();
-        navigationSlidingWidget->setVerticalMode( true );
-        navigationSlidingWidget->setSpeed( 220 );
-        navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
-        navigationSlidingWidget->setMinimumHeight(300);
-
-        const QStringList navPageNames = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
-        const QList<QColor> navPageColors = {
-            QColor( 244, 248, 255 ), QColor( 240, 251, 246 ), QColor( 255, 248, 238 ), QColor( 248, 243, 255 ), QColor( 245, 245, 245 )
-        };
-        for ( int i = 0; i < navPageNames.size(); ++i )
-        {
-            QLabel* page = new QLabel( navPageNames[ i ] );
-            page->setAlignment( Qt::AlignCenter );
-            page->setMinimumHeight( 220 );
-            page->setStyleSheet( QString( "background-color:%1;color:black;" ).arg( navPageColors[ i ].name() ) );
-            navigationSlidingWidget->addWidget( page );
-        }
-
-        connect( m_navigationTabBar,
-                 QOverload<int>::of( &QTabBar::currentChanged ),
-                 navigationSlidingWidget,
-                 &SlidingStackedWidget::setCurrentIndex );
-
-        bodyLayout->addWidget( navigationSlidingWidget, 1 );
-        navigationLayout->addLayout( bodyLayout );
-        mainLayout->addWidget( navigationWidget, 1 );
-    }
-
     // ============ 第3个Widget: 多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
     QWidget* pivotWidget = new QWidget();
     pivotWidget->setProperty( "fluentBorder", true );
@@ -699,6 +574,131 @@ void MainWindow::setupTabs()
 
         pillLayout->addStretch();
         mainLayout->addWidget( pillWidget, 1 );
+    }
+
+        // ============ 第1个Widget: CapsuleTabBar + SlidingStackedWidget ============
+    QWidget* capsuleWidget = new QWidget();
+    capsuleWidget->setProperty( "fluentBorder", true );
+    capsuleWidget->setAttribute( Qt::WA_StyledBackground );
+
+    QVBoxLayout* capsuleLayout = new QVBoxLayout( capsuleWidget );
+    capsuleLayout->setContentsMargins( 10, 10, 10, 10 );
+    capsuleLayout->setSpacing( 2 );
+
+    QLabel* capsuleLabel = new QLabel( "Capsule TabBar" );
+    capsuleLabel->setStyleSheet( "font-weight: bold; font-size: 14px; " );
+    capsuleLayout->addWidget( capsuleLabel );
+
+    m_capsuleTabBar = new QTabBar();
+    m_capsuleTabBar->setAttribute( Qt::WA_StyledBackground, true );
+    m_capsuleTabBar->setAutoFillBackground( false );
+    m_capsuleTabBar->setExpanding( false );
+    m_capsuleTabBar->setTabsClosable( true );
+    m_capsuleTabBar->setMovable( true );
+    m_capsuleTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+    m_capsuleTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Capsule ) );
+    m_capsuleTabBar->addTab( "Home" );
+    m_capsuleTabBar->addTab( "Search" );
+    m_capsuleTabBar->addTab( "Settings" );
+    m_capsuleTabBar->addTab( "Help" );
+    m_capsuleTabBar->addTab( "About" );
+    capsuleLayout->addWidget( m_capsuleTabBar );
+
+    SlidingStackedWidget* capsuleSlidingWidget = new SlidingStackedWidget();
+    capsuleSlidingWidget->setMinimumHeight(200);
+    QStringList pageNames                      = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
+    QList<QColor> pageColors                   = {
+        QColor( 255, 228, 225 ), QColor( 224, 255, 255 ), QColor( 240, 255, 240 ), QColor( 255, 250, 205 ), QColor( 230, 230, 250 )
+    };
+    for ( int i = 0; i < pageNames.size(); ++i )
+    {
+        QLabel* page = new QLabel( pageNames[ i ] );
+        page->setAlignment( Qt::AlignCenter );
+        page->setStyleSheet( QString( "background-color: %1;color:black;" ).arg( pageColors[ i ].name() ) );
+        capsuleSlidingWidget->addWidget( page );
+    }
+
+    connect(
+        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex );
+    connect( m_capsuleTabBar,
+             &QTabBar::tabMoved,
+             this,
+             [ capsuleSlidingWidget ]( int from, int to )
+             {
+                 QWidget* widget = capsuleSlidingWidget->widget( from );
+                 capsuleSlidingWidget->removeWidget( widget );
+                 capsuleSlidingWidget->insertWidget( to, widget );
+             } );
+
+    capsuleLayout->addWidget( capsuleSlidingWidget, 1 );
+    mainLayout->addWidget( capsuleWidget, 1 );
+
+    // ============ 第2个Widget: Navigation TabBar + SlidingStackedWidget ============
+    {
+        QWidget* navigationWidget = new QWidget();
+        navigationWidget->setProperty( "fluentBorder", true );
+        navigationWidget->setAttribute( Qt::WA_StyledBackground );
+
+        QVBoxLayout* navigationLayout = new QVBoxLayout( navigationWidget );
+        navigationLayout->setContentsMargins( 10, 10, 10, 10 );
+        navigationLayout->setSpacing( 10 );
+
+        QLabel* navigationLabel = new QLabel( "Navigation TabBar" );
+        navigationLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        navigationLayout->addWidget( navigationLabel );
+
+        QHBoxLayout* bodyLayout = new QHBoxLayout();
+        bodyLayout->setContentsMargins( 0, 0, 0, 0 );
+        bodyLayout->setSpacing( 2 );
+
+        m_navigationTabBar = new QTabBar();
+        m_navigationTabBar->setAttribute( Qt::WA_StyledBackground, true );
+        m_navigationTabBar->setShape( QTabBar::RoundedWest );
+        m_navigationTabBar->setDrawBase( false );
+        m_navigationTabBar->setMovable( false );
+        m_navigationTabBar->setExpanding( false );
+        m_navigationTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+        m_navigationTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Navigation ) );
+        m_navigationTabBar->addTab( "Overview" );
+        m_navigationTabBar->addTab( "Files" );
+        m_navigationTabBar->addTab( "History" );
+        m_navigationTabBar->addTab( "Insights" );
+        m_navigationTabBar->addTab( "Settings" );
+
+        QVBoxLayout* navigationTabBarLayout = new QVBoxLayout();
+        navigationTabBarLayout->setContentsMargins( 0, 0, 0, 0 );
+        navigationTabBarLayout->setSpacing( 0 );
+        navigationTabBarLayout->addWidget( m_navigationTabBar, 0, Qt::AlignTop );
+        navigationTabBarLayout->addStretch();
+        bodyLayout->addLayout( navigationTabBarLayout );
+
+        SlidingStackedWidget* navigationSlidingWidget = new SlidingStackedWidget();
+        navigationSlidingWidget->setVerticalMode( true );
+        navigationSlidingWidget->setSpeed( 220 );
+        navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
+        navigationSlidingWidget->setMinimumHeight(300);
+
+        const QStringList navPageNames = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
+        const QList<QColor> navPageColors = {
+            QColor( 244, 248, 255 ), QColor( 240, 251, 246 ), QColor( 255, 248, 238 ), QColor( 248, 243, 255 ), QColor( 245, 245, 245 )
+        };
+        for ( int i = 0; i < navPageNames.size(); ++i )
+        {
+            QLabel* page = new QLabel( navPageNames[ i ] );
+            page->setAlignment( Qt::AlignCenter );
+            page->setMinimumHeight( 220 );
+            page->setStyleSheet( QString( "background-color:%1;color:black;" ).arg( navPageColors[ i ].name() ) );
+            navigationSlidingWidget->addWidget( page );
+        }
+
+        connect( m_navigationTabBar,
+                 QOverload<int>::of( &QTabBar::currentChanged ),
+                 navigationSlidingWidget,
+                 &SlidingStackedWidget::setCurrentIndex );
+
+        bodyLayout->addWidget( navigationSlidingWidget, 1 );
+        navigationLayout->addLayout( bodyLayout );
+        mainLayout->addWidget( navigationWidget, 1 );
     }
 
     mainLayout->addStretch();
