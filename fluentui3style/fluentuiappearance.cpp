@@ -64,8 +64,9 @@ void FluentUIAppearance::setMainWindow(QWidget *mainWindow)
 
 void FluentUIAppearancePrivate::applyTheme()
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+#if /*QT_VERSION < QT_VERSION_CHECK(6, 8, 0)*/1
     auto appPalette = qApp->palette();
+    // PaletteManager::instance().setColorScheme(ColorScheme::Teams);
     PaletteManager::instance().applyPalette(appPalette, theme == Theme::Dark);
     qApp->setPalette(appPalette);
 #else

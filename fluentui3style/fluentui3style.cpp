@@ -57,6 +57,9 @@ static constexpr int contentItemHMargin        = 4;      // margin between conte
 static constexpr int contentHMargin            = 2 * 3;  // margin between rounded border and content (= rounded border
                                                          // margin * 3)
 
+static constexpr int menuItemVMargin            = 3;      // vertical margin for menu items
+static constexpr int menuItemHMargin            = 3;      // horizontal margin for menu items
+
 static constexpr int cBShadowBorderWidth = 2;
 static constexpr int cBRoundingRadius    = 4;
 
@@ -1609,12 +1612,11 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 if ( combobox->frame )
                 {
                     const bool isHovered = option->state & State_MouseOver;
-                    const auto frameCol  = highContrastTheme
+                    const auto frameCol  = highContrastTheme ?
 #    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-                                              ? option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
+                                              option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
 #    else
-                                              ? o->palette.color( isHovered ? QPalette::Highlight
-                                                                            : QPalette::ButtonText )  // Qt5/Qt6.5 fallback
+                                              option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )  // Qt5/Qt6.5 fallback
 #    endif
                                               : winUI3Color( frameColorLight );
 
@@ -1640,7 +1642,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 #    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
                                                       option->palette.color( QPalette::Accent )
 #    else
-                            ? option->palette.color( QPalette::Highlight )  // Qt5/Qt6.5 fallback
+                            option->palette.color( QPalette::Highlight )  // Qt5/Qt6.5 fallback
 #    endif
                                                       : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
 
@@ -4410,6 +4412,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
             t->setStartValue( 0.0 );
             t->setEndValue( 1.0 );
             t->setDuration( 500 );
+            t->setFrameRate(QStyleAnimation::DefaultFps );
             startAnimationEx( t, stateObject, animKey );
         }
         else if ( !toIndex.isValid() )
@@ -4419,7 +4422,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
     }
 
     const qreal progress      = clamp01( animationValue( stateObject, animKey, 1.0f ) );
-    const qreal drawX         = progress < 0.66 ? fromX : toX;
+    const qreal drawX         = progress < 0.5 ? fromX : toX;
     const bool movingDown     = toTop >= fromTop;
     const qreal fromBottom    = fromTop + fromH;
     const qreal toBottom      = toTop + toH;
@@ -4435,9 +4438,9 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
         drawTop       = lerp( fromTop, toTop, t );
         drawBottom    = lerp( fromBottom, toBottom, t );
     }
-    else if ( progress < 0.66 )
+    else if ( progress < 0.5 )
     {
-        const qreal stretchT = releaseProgress( progress / 0.66, 0.34 );
+        const qreal stretchT = releaseProgress( progress / 0.5, 0.34 );
         if ( movingDown )
         {
             drawTop    = fromTop;
@@ -4451,20 +4454,20 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
     }
     else
     {
-        const qreal settleT     = settleProgress( ( progress - 0.66 ) / 0.34, 0.04 );
-        const qreal heightT     = easeOutCubic( settleT );
-        const qreal settleBackT = easeOutBack( settleT );
+        const qreal retractT    = releaseProgress( ( progress - 0.5 ) / 0.5, 0.34 );
+        const qreal heightT     = retractT;
+        const qreal edgeT       = easeOutCubic( retractT );
         const qreal retractSpan = qMin( toH * 0.32, qreal( 20.0 ) );
-        const qreal microBounce = qSin( settleT * M_PI ) * ( 1.0 - settleT ) * 0.9;
+        const qreal microBounce = qSin( retractT * M_PI ) * ( 1.0 - retractT ) * 0.35;
 
         if ( movingDown )
         {
             drawTop    = lerp( toTop - retractSpan, toTop, heightT );
-            drawBottom = lerp( toBottom + microBounce, toBottom, settleBackT );
+            drawBottom = lerp( toBottom + microBounce, toBottom, edgeT );
         }
         else
         {
-            drawTop    = lerp( toTop - microBounce, toTop, settleBackT );
+            drawTop    = lerp( toTop - microBounce, toTop, edgeT );
             drawBottom = lerp( toBottom + retractSpan, toBottom, heightT );
         }
     }
@@ -5284,7 +5287,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 bool checked              = menuitem->checkType != QStyleOptionMenuItem::NotCheckable ? menuitem->checked : false;
                 bool act                  = menuitem->state & State_Selected;
 
-                const QRect rect = menuitem->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
+                const QRect rect = menuitem->rect.marginsRemoved( QMargins( menuItemHMargin, menuItemVMargin, menuItemHMargin, menuItemVMargin ) );
                 if ( act && dis == false )
                 {
                     // 实际绘制时，右边界会有1px，调整后可以覆盖掉这个
@@ -5751,6 +5754,10 @@ int FluentUI3Style::styleHint( StyleHint hint, const QStyleOption* opt, const QW
             return 0;
         case SH_DockWidget_ButtonsHaveFrame :
             return 1;
+    case SH_ComboBox_Popup:
+        if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt))
+            return !cmb->editable;
+        return 0;
         default :
             break;
     }
@@ -5942,7 +5949,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                 else
                 {
                     height                             = menuItem->fontMetrics.height() + 8;
-                    constexpr int fluentMenuItemHeight = 32;
+                    constexpr int fluentMenuItemHeight = 34; // WinUI3 menu item height, including 3px top and bottom margins
                     height                             = height < fluentMenuItemHeight ? fluentMenuItemHeight : height;
                     if ( !menuItem->icon.isNull() )
                     {
@@ -6709,13 +6716,7 @@ QColor FluentUI3Style::calculateAccentColor( const QStyleOption* option ) const
 
     const auto alphaColor = isPressed( option ) ? fillAccentTertiary : isHover( option ) ? fillAccentSecondary : fillAccentDefault;
     const auto alpha      = winUI3Color( alphaColor );
-
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-    // accent 在 inactive 窗口下可能退化成灰色
-    QColor col = /*option->palette.accent().color()*/ option->palette.color( QPalette::Active, QPalette::Accent );
-#else
-    QColor col = option->palette.color( QPalette::Highlight );
-#endif
+    QColor col = accentColor(option);
     col.setAlpha( alpha.alpha() );
     return col;
 }
@@ -6850,11 +6851,11 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
                                         int roundingRadius ) const
 {
     const bool isHovered = option->state & State_MouseOver;
-    const auto frameCol  = highContrastTheme
+    const auto frameCol  = highContrastTheme  ?
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-                              ? option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
+                             option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
 #else
-                              ? o->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )  // Qt5/Qt6.5 fallback
+                             option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )  // Qt5/Qt6.5 fallback
 #endif
                               : winUI3Color( frameColorLight );
 
@@ -6887,7 +6888,7 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
                                        option->palette.color( QPalette::Accent )
 #else
-                                       ? option->palette.color( QPalette::Highlight )  // Qt5/Qt6.5 fallback
+                                       option->palette.color( QPalette::Highlight )  // Qt5/Qt6.5 fallback
 #endif
                                        : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
     const auto penUnderline = QPen( underlineCol, hasFocus ? 2 : 1 );
@@ -6952,6 +6953,18 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 QColor FluentUI3Style::winUI3Color( WINUI3Color col ) const
 {
     return WINUI3Colors[ colorSchemeIndex ][ col ];
+}
+
+QColor FluentUI3Style::accentColor(const QStyleOption *option) const
+{
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+    // accent 在 inactive 窗口下可能退化成灰色
+    QColor col = /*option->palette.accent().color()*/ option->palette.color( QPalette::Active, QPalette::Accent );
+#else
+    // QColor col = colorSchemeIndex == 0 ? QColor( 0, 90, 158, 255 ) : QColor( 54, 166, 255, 255 );
+    QColor col = option->palette.color( QPalette::Highlight );
+#endif
+    return col;
 }
 
 QIcon FluentUI3Style::fluentIcon( const QChar& ch ) const

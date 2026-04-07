@@ -26,7 +26,7 @@
 
 #include <fluentui3style.h>
 #include <palettemanager.h>
-#include <slidingstackedwidget.h>
+#include <exstackedwidget.h>
 
 #include "fluentuiappearance.h"
 #include "qdebug.h"
@@ -119,12 +119,21 @@ MainWindow::MainWindow( QWidget* parent )
     init();
     ui->stackedWidget->setCurrentIndex( 0 );
 
+    ui->comboBox->setEditable(false);
+    ui->comboBox->clear();
     ui->comboBox->addItem( "窗含西岭千秋雪" );
     ui->comboBox->addItem( "门泊东吴万里船" );
     ui->comboBox->addItem( "日照香炉生紫烟" );
     ui->comboBox->addItem( "遥看瀑布挂前川" );
     ui->comboBox->setSizePolicy( QSizePolicy::Minimum, QSizePolicy::Fixed );
     ui->comboBox->setSizeAdjustPolicy( QComboBox::AdjustToContents );
+
+    QStyleOptionComboBox opt;
+    opt.editable = false;
+    if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, nullptr) > 0)
+    {
+        ui->comboBox->setView( new QListView() );
+    }
 
 #if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
     ui->comboBox->setView( new QListView() );
@@ -423,6 +432,33 @@ void MainWindow::initMenuAndToolBar()
                  updateActionIcons();
              } );
     toolBar->addWidget( themeComboBox );
+
+    // 添加QLabel(配色:) + QComboBox Qt::ColorScheme切换
+    // enum class ColorScheme {
+    //     Fluent,
+    //     Teams
+    // };
+    toolBar->addSeparator();
+    QLabel* colorSchemeLabel = new QLabel( "配色：", this );
+    toolBar->addWidget( colorSchemeLabel );
+    QComboBox* colorSchemeComboBox = new QComboBox( this );
+    colorSchemeComboBox->blockSignals( true );
+    colorSchemeComboBox->addItem( "Fluent" );
+    colorSchemeComboBox->addItem( "Teams" );
+    colorSchemeComboBox->blockSignals( false );
+    colorSchemeComboBox->setView( new QListView );
+    connect( colorSchemeComboBox,
+             QOverload<int>::of( &QComboBox::currentIndexChanged ),
+             this,
+             [ = ]( int index )
+             {
+                 PaletteManager::instance().setColorScheme( index == 0 ? ColorScheme::Fluent : ColorScheme::Teams );
+
+                fluentUIAppearance.setTheme( fluentUIAppearance.theme() );
+                updateActionIcons();
+
+             } );
+    toolBar->addWidget( colorSchemeComboBox );
 }
 
 void MainWindow::setupTabs()
@@ -444,19 +480,23 @@ void MainWindow::setupTabs()
     scrollArea->setWidget( contentWidget );
     pageLayout->addWidget( scrollArea );
 
-    // ============ 第3个Widget: 多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
+    // ============多种TabBar样式 (Pivot_Grow, Pivot_Slide, Pivot_Stretch) ============
     QWidget* pivotWidget = new QWidget();
     pivotWidget->setProperty( "fluentBorder", true );
     pivotWidget->setAttribute( Qt::WA_StyledBackground );
 
     QVBoxLayout* pivotLayout = new QVBoxLayout( pivotWidget );
     pivotLayout->setContentsMargins( 10, 10, 10, 10 );
-    pivotLayout->setSpacing( 20 );
+    pivotLayout->setSpacing( 10 );
 
     // Pivot_Grow
     QLabel* pivotGrowLabel = new QLabel( "Pivot Grow TabBar" );
     pivotGrowLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    QLabel* pivotGrowDescLabel = new QLabel( "特点：选中时会有一个生长动画效果。" );
+    pivotGrowDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
     pivotLayout->addWidget( pivotGrowLabel );
+    pivotLayout->addWidget( pivotGrowDescLabel );
+
 
     QTabBar* pivotGrowBar = new QTabBar();
     pivotGrowBar->setExpanding( false );
@@ -471,7 +511,10 @@ void MainWindow::setupTabs()
     // Pivot_Slide
     QLabel* pivotSlideLabel = new QLabel( "Pivot Slide TabBar" );
     pivotSlideLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    QLabel* pivotSlideDescLabel = new QLabel( "特点：选中时会有一个滑动动画效果。" );
+    pivotSlideDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
     pivotLayout->addWidget( pivotSlideLabel );
+    pivotLayout->addWidget( pivotSlideDescLabel );
 
     QTabBar* pivotSlideBar = new QTabBar();
     pivotSlideBar->setExpanding( false );
@@ -486,7 +529,10 @@ void MainWindow::setupTabs()
     // Pivot_Stretch
     QLabel* pivotStretchLabel = new QLabel( "Pivot Stretch TabBar" );
     pivotStretchLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+    QLabel* pivotStretchDescLabel = new QLabel( "特点：选中时会有一个拉伸动画效果。" );
+    pivotStretchDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
     pivotLayout->addWidget( pivotStretchLabel );
+    pivotLayout->addWidget( pivotStretchDescLabel );
 
     QTabBar* pivotStretchBar = new QTabBar();
     pivotStretchBar->setExpanding( false );
@@ -502,7 +548,7 @@ void MainWindow::setupTabs()
     pivotLayout->addStretch();
     mainLayout->addWidget( pivotWidget, 1 );
 
-    // ============ 第4个Widget: Segmented TabBar ============
+    // ============ Segmented TabBar ============
     {
         QWidget* segmentedWidget = new QWidget();
         segmentedWidget->setProperty( "fluentBorder", true );
@@ -514,7 +560,10 @@ void MainWindow::setupTabs()
 
         QLabel* segmentedLabel = new QLabel( "Segmented Slide TabBar" );
         segmentedLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
+        QLabel* segmentedDescLabel = new QLabel( "特点：Segmented风格， 选中时会有一个滑动动画效果。" );
+        segmentedDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
         segmentedLayout->addWidget( segmentedLabel );
+        segmentedLayout->addWidget( segmentedDescLabel );
 
         m_segmentedBar = new QTabBar();
         m_segmentedBar->setTabsClosable( false );
@@ -531,6 +580,10 @@ void MainWindow::setupTabs()
         QLabel* segmentedFadeLabel = new QLabel( "Segmented Fade TabBar" );
         segmentedFadeLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
         segmentedLayout->addWidget( segmentedFadeLabel );
+        QLabel* segmentedFadeDescLabel = new QLabel( "特点：选中时会有一个淡入淡出动画效果。" );
+        segmentedFadeDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
+        segmentedLayout->addWidget( segmentedFadeDescLabel );
+
 
         m_segmentedFadeBar = new QTabBar();
         m_segmentedFadeBar->setTabsClosable( false );
@@ -588,6 +641,9 @@ void MainWindow::setupTabs()
     QLabel* capsuleLabel = new QLabel( "Capsule TabBar" );
     capsuleLabel->setStyleSheet( "font-weight: bold; font-size: 14px; " );
     capsuleLayout->addWidget( capsuleLabel );
+    QLabel* capsuleDescLabel = new QLabel( "特点：浏览器标签样式。" );
+    capsuleDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
+    capsuleLayout->addWidget( capsuleDescLabel );
 
     m_capsuleTabBar = new QTabBar();
     m_capsuleTabBar->setAttribute( Qt::WA_StyledBackground, true );
@@ -604,7 +660,7 @@ void MainWindow::setupTabs()
     m_capsuleTabBar->addTab( "About" );
     capsuleLayout->addWidget( m_capsuleTabBar );
 
-    SlidingStackedWidget* capsuleSlidingWidget = new SlidingStackedWidget();
+    ExStackedWidget* capsuleSlidingWidget = new ExStackedWidget();
     capsuleSlidingWidget->setMinimumHeight(200);
     QStringList pageNames                      = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
     QList<QColor> pageColors                   = {
@@ -619,7 +675,7 @@ void MainWindow::setupTabs()
     }
 
     connect(
-        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &SlidingStackedWidget::setCurrentIndex );
+        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &ExStackedWidget::setCurrentIndex );
     connect( m_capsuleTabBar,
              &QTabBar::tabMoved,
              this,
@@ -633,7 +689,7 @@ void MainWindow::setupTabs()
     capsuleLayout->addWidget( capsuleSlidingWidget, 1 );
     mainLayout->addWidget( capsuleWidget, 1 );
 
-    // ============ 第2个Widget: Navigation TabBar + SlidingStackedWidget ============
+    // ============Navigation TabBar + SlidingStackedWidget ============
     {
         QWidget* navigationWidget = new QWidget();
         navigationWidget->setProperty( "fluentBorder", true );
@@ -646,6 +702,9 @@ void MainWindow::setupTabs()
         QLabel* navigationLabel = new QLabel( "Navigation TabBar" );
         navigationLabel->setStyleSheet( "font-weight: bold; font-size: 14px;" );
         navigationLayout->addWidget( navigationLabel );
+        QLabel* navigationDescLabel = new QLabel( "特点：适合用于侧边栏的导航菜单，选项卡垂直排列，选中时指示器有个变长效果" );
+        navigationDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
+        navigationLayout->addWidget( navigationDescLabel );
 
         QHBoxLayout* bodyLayout = new QHBoxLayout();
         bodyLayout->setContentsMargins( 0, 0, 0, 0 );
@@ -672,7 +731,7 @@ void MainWindow::setupTabs()
         navigationTabBarLayout->addStretch();
         bodyLayout->addLayout( navigationTabBarLayout );
 
-        SlidingStackedWidget* navigationSlidingWidget = new SlidingStackedWidget();
+        ExStackedWidget* navigationSlidingWidget = new ExStackedWidget();
         navigationSlidingWidget->setVerticalMode( true );
         navigationSlidingWidget->setSpeed( 220 );
         navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
@@ -694,7 +753,7 @@ void MainWindow::setupTabs()
         connect( m_navigationTabBar,
                  QOverload<int>::of( &QTabBar::currentChanged ),
                  navigationSlidingWidget,
-                 &SlidingStackedWidget::setCurrentIndex );
+                 &ExStackedWidget::setCurrentIndex );
 
         bodyLayout->addWidget( navigationSlidingWidget, 1 );
         navigationLayout->addLayout( bodyLayout );
@@ -853,10 +912,10 @@ void MainWindow::init()
         // toolButton_3 带文字和图标以及4个菜单
         ui->toolButton_3->setAutoRaise( false );
         ui->toolButton_3->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-        ui->toolButton_3->setPopupMode( QToolButton::MenuButtonPopup );
+        ui->toolButton_3->setPopupMode( QToolButton::InstantPopup );
         ui->toolButton_3->setText( "菜单按钮" );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
-        QMenu* menu                                                                  = new QMenu( ui->toolButton_3 );
+        QMenu* menu  = new QMenu( ui->toolButton_3 );
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" ) ] = "\ue8a5";
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" ) ] = "\ue8b5";
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" ) ] = "\ue8c3";

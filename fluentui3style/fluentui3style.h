@@ -118,8 +118,10 @@ private:
     QBrush inputFillBrush(const QStyleOption *option, const QWidget *widget) const;
     QColor controlTextColor( const QStyleOption* option, QPalette::ColorRole role = QPalette::ButtonText ) const;
     QColor winUI3Color( WINUI3Color col ) const;
+    QColor accentColor( const QStyleOption* option ) const;
 
     QIcon fluentIcon( const QChar& ch ) const;
+
 
 private:
     mutable QFont assetFont;

@@ -16,7 +16,6 @@
 #include <QPropertyAnimation>
 
 #include "mainwindow.h"
-#include "qtoolbar.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,8 +26,7 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication a(argc, argv);
-
-    // qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
+    Q_INIT_RESOURCE(resource);
 
     QFont font = qApp->font();
     font.setPixelSize(13);
