@@ -4,7 +4,7 @@
 #include <QTabBar>
 
 class QTabBar;
-class SlidingStackedWidget;
+class ExStackedWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

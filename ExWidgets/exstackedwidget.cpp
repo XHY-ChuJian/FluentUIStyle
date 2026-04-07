@@ -1,55 +1,55 @@
-#include "slidingstackedwidget.h"
+#include "exstackedwidget.h"
 
 #include <QLabel>
 #include <QParallelAnimationGroup>
 #include <QPixmap>
 #include <QPropertyAnimation>
 
-SlidingStackedWidget::SlidingStackedWidget( QWidget* parent )
+ExStackedWidget::ExStackedWidget( QWidget* parent )
     : QStackedWidget( parent )
 {}
 
-void SlidingStackedWidget::setVerticalMode( bool vertical )
+void ExStackedWidget::setVerticalMode( bool vertical )
 {
     m_verticalMode = vertical;
 }
 
-bool SlidingStackedWidget::verticalMode() const
+bool ExStackedWidget::verticalMode() const
 {
     return m_verticalMode;
 }
 
-void SlidingStackedWidget::setSpeed( int duration )
+void ExStackedWidget::setSpeed( int duration )
 {
     m_duration = qMax( 0, duration );
 }
 
-int SlidingStackedWidget::speed() const
+int ExStackedWidget::speed() const
 {
     return m_duration;
 }
 
-void SlidingStackedWidget::setAnimation( QEasingCurve::Type curve )
+void ExStackedWidget::setAnimation( QEasingCurve::Type curve )
 {
     m_curve = curve;
 }
 
-QEasingCurve::Type SlidingStackedWidget::animation() const
+QEasingCurve::Type ExStackedWidget::animation() const
 {
     return m_curve;
 }
 
-void SlidingStackedWidget::setCurrentIndex( int index )
+void ExStackedWidget::setCurrentIndex( int index )
 {
     slideToIndex( index );
 }
 
-void SlidingStackedWidget::setCurrentWidget( QWidget* widget )
+void ExStackedWidget::setCurrentWidget( QWidget* widget )
 {
     slideToIndex( indexOf( widget ) );
 }
 
-void SlidingStackedWidget::slideToIndex( int index )
+void ExStackedWidget::slideToIndex( int index )
 {
     if ( index < 0 || index >= count() )
     {
@@ -154,11 +154,11 @@ void SlidingStackedWidget::slideToIndex( int index )
     m_nextOverlay    = nextOverlay;
     m_animationGroup = group;
 
-    connect( group, &QParallelAnimationGroup::finished, this, &SlidingStackedWidget::finishAnimation );
+    connect( group, &QParallelAnimationGroup::finished, this, &ExStackedWidget::finishAnimation );
     group->start();
 }
 
-void SlidingStackedWidget::finishAnimation()
+void ExStackedWidget::finishAnimation()
 {
     if ( m_animationGroup )
     {

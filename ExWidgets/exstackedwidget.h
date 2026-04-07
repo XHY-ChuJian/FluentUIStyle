@@ -7,12 +7,12 @@
 class QLabel;
 class QParallelAnimationGroup;
 
-class SlidingStackedWidget : public QStackedWidget
+class ExStackedWidget : public QStackedWidget
 {
     Q_OBJECT
 
 public:
-    explicit SlidingStackedWidget( QWidget* parent = nullptr );
+    explicit ExStackedWidget( QWidget* parent = nullptr );
 
     void setVerticalMode( bool vertical );
     bool verticalMode() const;
