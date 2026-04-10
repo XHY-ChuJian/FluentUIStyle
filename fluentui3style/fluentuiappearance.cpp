@@ -19,7 +19,7 @@ public:
     void updateTitleBar();
     bool isSystemDark();
 
-    Theme theme{Theme::Dark};
+    Theme theme{Theme::Light};
     QWidget* mainWindow{nullptr};
 };
 
@@ -44,7 +44,6 @@ void FluentUIAppearance::setTheme(Theme theme)
     Q_D(FluentUIAppearance);
 
     qDebug()<< "Setting theme to:" << (theme == Theme::Dark ? "Dark" : "Light");
-
     d->theme = theme;
     d->applyTheme();
 }

@@ -109,11 +109,9 @@ CusFluentUI3/
 ![FluentUI3滚动条示例](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Fluent%20UI%203%20style%20scrollbar%20with%20modern%20design%2C%20light%20theme%2C%20clean%20UI&image_size=square_hd)
 
 ## 后续计划
-
-1. 修复Qt 5.15.2下ComboBox下拉框的Bug
-2. 增加更多FluentUI3控件的支持
-3. 进一步优化动画效果和性能
-4. 提供更多主题定制选项
+1. 增加更多FluentUI3控件的支持
+2. 进一步优化动画效果和性能
+3. 提供更多主题定制选项
 
 ## 总结
 

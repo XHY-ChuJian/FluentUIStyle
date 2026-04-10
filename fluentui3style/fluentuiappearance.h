@@ -1,6 +1,8 @@
 #ifndef FLUENTUIAPPEARANCE_H
 #define FLUENTUIAPPEARANCE_H
 
+#include "fluentui3style_global.h"
+
 #include <QObject>
 
 enum class Theme
@@ -12,7 +14,7 @@ enum class Theme
 #define fluentUIAppearance FluentUIAppearance::instance()
 
 class FluentUIAppearancePrivate;
-class FluentUIAppearance : public QObject
+class FLUENTUI3STYLE_EXPORT FluentUIAppearance : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(FluentUIAppearance)

@@ -3,11 +3,12 @@
 #include <QEasingCurve>
 #include <QPointer>
 #include <QStackedWidget>
+#include "exwidgets_global.h"
 
 class QLabel;
 class QParallelAnimationGroup;
 
-class ExStackedWidget : public QStackedWidget
+class EXWIDGETS_EXPORT ExStackedWidget : public QStackedWidget
 {
     Q_OBJECT
 

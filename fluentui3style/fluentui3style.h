@@ -1,6 +1,8 @@
 #ifndef FLUENTUI3STYLE_H
 #define FLUENTUI3STYLE_H
 
+#include "fluentui3style_global.h"
+
 #include <QPainter>
 #include <QPainterPath>
 #include <QProxyStyle>
@@ -37,8 +39,16 @@ enum TabBarStyle
     Navigation
 };
 
+[[maybe_unused]] constexpr const char* ProgressBarStyleProperty = "progressBarStyle";
+[[maybe_unused]] constexpr const char* ProgressBarThicknessProperty = "progressBarThickness";
+enum ProgressBarStyle
+{
+    ProgressBarThin  = 0,
+    ProgressBarThick = 1,
+    ProgressBarRing  = 2
+};
 
-class FluentUI3Style : public QProxyStyle
+class FLUENTUI3STYLE_EXPORT FluentUI3Style : public QProxyStyle
 {
     Q_OBJECT
 
@@ -74,13 +84,13 @@ public:
                    const QWidget* widget        = nullptr,
                    QStyleHintReturn* returnData = nullptr ) const override;
 
-    void polish( QWidget* widget ) override;
 
     QSize sizeFromContents( ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget ) const override;
 
     int pixelMetric( PixelMetric metric, const QStyleOption* option = nullptr, const QWidget* widget = nullptr ) const override;
 
     void polish( QPalette& result ) override;
+    void polish( QWidget* widget ) override;
     void unpolish( QWidget* widget ) override;
 
     QIcon standardIcon( StandardPixmap sp, const QStyleOption* option, const QWidget* widget ) const override;
@@ -102,6 +112,11 @@ private:
     void drawSegmentedSlideTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawSegmentedFadeTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
     void drawNavigationTab( const QStyleOptionTab* tab, QPainter* painter, const QWidget* widget ) const;
+
+    void drawProgressRing( const QStyleOptionProgressBar* option,
+                           QPainter* painter,
+                           const QWidget* widget,
+                           bool drawTrack ) const;
 
     void drawListViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;
     void drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const;

@@ -1,5 +1,7 @@
 QT += svg
 
+DEFINES += FLUENTUI3STYLE_LIBRARY
+
 HEADERS += \
     $$PWD/fluentui3style.h \
     $$PWD/fluentuiappearance.h \
@@ -7,7 +9,8 @@ HEADERS += \
     $$PWD/qhexstring_p.h \
     $$PWD/qstyleanimation_p.h \
     $$PWD/qstylehelper_p.h \
-    $$PWD/fluentui3colors.h
+    $$PWD/fluentui3colors.h \
+    $$PWD/fluentui3style_global.h
 
 SOURCES += \
     $$PWD/fluentui3style.cpp \

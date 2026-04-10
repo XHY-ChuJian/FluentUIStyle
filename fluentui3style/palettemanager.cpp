@@ -6,15 +6,15 @@ PaletteManager& PaletteManager::instance()
     return inst;
 }
 
-void PaletteManager::setColorScheme( ColorScheme scheme )
+void PaletteManager::setThemeStyle( ThemeStyle scheme )
 {
     currentScheme = scheme;
     switch ( scheme )
     {
-        case ColorScheme::Fluent :
+        case ThemeStyle::Fluent :
             strategy = std::make_unique<FluentColorScheme>();
             break;
-        case ColorScheme::Teams :
+        case ThemeStyle::Teams :
             strategy = std::make_unique<TeamsColorScheme>();
             break;
     }
@@ -110,39 +110,8 @@ void FluentColorScheme::applyLight( QPalette& p ) const
     p.setColor( QPalette::Inactive, QPalette::PlaceholderText, QColor( 0, 0, 0, 128 ) );
 
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-    p.setColor( QPalette::Inactive, QPalette::Accent, QColor( 240, 240, 240, 255 ) );
-#endif
-}
-
-void TeamsColorScheme::applyLight( QPalette& p ) const
-{
-    auto defaultColorScheme = std::make_unique<FluentColorScheme>();
-    defaultColorScheme->applyLight( p );
-
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-    QColor accentActive(91, 95, 199);     // #5B5FC7
-    QColor accentInactive(138, 141, 240); // #8A8DF0
-    QColor accentDisabled(200,200,200);   // #C8C8C8
-
-    p.setColor(QPalette::Active,   QPalette::Accent, accentActive);
-    p.setColor(QPalette::Inactive, QPalette::Accent, accentInactive);
-    p.setColor(QPalette::Disabled, QPalette::Accent, accentDisabled);
-#endif
-}
-
-void TeamsColorScheme::applyDark( QPalette& p ) const
-{
-    auto defaultColorScheme = std::make_unique<FluentColorScheme>();
-    defaultColorScheme->applyDark( p );
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-
-    QColor accentActive(99, 102, 241);    // 主色（Dark优化）
-    QColor accentInactive(70, 73, 160);   // 弱化
-    QColor accentDisabled(90, 90, 90);    // 灰
-
-    p.setColor(QPalette::Active,   QPalette::Accent, accentActive);
-    p.setColor(QPalette::Inactive, QPalette::Accent, accentInactive);
-    p.setColor(QPalette::Disabled, QPalette::Accent, accentDisabled);
+    // p.setColor( QPalette::Inactive, QPalette::Accent, QColor( 240, 240, 240, 255 ) );
+    p.setColor( QPalette::Inactive, QPalette::Accent, QColor( 0, 90, 158, 255 ) );
 #endif
 }
 
@@ -224,6 +193,62 @@ void FluentColorScheme::applyDark( QPalette& p ) const
     p.setColor( QPalette::Inactive, QPalette::PlaceholderText, QColor( 255, 255, 255, 128 ) );
 
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+    // p.setColor( QPalette::Inactive, QPalette::Accent, QColor( 54, 166, 255, 255 ) );
     p.setColor( QPalette::Inactive, QPalette::Accent, QColor( 54, 166, 255, 255 ) );
 #endif
+}
+
+void TeamsColorScheme::applyLight( QPalette& p ) const
+{
+    auto defaultColorScheme = std::make_unique<FluentColorScheme>();
+    defaultColorScheme->applyLight( p );
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+    QColor accentActive(91, 95, 199);     // #5B5FC7
+    QColor accentInactive(138, 141, 240); // #8A8DF0
+    QColor accentDisabled(200,200,200);   // #C8C8C8
+
+    p.setColor(QPalette::Active,   QPalette::Accent, accentActive);
+    p.setColor(QPalette::Inactive, QPalette::Accent, accentInactive);
+    p.setColor(QPalette::Disabled, QPalette::Accent, accentDisabled);
+#endif
+}
+
+void TeamsColorScheme::applyDark( QPalette& p ) const
+{
+    auto defaultColorScheme = std::make_unique<FluentColorScheme>();
+    defaultColorScheme->applyDark( p );
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+
+    QColor accentActive(99, 102, 241);    // 主色（Dark优化）
+    QColor accentInactive(70, 73, 160);   // 弱化
+    QColor accentDisabled(90, 90, 90);    // 灰
+
+    p.setColor(QPalette::Active,   QPalette::Accent, accentActive);
+    p.setColor(QPalette::Inactive, QPalette::Accent, accentInactive);
+    p.setColor(QPalette::Disabled, QPalette::Accent, accentDisabled);
+#endif
+}
+
+QColor FluentColorScheme::accentColor(bool isDark) const
+{
+    if (isDark) {
+        return QColor(54, 166, 255, 255);
+    } else {
+        return QColor(0, 90, 158, 255);
+    }
+}
+
+QColor TeamsColorScheme::accentColor(bool isDark) const
+{
+    if (isDark) {
+        return QColor(99, 102, 241, 255);
+    } else {
+        return QColor(91, 95, 199, 255);
+    }
+}
+
+QColor PaletteManager::accentColor(bool isDark) const
+{
+    return strategy->accentColor(isDark);
 }
