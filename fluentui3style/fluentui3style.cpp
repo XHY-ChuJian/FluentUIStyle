@@ -1138,13 +1138,14 @@ inline int getColorSchemeIndex()  // 0 = Light, 1 = Dark
 #    if 1
 
 #        ifdef FLUENT_USE_QT_STYLE
-    bool ok         = false;
+    bool ok = false;
     int colorScheme = qApp->property( "_q_colorscheme" ).toInt( &ok );
     if ( ok )
     {
         return colorScheme;
     }
-#        endif
+    return 0;
+#endif
 
     return (int)fluentUIAppearance.theme();
 #    else  // 直接读取系统设置，兼容性更好，可随系统变化

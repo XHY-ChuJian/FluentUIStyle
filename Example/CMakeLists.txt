@@ -32,6 +32,9 @@ target_link_libraries(Example PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Svg
+    Qt${QT_VERSION_MAJOR}::GuiPrivate
+    Qt${QT_VERSION_MAJOR}::WidgetsPrivate
+    Qt${QT_VERSION_MAJOR}::CorePrivate
 )
 
 set_target_properties(Example PROPERTIES
