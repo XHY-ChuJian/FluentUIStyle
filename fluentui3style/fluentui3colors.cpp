@@ -1,8 +1,8 @@
 #include "fluentui3colors.h"
 
 const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight {
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 3.73 ) ),   // subtleHighlightColor (fillSubtleSecondary)
-    QColor( 0x00, 0x00, 0x00, percentToAlpha( 2.41 ) ),   // subtlePressedColor (fillSubtleTertiary)
+    QColor( 0x00, 0x00, 0x00, percentToAlpha( 5.5 ) ),   // subtleHighlightColor (fillSubtleSecondary)
+    QColor( 0x00, 0x00, 0x00, percentToAlpha( 4.0 ) ),   // subtlePressedColor (fillSubtleTertiary)
     QColor( 0x00, 0x00, 0x00, 0x0F ),                     // frameColorLight
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 60.63 ) ),  // frameColorStrong
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 21.69 ) ),  // frameColorStrongDisabled

@@ -1,35 +1,23 @@
-QT       += core gui svg
+TEMPLATE = subdirs
+CONFIG += ordered
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+CONFIG += build_library
+CONFIG += build_plugin
+CONFIG += build_example
 
-CONFIG += c++17
+SUBDIRS += ExWidgets
 
-win32-msvc {
-    QMAKE_CXXFLAGS += /utf-8
+build_library {
+    SUBDIRS += FluentUI3Style
 }
 
-RC_ICONS = appicon.ico
+build_plugin {
+    SUBDIRS += FluentUI3StylePlugin
+    FluentUI3StylePlugin.subdir = FluentUI3Style/plugin
+    FluentUI3StylePlugin.depends = FluentUI3Style
+}
 
-SOURCES += \
-    main.cpp \
-    mainwindow.cpp \
-
-HEADERS += \
-    mainwindow.h \
-
-FORMS += \
-    mainwindow.ui
-
-RESOURCES += \
-    resources.qrc
-
-INCLUDEPATH += $$PWD/fluentui3style
-include($$PWD/fluentui3style/fluentui3style.pri)
-
-INCLUDEPATH += $$PWD/ExWidgets
-include($$PWD/ExWidgets/ExWidgets.pri)
-
-
-
-
-
+build_example {
+    SUBDIRS += Example
+    Example.depends = ExWidgets FluentUI3Style
+}

@@ -24,11 +24,19 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-#include <fluentui3style.h>
-#include <palettemanager.h>
 #include <exstackedwidget.h>
+#include <private/qabstractspinbox_p.h>
+#include <private/qlineedit_p.h>
 
-#include "fluentuiappearance.h"
+#include "qevent.h"
+#include "qpainter.h"
+#ifndef FLUENT_USE_QT_STYLE
+#    include <fluentui3style.h>
+#    include <palettemanager.h>
+
+#    include "fluentuiappearance.h"
+#endif
+
 #include "qdebug.h"
 #include "qeasingcurve.h"
 #include "ui_mainwindow.h"
@@ -66,9 +74,10 @@ QMap<QAction*, QString> actionIconMap;
 // 存储所有需要更新图标的menu及其对应的图标代码
 QMap<QMenu*, QString> menuIconMap;
 
-QIcon createFluentIcon( const QString& unicode, int pixelSize = 25 )
+QIcon createFluentIcon( const QString& unicode, QColor color = QColor() )
 {
-    qreal dpr = /*qApp->devicePixelRatio()*/ 1;
+    int pixelSize = 25;
+    qreal dpr     = /*qApp->devicePixelRatio()*/ 1;
     QFont iconFont( "Segoe Fluent Icons" );
     iconFont.setPixelSize( pixelSize * dpr );
 
@@ -77,7 +86,11 @@ QIcon createFluentIcon( const QString& unicode, int pixelSize = 25 )
 #if ( QT_VERSION >= QT_VERSION_CHECK( 6, 8, 0 ) )
     isDarkTheme = qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark;
 #else
+#    ifdef FLUENT_USE_QT_STYLE
+    isDarkTheme = qApp->property( "_q_colorscheme" ).toInt() == 1;
+#    else
     isDarkTheme = fluentUIAppearance.theme() == Theme::Dark;
+#    endif
 #endif
 
     QPixmap pixmap( 30 * dpr, 30 * dpr );
@@ -88,7 +101,7 @@ QIcon createFluentIcon( const QString& unicode, int pixelSize = 25 )
     QPainter painter( &pixmap );
     painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
     painter.setFont( iconFont );
-    painter.setPen( isDarkTheme ? Qt::white : Qt::black );
+    painter.setPen( !color.isValid() ? isDarkTheme ? Qt::white : Qt::black : color );
 
     painter.drawText( pixmap.rect(), Qt::AlignCenter, unicode );
 
@@ -106,8 +119,8 @@ MainWindow::MainWindow( QWidget* parent )
     setWindowTitle( QString( "FluentUI Demo - QStyle [Qt-Verison %1]" ).arg( QT_VERSION_STR ) );
     QList<QWidget*> widgetList;
     widgetList << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7 << ui->widget_8
-               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13;
-    for ( QWidget* w : widgetList )
+               << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_14;
+    for ( QWidget* w : std::as_const( widgetList ) )
     {
         // draw border in style
         w->setAttribute( Qt::WA_StyledBackground );
@@ -119,7 +132,7 @@ MainWindow::MainWindow( QWidget* parent )
     init();
     ui->stackedWidget->setCurrentIndex( 0 );
 
-    ui->comboBox->setEditable(false);
+    ui->comboBox->setEditable( false );
     ui->comboBox->clear();
     ui->comboBox->addItem( "窗含西岭千秋雪" );
     ui->comboBox->addItem( "门泊东吴万里船" );
@@ -130,7 +143,7 @@ MainWindow::MainWindow( QWidget* parent )
 
     QStyleOptionComboBox opt;
     opt.editable = false;
-    if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, nullptr) > 0)
+    if ( style()->styleHint( QStyle::SH_ComboBox_Popup, &opt, nullptr ) > 0 )
     {
         ui->comboBox->setView( new QListView() );
     }
@@ -422,22 +435,38 @@ void MainWindow::initMenuAndToolBar()
     themeComboBox->blockSignals( false );
 
     themeComboBox->setView( new QListView );
+#ifdef FLUENT_USE_QT_STYLE
+    themeComboBox->setCurrentIndex( qApp->property( "_q_colorscheme" ).toInt() == 1 ? 1 : 0 );
+
+#    if QT_VERSION > QT_VERSION_CHECK( 6, 8, 0 )
+    themeComboBox->setCurrentIndex( (int)( qApp->styleHints()->colorScheme() ) - 1 );
+#    else
+    themeComboBox->setCurrentIndex( qApp->property( "_q_colorscheme" ).toInt() == 1 ? 1 : 0 );
+#    endif
+
+#else
     themeComboBox->setCurrentIndex( fluentUIAppearance.theme() == Theme::Dark ? 1 : 0 );
+#endif
     connect( themeComboBox,
              QOverload<int>::of( &QComboBox::currentIndexChanged ),
              this,
              [ = ]( int index )
              {
-                 fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
+#ifdef FLUENT_USE_QT_STYLE
+
+#    if QT_VERSION > QT_VERSION_CHECK( 6, 8, 0 )
+                 qApp->styleHints()->setColorScheme( Qt::ColorScheme( index + 1 ) );
+#    else
+    qApp->setProperty("_q_colorscheme", index);
+#    endif
+                 qApp->setStyle( "FluentUI3" );
+#else
+                fluentUIAppearance.setTheme( index == 0 ? Theme::Light : Theme::Dark );
+#endif
+
                  updateActionIcons();
              } );
     toolBar->addWidget( themeComboBox );
-
-    // 添加QLabel(配色:) + QComboBox Qt::ColorScheme切换
-    // enum class ColorScheme {
-    //     Fluent,
-    //     Teams
-    // };
     toolBar->addSeparator();
     QLabel* colorSchemeLabel = new QLabel( "配色：", this );
     toolBar->addWidget( colorSchemeLabel );
@@ -452,13 +481,35 @@ void MainWindow::initMenuAndToolBar()
              this,
              [ = ]( int index )
              {
-                 PaletteManager::instance().setColorScheme( index == 0 ? ColorScheme::Fluent : ColorScheme::Teams );
+#ifdef FLUENT_USE_QT_STYLE
+                 qApp->setProperty( "_q_themestyle", index );
+                 qApp->setStyle( "FluentUI3" );
+#else
+        PaletteManager::instance().setThemeStyle( index == 0 ? ThemeStyle::Fluent : ThemeStyle::Teams );
+        fluentUIAppearance.setTheme( fluentUIAppearance.theme() );
+#endif
 
-                fluentUIAppearance.setTheme( fluentUIAppearance.theme() );
-                updateActionIcons();
-
+                 updateActionIcons();
              } );
     toolBar->addWidget( colorSchemeComboBox );
+
+    toolBar->addSeparator();
+    // QLabel(样式) + QcomboBox(切换QStyle QStyleFactory::keys())
+    QLabel* styleLabel = new QLabel( "样式：", this );
+    toolBar->addWidget( styleLabel );
+    QComboBox* styleComboBox = new QComboBox( this );
+    styleComboBox->addItems( QStyleFactory::keys() );
+    styleComboBox->setView( new QListView );
+    connect( styleComboBox,
+             QOverload<int>::of( &QComboBox::currentIndexChanged ),
+             this,
+             [ = ]( int index )
+             {
+                 QString styleName = styleComboBox->itemText( index );
+                 qApp->setStyle( styleName );
+                 updateActionIcons();
+             } );
+    toolBar->addWidget( styleComboBox );
 }
 
 void MainWindow::setupTabs()
@@ -472,7 +523,7 @@ void MainWindow::setupTabs()
     scrollArea->setFrameShape( QFrame::NoFrame );
     scrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
-    QWidget* contentWidget = new QWidget();
+    QWidget* contentWidget  = new QWidget();
     QVBoxLayout* mainLayout = new QVBoxLayout( contentWidget );
     mainLayout->setContentsMargins( 10, 10, 10, 10 );
     mainLayout->setSpacing( 15 );
@@ -497,10 +548,9 @@ void MainWindow::setupTabs()
     pivotLayout->addWidget( pivotGrowLabel );
     pivotLayout->addWidget( pivotGrowDescLabel );
 
-
     QTabBar* pivotGrowBar = new QTabBar();
     pivotGrowBar->setExpanding( false );
-    pivotGrowBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Grow ) );
+    pivotGrowBar->setProperty( "tabBarStyle", 2 );  // TabBarStyle::Pivot_Grow
     pivotGrowBar->addTab( "Home" );
     pivotGrowBar->addTab( "Search" );
     pivotGrowBar->addTab( "Settings" );
@@ -518,7 +568,7 @@ void MainWindow::setupTabs()
 
     QTabBar* pivotSlideBar = new QTabBar();
     pivotSlideBar->setExpanding( false );
-    pivotSlideBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Slide ) );
+    pivotSlideBar->setProperty( "tabBarStyle", 3 );  // TabBarStyle::Pivot_Slide
     pivotSlideBar->addTab( "Home" );
     pivotSlideBar->addTab( "Search" );
     pivotSlideBar->addTab( "Settings" );
@@ -536,7 +586,7 @@ void MainWindow::setupTabs()
 
     QTabBar* pivotStretchBar = new QTabBar();
     pivotStretchBar->setExpanding( false );
-    pivotStretchBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Pivot_Stretch ) );
+    pivotStretchBar->setProperty( "tabBarStyle", 4 );  // TabBarStyle::Pivot_Stretch
     pivotStretchBar->addTab( "Home" );
     pivotStretchBar->addTab( "Search" );
     pivotStretchBar->addTab( "Settings" );
@@ -569,7 +619,7 @@ void MainWindow::setupTabs()
         m_segmentedBar->setTabsClosable( false );
         m_segmentedBar->setMovable( false );
         m_segmentedBar->setExpanding( false );
-        m_segmentedBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Segmented_Slide ) );
+        m_segmentedBar->setProperty( "tabBarStyle", 6 );  // TabBarStyle::Segmented_Slide
         m_segmentedBar->addTab( "Home" );
         m_segmentedBar->addTab( "Search" );
         m_segmentedBar->addTab( "Settings" );
@@ -584,12 +634,11 @@ void MainWindow::setupTabs()
         segmentedFadeDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
         segmentedLayout->addWidget( segmentedFadeDescLabel );
 
-
         m_segmentedFadeBar = new QTabBar();
         m_segmentedFadeBar->setTabsClosable( false );
         m_segmentedFadeBar->setMovable( true );
         m_segmentedFadeBar->setExpanding( false );
-        m_segmentedFadeBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Segmented_Fade ) );
+        m_segmentedFadeBar->setProperty( "tabBarStyle", 7 );  // TabBarStyle::Segmented_Fade
         m_segmentedFadeBar->addTab( "Home" );
         m_segmentedFadeBar->addTab( "Search" );
         m_segmentedFadeBar->addTab( "Settings" );
@@ -600,7 +649,7 @@ void MainWindow::setupTabs()
         segmentedLayout->addStretch();
         mainLayout->addWidget( segmentedWidget, 1 );
     }
-    //========第5个Widget: PillTabs===========
+    //========PillTabs===========
     {
         QWidget* pillWidget = new QWidget();
         pillWidget->setProperty( "fluentBorder", true );
@@ -617,7 +666,7 @@ void MainWindow::setupTabs()
         QTabBar* pillBar = new QTabBar();
         pillBar->setTabsClosable( true );
         pillBar->setExpanding( false );
-        pillBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::PillTabs ) );
+        pillBar->setProperty( "tabBarStyle", 5 );  // TabBarStyle::PillTabs
         pillBar->addTab( "Home" );
         pillBar->addTab( "Search" );
         pillBar->addTab( "Settings" );
@@ -629,7 +678,7 @@ void MainWindow::setupTabs()
         mainLayout->addWidget( pillWidget, 1 );
     }
 
-        // ============ 第1个Widget: CapsuleTabBar + SlidingStackedWidget ============
+    // ============ CapsuleTabBar + SlidingStackedWidget ============
     QWidget* capsuleWidget = new QWidget();
     capsuleWidget->setProperty( "fluentBorder", true );
     capsuleWidget->setAttribute( Qt::WA_StyledBackground );
@@ -652,7 +701,7 @@ void MainWindow::setupTabs()
     m_capsuleTabBar->setTabsClosable( true );
     m_capsuleTabBar->setMovable( true );
     m_capsuleTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-    m_capsuleTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Capsule ) );
+    m_capsuleTabBar->setProperty( "tabBarStyle", 1 );  // TabBarStyle::Capsule
     m_capsuleTabBar->addTab( "Home" );
     m_capsuleTabBar->addTab( "Search" );
     m_capsuleTabBar->addTab( "Settings" );
@@ -661,9 +710,9 @@ void MainWindow::setupTabs()
     capsuleLayout->addWidget( m_capsuleTabBar );
 
     ExStackedWidget* capsuleSlidingWidget = new ExStackedWidget();
-    capsuleSlidingWidget->setMinimumHeight(200);
-    QStringList pageNames                      = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
-    QList<QColor> pageColors                   = {
+    capsuleSlidingWidget->setMinimumHeight( 200 );
+    QStringList pageNames    = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
+    QList<QColor> pageColors = {
         QColor( 255, 228, 225 ), QColor( 224, 255, 255 ), QColor( 240, 255, 240 ), QColor( 255, 250, 205 ), QColor( 230, 230, 250 )
     };
     for ( int i = 0; i < pageNames.size(); ++i )
@@ -674,8 +723,7 @@ void MainWindow::setupTabs()
         capsuleSlidingWidget->addWidget( page );
     }
 
-    connect(
-        m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &ExStackedWidget::setCurrentIndex );
+    connect( m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &ExStackedWidget::setCurrentIndex );
     connect( m_capsuleTabBar,
              &QTabBar::tabMoved,
              this,
@@ -717,7 +765,7 @@ void MainWindow::setupTabs()
         m_navigationTabBar->setMovable( false );
         m_navigationTabBar->setExpanding( false );
         m_navigationTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-        m_navigationTabBar->setProperty( "tabBarStyle", static_cast<int>( TabBarStyle::Navigation ) );
+        m_navigationTabBar->setProperty( "tabBarStyle", 8 );  // TabBarStyle::Navigation
         m_navigationTabBar->addTab( "Overview" );
         m_navigationTabBar->addTab( "Files" );
         m_navigationTabBar->addTab( "History" );
@@ -735,9 +783,9 @@ void MainWindow::setupTabs()
         navigationSlidingWidget->setVerticalMode( true );
         navigationSlidingWidget->setSpeed( 220 );
         navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
-        navigationSlidingWidget->setMinimumHeight(300);
+        navigationSlidingWidget->setMinimumHeight( 300 );
 
-        const QStringList navPageNames = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
+        const QStringList navPageNames    = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
         const QList<QColor> navPageColors = {
             QColor( 244, 248, 255 ), QColor( 240, 251, 246 ), QColor( 255, 248, 238 ), QColor( 248, 243, 255 ), QColor( 245, 245, 245 )
         };
@@ -805,7 +853,7 @@ void MainWindow::updateActionIcons()
 
     {
         ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
-        ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
+        ui->pushButton_10->setIcon( createFluentIcon( "\ue713" ) );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
         ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
         ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
@@ -860,12 +908,10 @@ void MainWindow::updateActionIcons()
 
 void MainWindow::init()
 {
-    {
-        //ui->lineEditSerach 添加一个搜索图标
-        ui->lineEditSerach->setPlaceholderText( "搜索..." );
-        ui->lineEditSerach->setClearButtonEnabled( true );
-        m_searchAction = ui->lineEditSerach->addAction( createFluentIcon( "\ue721" ), QLineEdit::TrailingPosition );
-    }
+    ui->lineEditSerach->setPlaceholderText( "搜索..." );
+    ui->lineEditSerach->setClearButtonEnabled( true );
+    m_searchAction = ui->lineEditSerach->addAction( createFluentIcon( "\ue721" ), QLineEdit::TrailingPosition );
+
     ui->stackedWidget->setVerticalMode( true );
     ui->stackedWidget->setAnimation( QEasingCurve::Type::InOutSine );
     ui->stackedWidget->setSpeed( 300 );
@@ -889,7 +935,9 @@ void MainWindow::init()
         m_toolBar->setAutoFillBackground( false );
     }
 
-    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
+    ui->progressBar->setProperty( "progressBarStyle", 1 );
+
+    ui->spinBox->setProperty( "spinBoxButtonLayout", 0 );  // ArrowsVertical
     ui->checkBox_5->setText( "Off" );
     ui->treeWidget->setProperty( "ItemHeight", 32 );
 
@@ -906,8 +954,8 @@ void MainWindow::init()
         ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
 
         // toolButton_2添加文字和图标
-        ui->toolButton_2->setText( "工具按钮" );
-        ui->toolButton_2->setIcon( createFluentIcon( "\ue713" ) );
+        ui->pushButton_10->setText( "工具按钮" );
+        ui->pushButton_10->setIcon( createFluentIcon( "\ue713" ) );
 
         // toolButton_3 带文字和图标以及4个菜单
         ui->toolButton_3->setAutoRaise( false );
@@ -915,7 +963,7 @@ void MainWindow::init()
         ui->toolButton_3->setPopupMode( QToolButton::InstantPopup );
         ui->toolButton_3->setText( "菜单按钮" );
         ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
-        QMenu* menu  = new QMenu( ui->toolButton_3 );
+        QMenu* menu                                                                  = new QMenu( ui->toolButton_3 );
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" ) ] = "\ue8a5";
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" ) ] = "\ue8b5";
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8c3" ), "最近打开" ) ] = "\ue8c3";
@@ -1061,11 +1109,19 @@ void MainWindow::on_checkBox_4_clicked( bool checked )
 {
     QList<QCheckBox*> cbs;
     cbs << ui->checkBox_5 /*<< ui->checkBox_6 << ui->checkBox_7 << ui->checkBox_8 << ui->checkBox_9*/;
-    for ( QCheckBox* cb : cbs )
+    for ( QCheckBox* cb : std::as_const( cbs ) )
     {
         cb->setChecked( checked );
     }
 }
+
+enum class SpinBoxButton
+{
+    ArrowsVertical,
+    ArrowsHorizontalSides,
+    ArrowsHorizontalRight,
+    PlusMinusHorizontalSides
+};
 
 void MainWindow::on_checkBox_5_stateChanged( int arg1 )
 {
@@ -1074,24 +1130,191 @@ void MainWindow::on_checkBox_5_stateChanged( int arg1 )
 
 void MainWindow::on_radioButton_7_clicked()
 {
-    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsVertical );
+    ui->spinBox->setProperty( "spinBoxButtonLayout", (int)SpinBoxButton::ArrowsVertical );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
 void MainWindow::on_radioButton_4_clicked()
 {
-    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsHorizontalSides );
+    ui->spinBox->setProperty( "spinBoxButtonLayout", (int)SpinBoxButton::ArrowsHorizontalSides );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
 void MainWindow::on_radioButton_5_clicked()
 {
-    ui->spinBox->setProperty( "spinBoxButtonLayout", ArrowsHorizontalRight );
+    ui->spinBox->setProperty( "spinBoxButtonLayout", (int)SpinBoxButton::ArrowsHorizontalRight );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
 void MainWindow::on_radioButton_6_clicked()
 {
-    ui->spinBox->setProperty( "spinBoxButtonLayout", PlusMinusHorizontalSides );
+    ui->spinBox->setProperty( "spinBoxButtonLayout", (int)SpinBoxButton::PlusMinusHorizontalSides );
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
+}
+
+static void applyStandardMenuIcons( QMenu* menu, QWidget* widget )
+{
+    if ( !menu )
+    {
+        return;
+    }
+
+    const QColor iconColor = widget ? widget->palette().color( QPalette::Text ) : QApplication::palette().color( QPalette::Text );
+    constexpr int iconPx   = 16;
+
+    // Segoe Fluent / MDL2 glyphs
+    constexpr QChar GlyphUndo( 0xE7A7 );
+    constexpr QChar GlyphRedo( 0xE7A6 );
+    constexpr QChar GlyphCut( 0xE8C6 );
+    constexpr QChar GlyphCopy( 0xE8C8 );
+    constexpr QChar GlyphPaste( 0xE77F );
+    constexpr QChar GlyphSelectAll( 0xE8B3 );
+    constexpr QChar GlyphDelete( 0xE74D );
+    constexpr QChar GlyphUp( 0xE70E );   // ChevronUp
+    constexpr QChar GlyphDown( 0xE70D ); // ChevronDown
+
+    const auto actions = menu->actions();
+    for ( QAction* act : actions )
+    {
+        if ( !act || act->isSeparator() )
+        {
+            continue;
+        }
+        if ( QMenu* sub = act->menu() )
+        {
+            applyStandardMenuIcons( sub, widget );
+            continue;
+        }
+
+        if ( !act->icon().isNull() )
+        {
+            continue;
+        }
+
+        QString text = act->text();
+        text.remove( '&' );
+        const QString t = text.toLower();
+
+        if ( t.contains( "undo" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphUndo ) );
+        }
+        else if ( t.contains( "redo" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphRedo ) );
+        }
+        else if ( t.contains( "cut" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphCut ) );
+        }
+        else if ( t.contains( "copy" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphCopy ) );
+        }
+        else if ( t.contains( "paste" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphPaste ) );
+        }
+        else if ( t.contains( "select all" ) || t.contains( "selectall" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphSelectAll ) );
+        }
+        else if ( t.contains( "delete" ) || t.contains( "clear" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphDelete ) );
+        }
+        else if ( t.contains( "step up" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphUp ) );
+        }
+        else if ( t.contains( "step down" ) )
+        {
+            act->setIcon( createFluentIcon( GlyphDown ) );
+        }
+    }
+}
+
+void QLineEdit::contextMenuEvent( QContextMenuEvent* event )
+{
+    if ( QMenu* menu = createStandardContextMenu() )
+    {
+        applyStandardMenuIcons( menu, this );
+        menu->setAttribute( Qt::WA_DeleteOnClose );
+        menu->exec( event->globalPos() );
+    }
+}
+
+void QTextEdit::contextMenuEvent( QContextMenuEvent* e )
+{
+    if ( QMenu* menu = createStandardContextMenu() )
+    {
+        applyStandardMenuIcons( menu, this );
+        menu->setAttribute( Qt::WA_DeleteOnClose );
+        menu->exec( e->globalPos() );
+    }
+}
+
+void QComboBox::contextMenuEvent( QContextMenuEvent* e )
+{
+    if ( lineEdit() )
+    {
+        if ( QMenu* menu = lineEdit()->createStandardContextMenu() )
+        {
+            applyStandardMenuIcons( menu, lineEdit() );
+            menu->setAttribute( Qt::WA_DeleteOnClose );
+            menu->exec( e->globalPos() );
+        }
+    }
+}
+
+void QAbstractSpinBox::contextMenuEvent( QContextMenuEvent* event )
+{
+    Q_D( QAbstractSpinBox );
+
+    QPointer<QMenu> menu = d->edit->createStandardContextMenu();
+    if ( !menu )
+    {
+        return;
+    }
+
+    // d->reset();
+
+    QAction* selAll = new QAction( tr( "&Select All" ), menu );
+#if QT_CONFIG( shortcut )
+    selAll->setShortcut( QKeySequence::SelectAll );
+#endif
+    menu->insertAction( d->edit->d_func()->selectAllAction, selAll );
+    menu->removeAction( d->edit->d_func()->selectAllAction );
+    menu->addSeparator();
+    const uint se = stepEnabled();
+    QAction* up   = menu->addAction( tr( "&Step up" ) );
+    up->setEnabled( se & StepUpEnabled );
+    QAction* down = menu->addAction( tr( "Step &down" ) );
+    down->setEnabled( se & StepDownEnabled );
+    menu->addSeparator();
+
+    applyStandardMenuIcons(menu, this);
+
+    const QPointer<QAbstractSpinBox> that = this;
+    const QPoint pos                      = ( event->reason() == QContextMenuEvent::Mouse )
+                                                ? event->globalPos()
+                                                : mapToGlobal( QPoint( event->pos().x(), 0 ) ) + QPoint( width() / 2, height() / 2 );
+    const QAction* action = menu->exec( pos );
+    delete static_cast<QMenu*>( menu );
+    if ( that && action )
+    {
+        if ( action == up )
+        {
+            stepBy( 1 );
+        }
+        else if ( action == down )
+        {
+            stepBy( -1 );
+        }
+        else if ( action == selAll )
+        {
+            selectAll();
+        }
+    }
+    event->accept();
 }

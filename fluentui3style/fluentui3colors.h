@@ -1,6 +1,8 @@
 #ifndef FLUENTUI3COLORS_H
 #define FLUENTUI3COLORS_H
 
+#include "fluentui3style_global.h"
+
 #include <QColor>
 #include <array>
 
@@ -55,15 +57,15 @@ static constexpr int percentToAlpha(double percent)
     return qRound(percent * 255. / 100.);
 }
 
-extern const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight;
-extern const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark;
-extern const std::array<std::array<QColor, WINUI3Color::count>, 2> WINUI3Colors;
+FLUENTUI3STYLE_EXPORT extern const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight;
+FLUENTUI3STYLE_EXPORT extern const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark;
+FLUENTUI3STYLE_EXPORT extern const std::array<std::array<QColor, WINUI3Color::count>, 2> WINUI3Colors;
 
 // Color of close Button in Titlebar (default + hover)
-extern const QColor shellCaptionCloseFillColorPrimary;
-extern const QColor shellCaptionCloseTextFillColorPrimary;
+FLUENTUI3STYLE_EXPORT extern const QColor shellCaptionCloseFillColorPrimary;
+FLUENTUI3STYLE_EXPORT extern const QColor shellCaptionCloseTextFillColorPrimary;
 // Color of close Button in Titlebar (pressed + disabled)
-extern const QColor shellCaptionCloseFillColorSecondary;
-extern const QColor shellCaptionCloseTextFillColorSecondary;
+FLUENTUI3STYLE_EXPORT extern const QColor shellCaptionCloseFillColorSecondary;
+FLUENTUI3STYLE_EXPORT extern const QColor shellCaptionCloseTextFillColorSecondary;
 
 #endif // FLUENTUI3COLORS_H

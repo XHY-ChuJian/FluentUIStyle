@@ -1,3 +1,12 @@
+【更新内容2026-4-10】
+1.新增ProgressBar样式(Ring和Thick)
+2.QComboBox弹窗位置与WinUI3一致
+3.修复Qt5.15.2无AccentColor问题
+4.新增Teams配色
+5.部分控件边框优化
+6.全局部分控件右键菜单新增图标
+7.优化项目结构，CMake和QMake引入工程更方便
+
 【更新内容2026-4-2】
 1.QComboBox修改下拉黑框，新增阴影和箭头动画
 2.QTreeView新增FluentUI导航控件样式

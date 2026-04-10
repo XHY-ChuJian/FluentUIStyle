@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.16)
 
 project(fluentw3uistyle VERSION 0.1 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Install prefix" FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -12,74 +18,136 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Svg)
 
-set(PROJECT_SOURCES
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    resources.qrc
-    fluentui3style/fluentui3style.cpp
-    fluentui3style/fluentui3style.h
-    fluentui3style/fluentui3colors.cpp
-    fluentui3style/fluentui3colors.h
-    fluentui3style/fluentuiappearance.cpp
-    fluentui3style/fluentuiappearance.h
-    fluentui3style/palettemanager.cpp
-    fluentui3style/palettemanager.h
-    fluentui3style/qhexstring_p.h
-    fluentui3style/qstyleanimation.cpp
-    fluentui3style/qstyleanimation_p.h
-    fluentui3style/qstylehelper.cpp
-    fluentui3style/qstylehelper_p.h
-    fluentui3style/resource.qrc
-    ExWidgets/exstackedwidget.cpp
-    ExWidgets/exstackedwidget.h
+option(BUILD_LIBRARY "Build as library" ON)
+option(BUILD_PLUGIN "Build as plugin" ON)
+option(BUILD_EXAMPLE "Build example application" ON)
+
+# Local runs: keep all configs in the same output dir (Windows/MSVC convenience).
+# Note: Debug/Release will overwrite each other if built to the same tree.
+set(_out_bin "${CMAKE_BINARY_DIR}/bin")
+set(_out_lib "${CMAKE_BINARY_DIR}/lib")
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_out_bin}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_out_lib}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}")
+
+foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
+endforeach()
+
+add_subdirectory(ExWidgets)
+
+if(BUILD_LIBRARY)
+    add_subdirectory(fluentui3style)
+endif()
+
+if(BUILD_PLUGIN)
+    add_subdirectory(fluentui3style/plugin)
+endif()
+
+if(BUILD_EXAMPLE)
+    add_subdirectory(Example)
+endif()
+
+# --- Install (DLL / import lib / headers / CMake packages) ---
+install(TARGETS ExWidgets
+    EXPORT ExWidgetsTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-if(WIN32)
-    list(APPEND PROJECT_SOURCES
-        appicon.rc
-        appicon.ico
+install(FILES $<TARGET_PDB_FILE:ExWidgets>
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    OPTIONAL
+)
+
+if(BUILD_LIBRARY)
+    install(TARGETS FluentUI3Style
+        EXPORT FluentUI3StyleTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
+    install(FILES $<TARGET_PDB_FILE:FluentUI3Style>
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OPTIONAL
     )
 endif()
 
-if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-    qt_standard_project_setup()
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ExWidgets/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ExWidgets
+    FILES_MATCHING PATTERN "*.h"
+)
 
-    qt_add_executable(fluentw3uistyle
-        WIN32
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-else()
-    add_executable(fluentw3uistyle WIN32
-        ${PROJECT_SOURCES}
+if(BUILD_LIBRARY)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fluentui3style/"
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluentui3style
+        FILES_MATCHING PATTERN "*.h"
     )
 endif()
 
-target_include_directories(fluentw3uistyle PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/fluentui3style
-    ${CMAKE_CURRENT_SOURCE_DIR}/ExWidgets
+include(CMakePackageConfigHelpers)
+
+set(_cfg_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+file(MAKE_DIRECTORY "${_cfg_dir}")
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ExWidgetsConfig.cmake.in"
+    "${_cfg_dir}/ExWidgetsConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ExWidgets
 )
 
-target_link_libraries(fluentw3uistyle PRIVATE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Svg
+write_basic_package_version_file(
+    "${_cfg_dir}/ExWidgetsConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMinorVersion
 )
 
-set_target_properties(fluentw3uistyle PROPERTIES
-    WIN32_EXECUTABLE TRUE
+install(EXPORT ExWidgetsTargets
+    FILE ExWidgetsTargets.cmake
+    NAMESPACE ExWidgets::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ExWidgets
 )
 
-if(MSVC)
-    target_compile_options(fluentw3uistyle PRIVATE /utf-8)
-    add_compile_options(/utf-8)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
+install(FILES
+    "${_cfg_dir}/ExWidgetsConfig.cmake"
+    "${_cfg_dir}/ExWidgetsConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ExWidgets
+)
+
+if(BUILD_LIBRARY)
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FluentUI3StyleConfig.cmake.in"
+        "${_cfg_dir}/FluentUI3StyleConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FluentUI3Style
+    )
+
+    write_basic_package_version_file(
+        "${_cfg_dir}/FluentUI3StyleConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMinorVersion
+    )
+
+    install(EXPORT FluentUI3StyleTargets
+        FILE FluentUI3StyleTargets.cmake
+        NAMESPACE FluentUI3Style::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FluentUI3Style
+    )
+
+    install(FILES
+        "${_cfg_dir}/FluentUI3StyleConfig.cmake"
+        "${_cfg_dir}/FluentUI3StyleConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FluentUI3Style
+    )
 endif()
 
-if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-    qt_finalize_executable(fluentw3uistyle)
+if(BUILD_PLUGIN)
+    install(TARGETS FluentUI3StylePlugin
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins/styles
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins/styles
+    )
 endif()
