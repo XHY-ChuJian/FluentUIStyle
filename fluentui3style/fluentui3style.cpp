@@ -5085,7 +5085,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 if ( isIndeterminate )
                 {
-                    constexpr auto loopDurationMSec = 8000;
+                    constexpr auto loopDurationMSec = 2000;
                     const auto elapsedTime  = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
                     const auto elapsed      = elapsedTime.time_since_epoch().count();
                     const auto handleCenter = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
