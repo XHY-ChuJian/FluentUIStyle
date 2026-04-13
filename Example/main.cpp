@@ -43,23 +43,28 @@ int main(int argc, char *argv[])
     font.setHintingPreference(QFont::PreferNoHinting);
     qApp->setFont(font);
 
+//FLUENT_USE_QT_STYLE只是在本项目中为了“qApp->setStyle("FluentUI3");”
+//和“fluentUIAppearance.initialize();”方式的切换，其他项目中可以根据需要选择使用哪种方式
+
 #ifdef FLUENT_USE_QT_STYLE
     qDebug()<< QStyleFactory::keys();
 
 #if QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
     qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
 #else
-    qApp->setProperty("_q_colorscheme", 1);             //控制主题，默认0-Light, 1-Dark
+    qApp->setProperty("_q_colorscheme", 0);             //控制主题，默认0-Light, 1-Dark
 #endif
     qApp->setProperty("_q_scrollHint_center", true);    //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
-    qApp->setProperty("_q_themestyle", 1);              //控制配色方案，默认0-Fluent, 1-Teams
+    qApp->setProperty("_q_themestyle", 0);              //控制配色方案，默认0-Fluent, 1-Teams
     qApp->setStyle("FluentUI3");
 #else
     fluentUIAppearance.initialize();
 #endif
 
     MainWindow w;
-    // fluentUIAppearance.setMainWindow(&w);            //动态切换标题栏颜色建议重启软件
+#ifndef FLUENT_USE_QT_STYLE
+    fluentUIAppearance.setMainWindow(&w);            //动态切换标题栏颜色建议重启软件
+#endif
 
     w.show();
 
