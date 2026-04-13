@@ -13,6 +13,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QScrollArea>
 #include <QStatusBar>
 #include <QStyle>
@@ -41,34 +42,78 @@
 #include "qeasingcurve.h"
 #include "ui_mainwindow.h"
 
+void applyStandardMenuIcons( QMenu* menu, QWidget* widget );
 class MenuOffsetFilter : public QObject
 {
 public:
-    explicit MenuOffsetFilter( QObject* parent = nullptr )
-        : QObject( parent )
+    explicit MenuOffsetFilter(QObject* parent = nullptr)
+        : QObject(parent)
     {
     }
 
 protected:
-    bool eventFilter( QObject* obj, QEvent* event ) override
+    bool eventFilter(QObject* obj, QEvent* event) override
     {
-        if ( event->type() == QEvent::Show )
+        if (event->type() == QEvent::Show)
         {
-            if ( auto menu = qobject_cast<QMenu*>( obj ) )
+            if (auto menu = qobject_cast<QMenu*>(obj))
             {
                 auto menuParent = menu->parentWidget();
-                if ( menuParent && menuParent->inherits( "QMenuBar" ) )
+                if (menuParent && menuParent->inherits("QMenuBar"))
                 {
                     QPoint pos = menu->pos();
-                    menu->move( pos + QPoint( 2, 0 ) );
+                    menu->move(pos + QPoint(2, 0));
                 }
             }
         }
 
-        return QObject::eventFilter( obj, event );
+        return QObject::eventFilter(obj, event);
     }
 };
 
+#ifdef __MINGW32__
+void hookContextMenu(QWidget* w)
+{
+    if (!w) return;
+
+    w->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    QObject::connect(w, &QWidget::customContextMenuRequested, w,
+        [w](const QPoint& pos)
+        {
+            QMenu* menu = nullptr;
+
+            if (auto edit = qobject_cast<QLineEdit*>(w))
+            {
+                menu = edit->createStandardContextMenu();
+            }
+            else if (auto text = qobject_cast<QTextEdit*>(w))
+            {
+                menu = text->createStandardContextMenu();
+            }
+            else if (auto plain = qobject_cast<QPlainTextEdit*>(w))
+            {
+                menu = plain->createStandardContextMenu();
+            }
+            else if (auto combo = qobject_cast<QComboBox*>(w))
+            {
+                if (combo->isEditable() && combo->lineEdit())
+                    menu = combo->lineEdit()->createStandardContextMenu();
+            }
+            else if (auto spin = qobject_cast<QAbstractSpinBox*>(w))
+            {
+                if (auto edit = spin->findChild<QLineEdit*>())
+                    menu = edit->createStandardContextMenu();
+            }
+
+            if (!menu) return;
+
+            applyStandardMenuIcons(menu, w);
+            menu->exec(w->mapToGlobal(pos));
+            delete menu;
+        });
+}
+#endif
 // 存储所有需要更新图标的action及其对应的图标代码
 QMap<QAction*, QString> actionIconMap;
 // 存储所有需要更新图标的menu及其对应的图标代码
@@ -154,6 +199,13 @@ MainWindow::MainWindow( QWidget* parent )
 
     loadChangelog();
     updateActionIcons();
+
+#ifdef __MINGW32__
+    for (auto w : findChildren<QWidget*>())
+    {
+        hookContextMenu(w);
+    }
+#endif
 }
 
 void MainWindow::loadChangelog()
@@ -1152,7 +1204,7 @@ void MainWindow::on_radioButton_6_clicked()
     ui->spinBox->setFrame( ui->spinBox->hasFrame() );
 }
 
-static void applyStandardMenuIcons( QMenu* menu, QWidget* widget )
+void applyStandardMenuIcons( QMenu* menu, QWidget* widget )
 {
     if ( !menu )
     {
@@ -1160,7 +1212,6 @@ static void applyStandardMenuIcons( QMenu* menu, QWidget* widget )
     }
 
     const QColor iconColor = widget ? widget->palette().color( QPalette::Text ) : QApplication::palette().color( QPalette::Text );
-    constexpr int iconPx   = 16;
 
     // Segoe Fluent / MDL2 glyphs
     constexpr QChar GlyphUndo( 0xE7A7 );
@@ -1234,6 +1285,7 @@ static void applyStandardMenuIcons( QMenu* menu, QWidget* widget )
     }
 }
 
+#ifndef __MINGW32__
 void QLineEdit::contextMenuEvent( QContextMenuEvent* event )
 {
     if ( QMenu* menu = createStandardContextMenu() )
@@ -1318,3 +1370,4 @@ void QAbstractSpinBox::contextMenuEvent( QContextMenuEvent* event )
     }
     event->accept();
 }
+#endif

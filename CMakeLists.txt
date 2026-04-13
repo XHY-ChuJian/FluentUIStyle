@@ -40,11 +40,11 @@ endforeach()
 add_subdirectory(ExWidgets)
 
 if(BUILD_LIBRARY)
-    add_subdirectory(fluentui3style)
+    add_subdirectory(FluentUI3Style)
 endif()
 
 if(BUILD_PLUGIN)
-    add_subdirectory(fluentui3style/plugin)
+    add_subdirectory(FluentUI3Style/plugin)
 endif()
 
 if(BUILD_EXAMPLE)
@@ -84,8 +84,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ExWidgets/"
 )
 
 if(BUILD_LIBRARY)
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fluentui3style/"
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fluentui3style
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FluentUI3Style/"
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Style
         FILES_MATCHING PATTERN "*.h"
     )
 endif()
