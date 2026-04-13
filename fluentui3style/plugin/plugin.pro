@@ -25,16 +25,24 @@ INSTALLS += target
 
 # --- Auto copy to Qt plugins dir ---
 TARGET_STYLE_DIR = $$[QT_INSTALL_PLUGINS]/styles
-TARGET_STYLE_DIR_WIN = $$replace(TARGET_STYLE_DIR, /, \\)
 
 DLL_PATH = $${DESTDIR}/$${TARGET}.dll
-DLL_PATH_WIN = $$replace(DLL_PATH, /, \\)
 
-win32 {
+win32-g++ {
+    # MinGW环境使用cp命令
+    QMAKE_POST_LINK += $$quote(test -d "$$TARGET_STYLE_DIR" || mkdir -p "$$TARGET_STYLE_DIR") $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += $$quote(cp -f "$$DLL_PATH" "$$TARGET_STYLE_DIR/") $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += $$quote(echo "Success! Plugin copied to Qt dir.")
+}
+
+win32-msvc {
+    # MSVC环境使用CMD命令
+    TARGET_STYLE_DIR_WIN = $$replace(TARGET_STYLE_DIR, /, \\)
+    DLL_PATH_WIN = $$replace(DLL_PATH, /, \\)
     QMAKE_POST_LINK += $$quote(if not exist "$$TARGET_STYLE_DIR_WIN" mkdir "$$TARGET_STYLE_DIR_WIN") $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$quote(copy /y "$$DLL_PATH_WIN" "$$TARGET_STYLE_DIR_WIN" > nul) $$escape_expand(\\n\\t)
-    
-    win32-msvc:CONFIG(debug, debug|release) {
+
+    CONFIG(debug, debug|release) {
         PDB_PATH = $${DESTDIR}/$${TARGET}.pdb
         PDB_PATH_WIN = $$replace(PDB_PATH, /, \\)
         QMAKE_POST_LINK += $$quote(if exist "$$PDB_PATH_WIN" copy /y "$$PDB_PATH_WIN" "$$TARGET_STYLE_DIR_WIN" > nul) $$escape_expand(\\n\\t)

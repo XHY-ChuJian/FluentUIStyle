@@ -5539,7 +5539,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         penColor = menuitem->palette.color( dis ? QPalette::Disabled : QPalette::Current, QPalette::Text );
                     }
                     painter->setPen( penColor );
-                    const QString textToDraw = s.left( t ).toString();
+                    //FIX: Qt5.14.2 t < 0, s.left assert failed
+                    const QString textToDraw = t >= 0 ? s.left( t ).toString() : s.toString();
                     painter->drawText( vRect, text_flags, textToDraw );
                 }
                 if ( menuitem->menuItemType == QStyleOptionMenuItem::SubMenu )
