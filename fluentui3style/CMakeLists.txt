@@ -24,7 +24,7 @@ target_compile_definitions(FluentUI3Style PRIVATE FLUENTUI3STYLE_LIBRARY)
 
 target_include_directories(FluentUI3Style PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/fluentui3style>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Style>
 )
 
 target_link_libraries(FluentUI3Style PUBLIC
