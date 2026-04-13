@@ -1,10 +1,9 @@
 # FluentUI3Style：基于Qt的FluentUI3风格实现
 
 ## 预览
-<img width="2004" height="1338" alt="screenshot-20260410-173052" src="https://github.com/user-attachments/assets/320f385b-68bf-4320-aa23-cebbb0b3c056" />
 <img width="2004" height="1338" alt="screenshot-20260410-173023" src="https://github.com/user-attachments/assets/11e20b1e-2b6f-47eb-9197-00ae41066d87" />
 <img width="2004" height="1338" alt="screenshot-20260410-173008" src="https://github.com/user-attachments/assets/3db1a598-2adf-4492-9417-7ffbb50044bf" />
-
+<img width="2004" height="1338" alt="screenshot-20260410-173052" src="https://github.com/user-attachments/assets/320f385b-68bf-4320-aa23-cebbb0b3c056" />
 
 ## 项目简介
 
