@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
 #if QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
     qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
 #else
-    qApp->setProperty("_q_colorscheme", 0);             //控制主题，默认0-Light, 1-Dark
+    qApp->setProperty("_q_colorscheme", 0);             //控制主题，默认0-Light, 1-Dark, 2-System
 #endif
-    qApp->setProperty("_q_scrollHint_center", true);    //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
+    qApp->setProperty("_q_scrollHint_center", false);   //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
     qApp->setProperty("_q_themestyle", 0);              //控制配色方案，默认0-Fluent, 1-Teams
     qApp->setStyle("FluentUI3");
 #else
