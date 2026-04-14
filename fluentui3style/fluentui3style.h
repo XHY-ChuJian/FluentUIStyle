@@ -20,9 +20,9 @@ enum class ControlType
 
 enum SpinBoxButtonLayout
 {
+    ArrowsHorizontalRight,
     ArrowsVertical,
     ArrowsHorizontalSides,
-    ArrowsHorizontalRight,
     PlusMinusHorizontalSides
 };
 
@@ -39,8 +39,8 @@ enum TabBarStyle
     Navigation
 };
 
-[[maybe_unused]] constexpr const char* ProgressBarStyleProperty = "progressBarStyle";
 [[maybe_unused]] constexpr const char* ProgressBarThicknessProperty = "progressBarThickness";
+[[maybe_unused]] constexpr const char* ProgressBarStyleProperty = "progressBarStyle";
 enum ProgressBarStyle
 {
     ProgressBarThin  = 0,

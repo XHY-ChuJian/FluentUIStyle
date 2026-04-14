@@ -906,7 +906,7 @@ void MainWindow::updateActionIcons()
     {
         ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
         ui->pushButton_10->setIcon( createFluentIcon( "\ue713" ) );
-        ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
+        // ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
         ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
         ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
     }
@@ -1014,7 +1014,6 @@ void MainWindow::init()
         ui->toolButton_3->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
         ui->toolButton_3->setPopupMode( QToolButton::InstantPopup );
         ui->toolButton_3->setText( "菜单按钮" );
-        ui->toolButton_3->setIcon( createFluentIcon( "\uEA8E" ) );
         QMenu* menu                                                                  = new QMenu( ui->toolButton_3 );
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8a5" ), "新建文件" ) ] = "\ue8a5";
         actionIconMap[ menu->addAction( createFluentIcon( "\ue8b5" ), "新建项目" ) ] = "\ue8b5";

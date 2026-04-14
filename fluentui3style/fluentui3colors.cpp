@@ -16,7 +16,7 @@ const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight {
     QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // focusFrameInnerStroke
     QColor( 0x00, 0x00, 0x00, 0xFF ),                     // focusFrameOuterStroke
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 70 ) ),     // fillControlDefault
-    QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 50 ) ),     // fillControlSecondary
+    QColor( 0xF0, 0xF0, 0xF0, percentToAlpha( 80 ) ),     // fillControlSecondary
     QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 30 ) ),     // fillControlTertiary
     QColor( 0xF9, 0xF9, 0xF9, percentToAlpha( 30 ) ),     // fillControlDisabled
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 100 ) ),    // fillControlInputActive
@@ -59,7 +59,7 @@ const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark {
     QColor( 0x00, 0x00, 0x00, 0xFF ),                     // focusFrameInnerStroke
     QColor( 0xFF, 0xFF, 0xFF, 0xFF ),                     // focusFrameOuterStroke
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.05 ) ),   // fillControlDefault
-    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 8.37 ) ),   // fillControlSecondary
+    QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 15.0 ) ),   // fillControlSecondary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 3.26 ) ),   // fillControlTertiary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // fillControlDisabled
     QColor( 0x1E, 0x1E, 0x1E, percentToAlpha( 70 ) ),     // fillControlInputActive
