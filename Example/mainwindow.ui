@@ -54,7 +54,7 @@
     <item row="0" column="1">
      <widget class="ExStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QGridLayout" name="gridLayout_47">
@@ -86,7 +86,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1212</width>
+             <width>790</width>
              <height>969</height>
             </rect>
            </property>
@@ -1094,6 +1094,124 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_7">
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QTableWidget" name="tableWidget">
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <row>
+           <property name="text">
+            <string>新建行</string>
+           </property>
+          </row>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>新建列</string>
+           </property>
+          </column>
+          <item row="0" column="0">
+           <property name="text">
+            <string>1</string>
+           </property>
+          </item>
+          <item row="0" column="1">
+           <property name="text">
+            <string>dddd</string>
+           </property>
+          </item>
+          <item row="1" column="0">
+           <property name="text">
+            <string>2</string>
+           </property>
+          </item>
+          <item row="1" column="1">
+           <property name="text">
+            <string>ddd</string>
+           </property>
+          </item>
+          <item row="2" column="0">
+           <property name="text">
+            <string>3</string>
+           </property>
+          </item>
+          <item row="2" column="1">
+           <property name="text">
+            <string>d</string>
+           </property>
+          </item>
+          <item row="3" column="0">
+           <property name="text">
+            <string>4</string>
+           </property>
+          </item>
+          <item row="3" column="1">
+           <property name="text">
+            <string>ddddd</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="page_2">
        <layout class="QGridLayout" name="gridLayout_3">
         <property name="leftMargin">
@@ -1280,7 +1398,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
+             <width>81</width>
              <height>1022</height>
             </rect>
            </property>

@@ -26,6 +26,7 @@
 #include <QVBoxLayout>
 
 #include <exstackedwidget.h>
+#include <extabwidget.h>
 #include <private/qabstractspinbox_p.h>
 #include <private/qlineedit_p.h>
 
@@ -746,47 +747,33 @@ void MainWindow::setupTabs()
     capsuleDescLabel->setStyleSheet( "color: gray; font-size: 12px;" );
     capsuleLayout->addWidget( capsuleDescLabel );
 
-    m_capsuleTabBar = new QTabBar();
-    m_capsuleTabBar->setAttribute( Qt::WA_StyledBackground, true );
-    m_capsuleTabBar->setAutoFillBackground( false );
-    m_capsuleTabBar->setExpanding( false );
-    m_capsuleTabBar->setTabsClosable( true );
-    m_capsuleTabBar->setMovable( true );
-    m_capsuleTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-    m_capsuleTabBar->setProperty( "tabBarStyle", 1 );  // TabBarStyle::Capsule
-    m_capsuleTabBar->addTab( "Home" );
-    m_capsuleTabBar->addTab( "Search" );
-    m_capsuleTabBar->addTab( "Settings" );
-    m_capsuleTabBar->addTab( "Help" );
-    m_capsuleTabBar->addTab( "About" );
-    capsuleLayout->addWidget( m_capsuleTabBar );
+    m_capsuleTabWidget = new ExTabWidget();
+    m_capsuleTabWidget->setMinimumHeight( 200 );
+    m_capsuleTabWidget->setTabsClosable( true );
+    m_capsuleTabWidget->setMovable( true );
+    
+    QTabBar* capTabBar = m_capsuleTabWidget->tabBar();
+    capTabBar->setAttribute( Qt::WA_StyledBackground, true );
+    capTabBar->setAutoFillBackground( false );
+    capTabBar->setExpanding( false );
+    capTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+    capTabBar->setProperty( "tabBarStyle", 1 );  // TabBarStyle::Capsule
+    capTabBar->setDrawBase( false );
 
-    ExStackedWidget* capsuleSlidingWidget = new ExStackedWidget();
-    capsuleSlidingWidget->setMinimumHeight( 200 );
-    QStringList pageNames    = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
+    QStringList pageNames    = { "Home", "Search", "Settings", "Help", "About" };
+    QStringList fullNames    = { "Home Page", "Search Page", "Settings Page", "Help Page", "About Page" };
     QList<QColor> pageColors = {
         QColor( 255, 228, 225 ), QColor( 224, 255, 255 ), QColor( 240, 255, 240 ), QColor( 255, 250, 205 ), QColor( 230, 230, 250 )
     };
     for ( int i = 0; i < pageNames.size(); ++i )
     {
-        QLabel* page = new QLabel( pageNames[ i ] );
+        QLabel* page = new QLabel( fullNames[ i ] );
         page->setAlignment( Qt::AlignCenter );
         page->setStyleSheet( QString( "background-color: %1;color:black;" ).arg( pageColors[ i ].name() ) );
-        capsuleSlidingWidget->addWidget( page );
+        m_capsuleTabWidget->addTab( page, pageNames[ i ] );
     }
 
-    connect( m_capsuleTabBar, QOverload<int>::of( &QTabBar::currentChanged ), capsuleSlidingWidget, &ExStackedWidget::setCurrentIndex );
-    connect( m_capsuleTabBar,
-             &QTabBar::tabMoved,
-             this,
-             [ capsuleSlidingWidget ]( int from, int to )
-             {
-                 QWidget* widget = capsuleSlidingWidget->widget( from );
-                 capsuleSlidingWidget->removeWidget( widget );
-                 capsuleSlidingWidget->insertWidget( to, widget );
-             } );
-
-    capsuleLayout->addWidget( capsuleSlidingWidget, 1 );
+    capsuleLayout->addWidget( m_capsuleTabWidget, 1 );
     mainLayout->addWidget( capsuleWidget, 1 );
 
     // ============Navigation TabBar + SlidingStackedWidget ============
@@ -810,52 +797,37 @@ void MainWindow::setupTabs()
         bodyLayout->setContentsMargins( 0, 0, 0, 0 );
         bodyLayout->setSpacing( 2 );
 
-        m_navigationTabBar = new QTabBar();
-        m_navigationTabBar->setAttribute( Qt::WA_StyledBackground, true );
-        m_navigationTabBar->setShape( QTabBar::RoundedWest );
-        m_navigationTabBar->setDrawBase( false );
-        m_navigationTabBar->setMovable( false );
-        m_navigationTabBar->setExpanding( false );
-        m_navigationTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
-        m_navigationTabBar->setProperty( "tabBarStyle", 8 );  // TabBarStyle::Navigation
-        m_navigationTabBar->addTab( "Overview" );
-        m_navigationTabBar->addTab( "Files" );
-        m_navigationTabBar->addTab( "History" );
-        m_navigationTabBar->addTab( "Insights" );
-        m_navigationTabBar->addTab( "Settings" );
+        m_navigationTabWidget = new ExTabWidget();
+        m_navigationTabWidget->setTabPosition(QTabWidget::West );
+        m_navigationTabWidget->setVerticalMode( true );
+        m_navigationTabWidget->setSpeed( 220 );
+        m_navigationTabWidget->setAnimation( QEasingCurve::OutCubic );
+        m_navigationTabWidget->setMinimumHeight( 300 );
 
-        QVBoxLayout* navigationTabBarLayout = new QVBoxLayout();
-        navigationTabBarLayout->setContentsMargins( 0, 0, 0, 0 );
-        navigationTabBarLayout->setSpacing( 0 );
-        navigationTabBarLayout->addWidget( m_navigationTabBar, 0, Qt::AlignTop );
-        navigationTabBarLayout->addStretch();
-        bodyLayout->addLayout( navigationTabBarLayout );
+        QTabBar* navTabBar = m_navigationTabWidget->tabBar();
+        navTabBar->setAttribute( Qt::WA_StyledBackground, true );
+        navTabBar->setShape( QTabBar::RoundedWest );
+        navTabBar->setDrawBase( false );
+        m_navigationTabWidget->setMovable( false );
+        navTabBar->setExpanding( false );
+        navTabBar->setProperty( "TextAlign", static_cast<int>( Qt::AlignVCenter | Qt::AlignLeft ) );
+        navTabBar->setProperty( "tabBarStyle", 8 );  // TabBarStyle::Navigation
 
-        ExStackedWidget* navigationSlidingWidget = new ExStackedWidget();
-        navigationSlidingWidget->setVerticalMode( true );
-        navigationSlidingWidget->setSpeed( 220 );
-        navigationSlidingWidget->setAnimation( QEasingCurve::OutCubic );
-        navigationSlidingWidget->setMinimumHeight( 300 );
-
-        const QStringList navPageNames    = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
+        const QStringList navFullNames    = { "Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page" };
+        const QStringList navNames        = { "Overview", "Files", "History", "Insights", "Settings" };
         const QList<QColor> navPageColors = {
             QColor( 244, 248, 255 ), QColor( 240, 251, 246 ), QColor( 255, 248, 238 ), QColor( 248, 243, 255 ), QColor( 245, 245, 245 )
         };
-        for ( int i = 0; i < navPageNames.size(); ++i )
+        for ( int i = 0; i < navFullNames.size(); ++i )
         {
-            QLabel* page = new QLabel( navPageNames[ i ] );
+            QLabel* page = new QLabel( navFullNames[ i ] );
             page->setAlignment( Qt::AlignCenter );
             page->setMinimumHeight( 220 );
             page->setStyleSheet( QString( "background-color:%1;color:black;" ).arg( navPageColors[ i ].name() ) );
-            navigationSlidingWidget->addWidget( page );
+            m_navigationTabWidget->addTab( page, navNames[ i ] );
         }
 
-        connect( m_navigationTabBar,
-                 QOverload<int>::of( &QTabBar::currentChanged ),
-                 navigationSlidingWidget,
-                 &ExStackedWidget::setCurrentIndex );
-
-        bodyLayout->addWidget( navigationSlidingWidget, 1 );
+        bodyLayout->addWidget( m_navigationTabWidget, 1 );
         navigationLayout->addLayout( bodyLayout );
         mainLayout->addWidget( navigationWidget, 1 );
     }
@@ -868,13 +840,13 @@ void MainWindow::updateActionIcons()
     ui->lineEditSerach->removeAction( m_searchAction );
     m_searchAction = ui->lineEditSerach->addAction( createFluentIcon( "\ue721" ), QLineEdit::TrailingPosition );
     {
-        if ( m_capsuleTabBar )
+        if ( m_capsuleTabWidget )
         {
-            m_capsuleTabBar->setTabIcon( 0, createFluentIcon( "\ueA86" ) );
-            m_capsuleTabBar->setTabIcon( 1, createFluentIcon( "\uE7F3" ) );
-            m_capsuleTabBar->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
-            m_capsuleTabBar->setTabIcon( 3, createFluentIcon( "\uE836" ) );
-            m_capsuleTabBar->setTabIcon( 4, createFluentIcon( "\uE9F5" ) );
+            m_capsuleTabWidget->setTabIcon( 0, createFluentIcon( "\ueA86" ) );
+            m_capsuleTabWidget->setTabIcon( 1, createFluentIcon( "\uE7F3" ) );
+            m_capsuleTabWidget->setTabIcon( 2, createFluentIcon( "\ue8c3" ) );
+            m_capsuleTabWidget->setTabIcon( 3, createFluentIcon( "\uE836" ) );
+            m_capsuleTabWidget->setTabIcon( 4, createFluentIcon( "\uE9F5" ) );
         }
 
         if ( m_segmentedBar )
@@ -893,13 +865,13 @@ void MainWindow::updateActionIcons()
             m_segmentedFadeBar->setTabIcon( 3, createFluentIcon( "\uE7ED" ) );
             m_segmentedFadeBar->setTabIcon( 4, createFluentIcon( "\uF163" ) );
         }
-        if ( m_navigationTabBar )
+        if ( m_navigationTabWidget )
         {
-            m_navigationTabBar->setTabIcon( 0, createFluentIcon( "\uEC64" ) );
-            m_navigationTabBar->setTabIcon( 1, createFluentIcon( "\uE8B7" ) );
-            m_navigationTabBar->setTabIcon( 2, createFluentIcon( "\uE81C" ) );
-            m_navigationTabBar->setTabIcon( 3, createFluentIcon( "\uE9CE" ) );
-            m_navigationTabBar->setTabIcon( 4, createFluentIcon( "\uE713" ) );
+            m_navigationTabWidget->setTabIcon( 0, createFluentIcon( "\uEC64" ) );
+            m_navigationTabWidget->setTabIcon( 1, createFluentIcon( "\uE8B7" ) );
+            m_navigationTabWidget->setTabIcon( 2, createFluentIcon( "\uE81C" ) );
+            m_navigationTabWidget->setTabIcon( 3, createFluentIcon( "\uE9CE" ) );
+            m_navigationTabWidget->setTabIcon( 4, createFluentIcon( "\uE713" ) );
         }
     }
 
@@ -970,6 +942,7 @@ void MainWindow::init()
 
     initMenuAndToolBar();
     initNavigationView();
+    initTableView();
 
     {
         setProperty( "MainBackground", true );
@@ -1073,6 +1046,76 @@ void MainWindow::init()
     }
 }
 
+void MainWindow::initTableView()
+{
+      auto *table = ui->tableWidget;
+
+    // 1️⃣ 清空并设置结构
+    table->clear();
+    table->setRowCount(5);
+    table->setColumnCount(4);
+
+    QStringList headers;
+    headers << "Name" << "Age" << "Type" << "Score";
+    table->setHorizontalHeaderLabels(headers);
+
+    // 2️⃣ 基础属性（推荐）
+    table->setEditTriggers(QAbstractItemView::DoubleClicked |
+                           QAbstractItemView::EditKeyPressed);
+
+    table->horizontalHeader()->setStretchLastSection(true);
+    table->verticalHeader()->setVisible(false);
+
+    // =========================
+    // 3️⃣ 第一列：可编辑文本
+    // =========================
+    for (int row = 0; row < 5; ++row)
+    {
+        auto *item = new QTableWidgetItem(QString("User_%1").arg(row));
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        table->setItem(row, 0, item);
+    }
+
+    // =========================
+    // 4️⃣ 第二列：SpinBox
+    // =========================
+    for (int row = 0; row < 5; ++row)
+    {
+        auto *spin = new QSpinBox(table);
+        spin->setRange(0, 120);
+        spin->setValue(20 + row);
+        spin->setAlignment(Qt::AlignCenter);
+
+        table->setCellWidget(row, 1, spin);
+    }
+
+    // =========================
+    // 5️⃣ 第三列：ComboBox
+    // =========================
+    QStringList types = {"Admin", "User", "Guest"};
+
+    for (int row = 0; row < 5; ++row)
+    {
+        auto *combo = new QComboBox(table);
+        combo->addItems(types);
+        combo->setCurrentIndex(row % types.size());
+
+        table->setCellWidget(row, 2, combo);
+    }
+
+    // =========================
+    // 6️⃣ 第四列：可编辑数字
+    // =========================
+    for (int row = 0; row < 5; ++row)
+    {
+        auto *item = new QTableWidgetItem(QString::number(60.5 + row));
+        item->setTextAlignment(Qt::AlignCenter);
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+
+        table->setItem(row, 3, item);
+    }
+}
+
 void MainWindow::initNavigationView()
 {
     // ui->navView 字号 + 1
@@ -1082,6 +1125,7 @@ void MainWindow::initNavigationView()
 
     ui->navView->setIconSize( QSize( 20, 20 ) );
 
+    ui->navView->setSelectionBehavior( QAbstractItemView::SelectRows );
     ui->navView->setFont( navFont );
     ui->navView->setRootIsDecorated( false );
     ui->navView->setFrameShape( QFrame::NoFrame );
@@ -1094,29 +1138,34 @@ void MainWindow::initNavigationView()
     basicItem->setData( 0, Qt::UserRole, 0 );
     basicItem->setData( 0, Qt::UserRole + 1, "\uE80F" );
 
+    QTreeWidgetItem* tableItem = new QTreeWidgetItem( ui->navView );
+    tableItem->setText( 0, "表格控件" );
+    tableItem->setData( 0, Qt::UserRole, 1 );
+    tableItem->setData( 0, Qt::UserRole + 1, "\uE99A" );
+
     QTreeWidgetItem* listItem = new QTreeWidgetItem( ui->navView );
     listItem->setText( 0, "列表控件" );
-    listItem->setData( 0, Qt::UserRole, 1 );
+    listItem->setData( 0, Qt::UserRole, 2 );
     listItem->setData( 0, Qt::UserRole + 1, "\uE71D" );
 
     QTreeWidgetItem* treeItem = new QTreeWidgetItem( ui->navView );
     treeItem->setText( 0, "树形控件" );
-    treeItem->setData( 0, Qt::UserRole, 2 );
+    treeItem->setData( 0, Qt::UserRole, 3 );
     treeItem->setData( 0, Qt::UserRole + 1, "\uED28" );
 
     QTreeWidgetItem* tabItem = new QTreeWidgetItem( ui->navView );
     tabItem->setText( 0, "导航控件" );
-    tabItem->setData( 0, Qt::UserRole, 3 );
+    tabItem->setData( 0, Qt::UserRole, 4 );
     tabItem->setData( 0, Qt::UserRole + 1, "\uE8B0" );
 
     QTreeWidgetItem* mdiItem = new QTreeWidgetItem( ui->navView );
     mdiItem->setText( 0, "Mdi" );
-    mdiItem->setData( 0, Qt::UserRole, 4 );
+    mdiItem->setData( 0, Qt::UserRole, 5 );
     mdiItem->setData( 0, Qt::UserRole + 1, "\uE9D9" );
 
     QTreeWidgetItem* settingItem = new QTreeWidgetItem( ui->navView );
     settingItem->setText( 0, "设置" );
-    settingItem->setData( 0, Qt::UserRole, 5 );
+    settingItem->setData( 0, Qt::UserRole, 6 );
     settingItem->setData( 0, Qt::UserRole + 1, "\uE9F5" );
 
     connect( ui->navView,
@@ -1370,3 +1419,4 @@ void QAbstractSpinBox::contextMenuEvent( QContextMenuEvent* event )
     event->accept();
 }
 #endif
+

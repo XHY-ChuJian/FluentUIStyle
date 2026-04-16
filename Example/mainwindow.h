@@ -5,6 +5,7 @@
 
 class QTabBar;
 class ExStackedWidget;
+class ExTabWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,6 +31,7 @@ private slots:
 
 private:
     void init();
+    void initTableView();
     void initNavigationView();
     void initMenuAndToolBar();
     void setupTabs();
@@ -42,9 +44,9 @@ private:
 
     QToolBar* m_toolBar{nullptr};
 
-    QTabBar* m_capsuleTabBar{nullptr};
+    ExTabWidget* m_capsuleTabWidget{nullptr};
     QTabBar* m_segmentedBar{nullptr};
     QTabBar* m_segmentedFadeBar{nullptr};
-    QTabBar* m_navigationTabBar{nullptr};
+    ExTabWidget* m_navigationTabWidget{nullptr};
     QAction* m_searchAction{nullptr};
 };

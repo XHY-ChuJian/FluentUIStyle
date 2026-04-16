@@ -1,6 +1,8 @@
 set(EXWIDGETS_SOURCES
     exstackedwidget.cpp
     exstackedwidget.h
+    extabwidget.cpp
+    extabwidget.h
 )
 
 add_library(ExWidgets SHARED

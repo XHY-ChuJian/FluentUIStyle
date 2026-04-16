@@ -62,7 +62,7 @@ const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark {
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 15.0 ) ),   // fillControlSecondary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 3.26 ) ),   // fillControlTertiary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // fillControlDisabled
-    QColor( 0x1E, 0x1E, 0x1E, percentToAlpha( 70 ) ),     // fillControlInputActive
+    QColor( 0x1E, 0x1E, 0x1E, percentToAlpha( 100 ) ),    // fillControlInputActive
     QColor( 0x00, 0x00, 0x00, percentToAlpha( 10.0 ) ),   // fillControlAltDefault
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 4.19 ) ),   // fillControlAltSecondary
     QColor( 0xFF, 0xFF, 0xFF, percentToAlpha( 6.98 ) ),   // fillControlAltTertiafillCy

@@ -40,13 +40,18 @@ enum TabBarStyle
 };
 
 [[maybe_unused]] constexpr const char* ProgressBarThicknessProperty = "progressBarThickness";
-[[maybe_unused]] constexpr const char* ProgressBarStyleProperty = "progressBarStyle";
+[[maybe_unused]]  constexpr const char* ProgressBarStyleProperty = "progressBarStyle";
 enum ProgressBarStyle
 {
     ProgressBarThin  = 0,
     ProgressBarThick = 1,
     ProgressBarRing  = 2
 };
+
+[[maybe_unused]] constexpr const char* ButtonAccentStyleProperty = "accent";
+[[maybe_unused]] constexpr const char* SwitchStyleProperty = "isSwitchButton";
+[[maybe_unused]] constexpr const char* NavigationViewStyleProperty = "navigationViewIndicator";
+[[maybe_unused]] constexpr const char* NoRoundedCorners = "noRoundedCorners";
 
 class FLUENTUI3STYLE_EXPORT FluentUI3Style : public QProxyStyle
 {
@@ -135,7 +140,7 @@ private:
     QColor winUI3Color( WINUI3Color col ) const;
     QColor accentColor( const QStyleOption* option ) const;
 
-    QIcon fluentIcon( const QChar& ch ) const;
+    QIcon fluentIcon( const QChar& ch, const QColor& color = QColor() ) const;
 
 
 private:

@@ -106,6 +106,9 @@ enum
 #define ChromeClose      QChar( 0xE8BB )
 
 #define Help             QChar( 0xE897 )
+#define InfoMessage      QChar( 0xE946 )
+#define WarningMessage   QChar( 0xE7BA )
+#define CriticalMessage  QChar( 0xEA39 )
 
 template <typename R, typename P, typename B>
 static inline void drawRoundedRect( QPainter* p, R&& rect, P&& pen, B&& brush )
@@ -168,6 +171,18 @@ static inline void tabLayout( const QStyle* proxyStyle,
             *iconRect = QRect( tr.left() + offsetX, tr.center().y() - tabIconSize.height() / 2, tabIconSize.width(), tabIconSize.height() );
             *iconRect = QStyle::visualRect( opt->direction, opt->rect, *iconRect );
             tr.setLeft( tr.left() + tabIconSize.width() + iconTextSpacing );
+        }
+        else
+        {
+            int cachedIconWidth = widget ? widget->property( "_q_navigation_widest_icon_width" ).toInt() : 0;
+            if ( cachedIconWidth > 0 )
+            {
+                tr.setLeft( tr.left() + cachedIconWidth + iconTextSpacing );
+            }
+            else
+            {
+                tr.setLeft( tr.left() + iconTextSpacing );
+            }
         }
 
         *textRect = QStyle::visualRect( opt->direction, opt->rect, tr );
@@ -2169,7 +2184,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 t->setDuration( 150 );
                 startAnimation( t );
             }
-            else if ( element == PE_IndicatorCheckBox && widget && widget->property( "isSwitchButton" ).toBool() == false )
+            else if ( element == PE_IndicatorCheckBox && widget && widget->property( SwitchStyleProperty ).toBool() == false )
             {
                 if ( ( oldState & State_Off && state & State_On ) || ( oldState & State_NoChange && state & State_On ) )
                 {
@@ -2180,7 +2195,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     startAnimation( t );
                 }
             }
-            else if ( element == PE_IndicatorCheckBox && widget && widget->property( "isSwitchButton" ).toBool() == true )
+            else if ( element == PE_IndicatorCheckBox && widget && widget->property( SwitchStyleProperty ).toBool() == true )
             {
                 if ( ( state & State_On ) != ( oldState & State_On ) )
                 {
@@ -2287,7 +2302,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             break;
         case PE_IndicatorCheckBox :
-            if ( widget && widget->property( "isSwitchButton" ).toBool() )
+            if ( widget && widget->property( SwitchStyleProperty ).toBool() )
             {
                 drawSwitchButton( option, painter, widget );
             }
@@ -2299,7 +2314,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         case PE_IndicatorBranch :
         {
             if ( const QTreeView* treeView = qobject_cast<const QTreeView*>( widget );
-                 treeView && treeView->property( "navigationViewIndicator" ).toBool() )
+                 treeView && treeView->property( NavigationViewStyleProperty ).toBool() )
             {
                 break;
             }
@@ -2525,7 +2540,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
 
                 painter->setPen( Qt::NoPen );
 
-                bool noRoundedCorners = widget && widget->property("noRoundedCorners").toBool();
+                bool noRoundedCorners = widget && widget->property(NoRoundedCorners).toBool();
                 if ( isComboPopup )
                 {
                     drawFluentShadow( painter, rect.toRect(), cBShadowBorderWidth, cBRoundingRadius );
@@ -2622,21 +2637,22 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     // painting
                     if ( auto treeView = qobject_cast<const QTreeView*>( widget ) )
                     {
-                        if ( treeView->property( "navigationViewIndicator" ).toBool() == false )
+                        if ( treeView->property( NavigationViewStyleProperty ).toBool() == false )
                         {
                             drawTreeViewIndicator( vopt, painter, widget );
                         }
                     }
 
-                    const bool isTree = qobject_cast<const QTreeView*>(widget);
-
-                    bool isDecorationColumn =
-                        isTree &&
-                        (vopt->decorationSize.isValid());
-                    isDecorationColumn = false;
-
-                    const bool highlight = (vopt->state & State_Selected) || (vopt->state & State_MouseOver);
-                    if (isDecorationColumn && highlight && vopt->showDecorationSelected)
+                    bool isDecorationColumn = false;
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 9, 0 )
+                isDecorationColumn = vopt->features.testFlag( QStyleOptionViewItem::IsDecoratedRootColumn );
+#else
+                if ( qobject_cast<const QTreeView*>( widget ) )
+                {
+                    // isDecorationColumn = !vopt->index.isValid() || vopt->index.column() == 0;
+                }
+#endif
+                    if (isDecorationColumn && vopt->showDecorationSelected)
                     {
                         const bool onlyOne = vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
                                              || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
@@ -2703,9 +2719,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 return;
             }
 
-            if ( widget && widget->palette().isBrushSet( QPalette::Active, widget->backgroundRole() ) )
+            if ( widget && widget->autoFillBackground() )
             {
-                const QBrush bg = widget->palette().brush( widget->backgroundRole() );
+                const QBrush bg = option->palette.brush( widget->backgroundRole() );
                 updateBrushOrigin_public( painter, widget, bg );
                 painter->fillRect( option->rect, bg );
             }
@@ -3242,10 +3258,6 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
         case CC_ToolButton :
             if ( const QStyleOptionToolButton* tb = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
             {
-                if (widget->objectName() == "toolButton_4")
-                {
-                    qDebug()<< widget->objectName() << "features: " << tb->features;
-                }
                 int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, tb, widget );
                 ret     = tb->rect;
                 switch ( subControl )
@@ -5241,7 +5253,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 }
 
                 auto vTextRect = visualRect( btn->direction, btn->rect, textRect );
-                bool accent    = widget && widget->property( "accent" ).toBool();
+                bool accent    = widget && widget->property( ButtonAccentStyleProperty ).toBool();
 
                 bool checkable = false, checked = false;
                 if ( const auto* button = qobject_cast<const QPushButton*>( widget ) )
@@ -5661,7 +5673,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 QRect iconRect  = p->subElementRect( SE_ItemViewItemDecoration, vopt, widget );
                 QRect textRect  = p->subElementRect( SE_ItemViewItemText, vopt, widget );
                 const bool isNavigationTreeView =
-                    qobject_cast<const QTreeView*>( widget ) && widget->property( "navigationViewIndicator" ).toBool();
+                    qobject_cast<const QTreeView*>( widget ) && widget->property( NavigationViewStyleProperty ).toBool();
 
                 if ( isNavigationTreeView && ( vopt->state & State_Children ) )
                 {
@@ -5679,12 +5691,15 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 // the tree decoration already painted the left side of the
                 // rounded rect
-                const bool isTree = qobject_cast<const QTreeView*>(widget);
-
-                bool isDecorationColumn =
-                    isTree &&
-                    (vopt->decorationSize.isValid());
-                isDecorationColumn = false;
+                bool isDecorationColumn = false;
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 9, 0 )
+                isDecorationColumn = vopt->features.testFlag( QStyleOptionViewItem::IsDecoratedRootColumn );
+#else
+                if ( qobject_cast<const QTreeView*>( widget ) )
+                {
+                    // isDecorationColumn = !vopt->index.isValid() || vopt->index.column() == 0;
+                }
+#endif
                 if ( isDecorationColumn && vopt->showDecorationSelected )
                 {
                     isFirst = false;
@@ -5799,7 +5814,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 drawListViewIndicator( vopt, painter, widget );
                 if ( const QTreeView* treeView = qobject_cast<const QTreeView*>( widget ) )
                 {
-                    if ( treeView->property( "navigationViewIndicator" ).toBool() )
+                    if ( treeView->property( NavigationViewStyleProperty ).toBool() )
                     {
                         if ( vopt->state & State_Children )
                         {
@@ -6321,7 +6336,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                                 cachedIconWidth = widestIconWidth;
                             }
 
-                            const int contentWidth = contentLeadingInset + cachedIconWidth + ( cachedIconWidth > 0 ? iconTextSpacing : 0 )
+                            const int contentWidth = contentLeadingInset + cachedIconWidth + iconTextSpacing
                                                      + cachedTextWidth + contentTrailingInset;
                             contentSize.setWidth( contentWidth );
                         }
@@ -6329,7 +6344,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                         {
                             const int iconWidth    = tab->icon.isNull() ? 0 : qMax( 16, tab->iconSize.width() );
                             const int textWidth    = tab->fontMetrics.horizontalAdvance( tab->text );
-                            const int contentWidth = contentLeadingInset + iconWidth + ( iconWidth > 0 ? iconTextSpacing : 0 ) + textWidth
+                            const int contentWidth = contentLeadingInset + iconWidth + iconTextSpacing + textWidth
                                                      + contentTrailingInset;
                             contentSize.setWidth( contentWidth );
                         }
@@ -6385,7 +6400,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
         case PM_IndicatorWidth :
         case PM_IndicatorHeight :
         {
-            if ( widget && widget->property( "isSwitchButton" ).toBool() )
+            if ( widget && widget->property( SwitchStyleProperty ).toBool() )
             {
                 return PM_IndicatorWidth == metric ? 40 : 20;
             }
@@ -6714,7 +6729,7 @@ QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* optio
             p.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
 
             p.setFont( f );
-            p.setPen( widget->palette().color( QPalette::Window ) );
+            p.setPen( widget ? widget->palette().color( QPalette::Window ) : qApp->palette().color( QPalette::Window ));
             p.drawText( pix.rect(), Qt::AlignCenter, QChar( 0xE894 ) );
 
             icon.addPixmap( pix, QIcon::Active );
@@ -6726,6 +6741,23 @@ QIcon FluentUI3Style::standardIcon( StandardPixmap sp, const QStyleOption* optio
     {
         return colorSchemeIndex ? QIcon( ":/resource/images/window-restore-s-light.png" )
                                 : QIcon( ":/resource/images/window-restore-s-dark.png" );
+    }
+
+    if ( sp == SP_MessageBoxInformation )
+    {
+        return fluentIcon( InfoMessage, colorSchemeIndex ? QColor( "#60CDFF" ) : QColor( "#005FB8" ) );
+    }
+    if ( sp == SP_MessageBoxWarning )
+    {
+        return fluentIcon( WarningMessage, colorSchemeIndex ? QColor( "#FCE100" ) : QColor( "#9D5D00" ) );
+    }
+    if ( sp == SP_MessageBoxCritical )
+    {
+        return fluentIcon( CriticalMessage, colorSchemeIndex ? QColor( "#FF99A4" ) : QColor( "#C42B1C" ) );
+    }
+    if ( sp == SP_MessageBoxQuestion )
+    {
+        return fluentIcon( Help, colorSchemeIndex ? QColor( "#60CDFF" ) : QColor( "#005FB8" ) );
     }
 
     return QProxyStyle::standardIcon( sp, option, widget );
@@ -7101,7 +7133,7 @@ QColor FluentUI3Style::accentColor( const QStyleOption* option ) const
 #endif
 }
 
-QIcon FluentUI3Style::fluentIcon( const QChar& ch ) const
+QIcon FluentUI3Style::fluentIcon( const QChar& ch, const QColor& color ) const
 {
     QFont f( assetFont );
     f.setPixelSize( 27 );
@@ -7113,7 +7145,7 @@ QIcon FluentUI3Style::fluentIcon( const QChar& ch ) const
     p.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform );
 
     p.setFont( f );
-    p.setPen( winUI3Color( textPrimary ) );
+    p.setPen( color.isValid() ? color : winUI3Color( textPrimary ) );
     p.drawText( pix.rect(), Qt::AlignCenter, ch );
 
     return QIcon( pix );
