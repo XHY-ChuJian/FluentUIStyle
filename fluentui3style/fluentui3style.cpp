@@ -4472,7 +4472,8 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
 
     if (option->state & State_Selected)
     {
-        const bool selectionChanged = qAbs(targetX - toX) > 0.5 || qAbs(targetTop - toTop) > 0.5 || qAbs(targetH - toH) > 0.5;
+        // 用 index 判断选中项是否真正切换，避免滚动时坐标变化误触发动画
+        const bool selectionChanged = (option->index != toIndex);
         if (selectionChanged)
         {
             fromX = toX;
@@ -4491,9 +4492,19 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
             t->setFrameRate(QStyleAnimation::DefaultFps);
             startAnimationEx(t, stateObject, animKey);
         }
-        else if (!toIndex.isValid())
+        else
         {
-            toIndex = option->index;
+            // 同一个选中项，只是视口滚动导致坐标变化，静默更新坐标不触发动画
+            toX = targetX;
+            toTop = targetTop;
+            toH = targetH;
+            // from 与 to 同步，确保动画结束后坐标与当前视口一致
+            if (animationValue(stateObject, animKey, 1.0f) >= 1.0f)
+            {
+                fromX = targetX;
+                fromTop = targetTop;
+                fromH = targetH;
+            }
         }
     }
 
