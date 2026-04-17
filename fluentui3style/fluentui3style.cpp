@@ -4497,22 +4497,6 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
         }
     }
 
-    // ===================================================================
-    // 动画逻辑：对应 ElaNavigationStyle 的两段式顺序动画
-    //
-    // 阶段1 [progress 0→0.5]：旧 indicator（fromItem）向目标方向伸展
-    //   - 向下移动：fromItem 底部从 fromBottom 伸展到 item 底边（inset→0）
-    //   - 向上移动：fromItem 顶部从 fromTop 伸展到 item 顶边（inset→0）
-    //   - toItem 不显示（对应 _isSelectMarkDisplay=false）
-    //
-    // 阶段2 [progress 0.5→1]：新 indicator（toItem）从边缘收缩至正常位置
-    //   - 向下移动：toItem 顶部从 item 顶边收缩到 toTop（inset 0→normalInset）
-    //   - 向上移动：toItem 底部从 item 底边收缩到 toBottom（inset 0→normalInset）
-    //   - fromItem 不显示
-    //
-    // 缓动：两段均用 smoothStep（InOutSine 近似），各 300ms，总计 600ms
-    // ===================================================================
-
     const qreal progress = clamp01(animationValue(stateObject, animKey, 1.0f));
     const bool movingDown = toTop >= fromTop;
     const qreal fromBottom = fromTop + fromH;
@@ -4552,7 +4536,7 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
         {
             shouldDraw = true;
             const qreal p = progress / 0.5;
-            const qreal t = p * p;  // easeIn quadratic
+            const qreal t = p * p; // easeIn quadratic
             if (movingDown)
             {
                 drawTop = fromTop;
@@ -4564,7 +4548,6 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
                 drawBottom = fromBottom;
             }
         }
-        // toItem 在此阶段不显示
     }
     else
     {
@@ -4574,7 +4557,7 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
         {
             shouldDraw = true;
             const qreal p = (progress - 0.5) / 0.5;
-            const qreal t = p * (2.0 - p);  // easeOut quadratic
+            const qreal t = p * (2.0 - p); // easeOut quadratic
             if (movingDown)
             {
                 drawTop = lerp(toItemTop, toTop, t);
@@ -4586,7 +4569,6 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
                 drawBottom = lerp(toItemBottom, toBottom, t);
             }
         }
-        // fromItem 在此阶段不显示
     }
 
     stateObject->setProperty("_q_tree_indicator_from_x", fromX);
