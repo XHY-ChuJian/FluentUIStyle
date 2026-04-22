@@ -59,6 +59,20 @@ static constexpr int contentItemHMargin = 4;        // margin between content it
 static constexpr int contentHMargin = 2 * 3;        // margin between rounded border and content (= rounded border
                                                     // margin * 3)
 
+/// 将半透明的 Fluent 颜色与底色预合成，返回完全不透明的颜色。
+/// 用于 input 控件作为 delegate editor 时，防止半透明背景透底。
+static QColor resolveOpaque(const QColor &fluentColor, const QColor &base)
+{
+    return fluentColor;
+    // if (fluentColor.alpha() == 255)
+    //     return fluentColor;
+    // const double a = fluentColor.alphaF();
+    // return QColor(
+    //     qRound(base.red() * (1.0 - a) + fluentColor.red() * a),
+    //     qRound(base.green() * (1.0 - a) + fluentColor.green() * a),
+    //     qRound(base.blue() * (1.0 - a) + fluentColor.blue() * a));
+}
+
 static constexpr int menuItemVMargin = 3; // vertical margin for menu items
 static constexpr int menuItemHMargin = 3; // horizontal margin for menu items
 
@@ -1237,6 +1251,10 @@ FluentUI3Style::FluentUI3Style(QStyle *style)
     }
 #endif
     qDebug() << "FluentUI color scheme index:" << colorSchemeIndex;
+
+    auto appPalette = qApp->palette();
+    PaletteManager::instance().applyPalette(appPalette, colorSchemeIndex);
+    qApp->setPalette(appPalette);
 }
 
 FluentUI3Style::~FluentUI3Style()
@@ -1432,6 +1450,17 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                     panel.rect = option->rect;
                     panel.lineWidth = 1;
                     panel.midLineWidth = 0;
+
+                    const auto fillColor = [&]() -> WINUI3Color
+                    {
+                        if (state & State_HasFocus)
+                            return fillControlInputActive;
+                        if (state & State_MouseOver)
+                            return fillControlSecondary;
+                        return fillControlDefault;
+                    }();
+                    const QColor bg = resolveOpaque(winUI3Color(fillColor), sb->palette.base().color());
+                    drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, bg);
 
                     proxy()->drawPrimitive(PE_FrameLineEdit, &panel, cp.painter(), widget);
                 }
@@ -1653,10 +1682,14 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                 p->setBrush(brush);
                 p->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             };
-            _drawRoundedRect(painter,
-                             frameRect,
-                             Qt::NoPen,
-                             combobox->editable ? inputFillBrush(option, widget) : controlFillBrush(&opt, ControlType::Control));
+            const QBrush rawBrush = combobox->editable
+                                        ? inputFillBrush(option, widget)
+                                        : controlFillBrush(&opt, ControlType::Control);
+            const QColor blendBase = combobox->editable
+                                         ? option->palette.base().color()
+                                         : option->palette.button().color();
+            const QColor opaqueBg = resolveOpaque(rawBrush.color(), blendBase);
+            _drawRoundedRect(painter, frameRect, Qt::NoPen, opaqueBg);
 
             if (combobox->frame)
             {
@@ -2497,7 +2530,9 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
                     return winUI3Color(fillControlDefault);
                 };
 
-                drawRoundedRect(painter, frameRect, Qt::NoPen, inputFillBrush(option, widget));
+                const QColor opaqueBg =
+                    resolveOpaque(inputFillBrush(option, widget).color(), option->palette.base().color());
+                drawRoundedRect(painter, frameRect, Qt::NoPen, opaqueBg);
                 if (panel->lineWidth > 0)
                 {
                     proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
@@ -2698,14 +2733,16 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             pen.setWidth(1);
             painter->setPen(pen);
 
-            painter->setBrush(Qt::NoBrush);
-            painter->drawRoundedRect(r, 4, 4);
+            auto brColor = option->palette.brush(widget->backgroundRole()).color();
+            brColor.setAlpha(50);
+            painter->setBrush( brColor );
+            painter->drawRoundedRect(r, 6, 6);
 
             painter->restore();
             return;
         }
 
-        if (widget && widget->autoFillBackground())
+        if (widget && widget->palette().isBrushSet(QPalette::Active, widget->backgroundRole()))
         {
             const QBrush bg = option->palette.brush(widget->backgroundRole());
             updateBrushOrigin_public(painter, widget, bg);
@@ -2748,7 +2785,7 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             painter->drawLine(QPointF(rect.left() + fwidth, rect.bottom()), QPointF(rect.right() - fwidth, rect.bottom()));
             painter->drawLine(QPointF(rect.right(), rect.top()), QPointF(rect.right(), rect.bottom() - fwidth));
 
-            painter->setPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]);
+            painter->setPen(winUI3Color(surfaceStroke));
             painter->drawLine(QPointF(rect.left() + 0.5, rect.top() + 0.5),
                               QPointF(rect.left() + 0.5, rect.bottom() - 0.5 - secondLevelRoundingRadius));
             painter->drawLine(QPointF(rect.left() + 0.5 + secondLevelRoundingRadius, rect.bottom() - 0.5),
@@ -2761,7 +2798,7 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             painter->drawPie(bottomRightCorner.marginsAdded(QMarginsF(2.5, 2.5, 0.0, 0.0)), 270 * 16, 90 * 16);
             painter->drawPie(bottomLeftCorner.marginsAdded(QMarginsF(0.0, 2.5, 2.5, 0.0)), -90 * 16, -90 * 16);
 
-            painter->setPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]);
+            painter->setPen(winUI3Color(surfaceStroke));
             painter->setBrush(Qt::NoBrush);
             painter->drawArc(bottomRightCorner, 0 * 16, -90 * 16);
             painter->drawArc(bottomLeftCorner, -90 * 16, -90 * 16);
@@ -5170,7 +5207,7 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
 
             if (isIndeterminate)
             {
-                constexpr auto loopDurationMSec = 2000;
+                constexpr auto loopDurationMSec = 3000;
                 const auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
                 const auto elapsed = elapsedTime.time_since_epoch().count();
                 const auto handleCenter = (elapsed % loopDurationMSec) / float(loopDurationMSec);
@@ -6516,21 +6553,15 @@ int FluentUI3Style::pixelMetric(PixelMetric metric, const QStyleOption *option, 
 
 void FluentUI3Style::polish(QPalette &result)
 {
+#if 0
     highContrastTheme = isHighContrastTheme();
     colorSchemeIndex = getColorSchemeIndex();
 
     if (!highContrastTheme)
     {
-#ifdef FLUENT_USE_QT_STYLE
-        bool ok = false;
-        int themeStyle = qApp->property("_q_themestyle").toInt(&ok);
-        if (ok)
-        {
-            PaletteManager::instance().setThemeStyle((ThemeStyle)themeStyle);
-        }
-#endif
         PaletteManager::instance().applyPalette(result, colorSchemeIndex);
     }
+#endif
 }
 
 void FluentUI3Style::polish(QWidget *widget)

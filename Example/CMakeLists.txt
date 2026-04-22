@@ -37,6 +37,11 @@ target_link_libraries(Example PRIVATE
     Qt${QT_VERSION_MAJOR}::CorePrivate
 )
 
+# Windows 平台链接 DWM API（Mica/Acrylic 效果所需）
+if(WIN32)
+    target_link_libraries(Example PRIVATE dwmapi)
+endif()
+
 set_target_properties(Example PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
     DEBUG_POSTFIX d
