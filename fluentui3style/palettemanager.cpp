@@ -44,8 +44,14 @@ void FluentColorScheme::applyLight( QPalette& p ) const
     p.setColor( QPalette::Active, QPalette::Text, QColor( 0, 0, 0, 255 ) );
     p.setColor( QPalette::Active, QPalette::BrightText, QColor( 255, 255, 255, 255 ) );
     p.setColor( QPalette::Active, QPalette::ButtonText, QColor( 0, 0, 0, 255 ) );
+
     p.setColor( QPalette::Active, QPalette::Base, QColor( 255, 255, 255, 255 ) );
-    p.setColor( QPalette::Active, QPalette::Window, QColor( /*255,255,255*/ 250, 250, 250, 255 ) );
+    p.setColor( QPalette::Active, QPalette::Window, QColor(250, 250, 250, 255 ) );
+
+    //Fluent测试
+    p.setColor(QPalette::Active, QPalette::Window, QColor(243, 243, 243));
+    p.setColor(QPalette::Active, QPalette::Base,   QColor(249, 249, 249));
+
     p.setColor( QPalette::Active, QPalette::Shadow, QColor( 105, 105, 105, 255 ) );
     p.setColor( QPalette::Active, QPalette::Highlight, QColor( 0, 120, 215, 255 ) );
     p.setColor( QPalette::Active, QPalette::HighlightedText, QColor( 255, 255, 255, 255 ) );
@@ -76,8 +82,8 @@ void FluentColorScheme::applyLight( QPalette& p ) const
     p.setColor( QPalette::Disabled, QPalette::Shadow, QColor( 0, 0, 0, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::Highlight, QColor( 0, 120, 215, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::HighlightedText, QColor( 255, 255, 255, 255 ) );
-    p.setColor( QPalette::Disabled, QPalette::Link, QColor( 0, 0, 255, 255 ) );
-    p.setColor( QPalette::Disabled, QPalette::LinkVisited, QColor( 255, 0, 255, 255 ) );
+    p.setColor( QPalette::Disabled, QPalette::Link, QColor( 0, 66, 117, 128 ) );
+    p.setColor( QPalette::Disabled, QPalette::LinkVisited, QColor( 0, 38, 66, 128 ) );
     p.setColor( QPalette::Disabled, QPalette::AlternateBase, QColor( 245, 245, 245, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::ToolTipBase, QColor( 243, 243, 243, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::ToolTipText, QColor( 0, 0, 0, 255 ) );
@@ -127,8 +133,14 @@ void FluentColorScheme::applyDark( QPalette& p ) const
     p.setColor( QPalette::Active, QPalette::Text, QColor( 255, 255, 255, 255 ) );
     p.setColor( QPalette::Active, QPalette::BrightText, QColor( 105, 189, 255, 255 ) );
     p.setColor( QPalette::Active, QPalette::ButtonText, QColor( 255, 255, 255, 255 ) );
+
     p.setColor( QPalette::Active, QPalette::Base, QColor( 50, 50, 50, 255 ) );
     p.setColor( QPalette::Active, QPalette::Window, QColor( 39, 39, 39, 255 ) );
+
+    //Fluent测试
+    p.setColor( QPalette::Active, QPalette::Base, QColor( 39, 39, 39, 255 ) );
+    p.setColor( QPalette::Active, QPalette::Window, QColor( 32, 32, 32, 255 ) );
+
     p.setColor( QPalette::Active, QPalette::Shadow, QColor( 0, 0, 0, 255 ) );
     p.setColor( QPalette::Active, QPalette::Highlight, QColor( 0, 120, 215, 255 ) );
     p.setColor( QPalette::Active, QPalette::HighlightedText, QColor( 255, 255, 255, 255 ) );
@@ -159,8 +171,8 @@ void FluentColorScheme::applyDark( QPalette& p ) const
     p.setColor( QPalette::Disabled, QPalette::Shadow, QColor( 0, 0, 0, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::Highlight, QColor( 0, 120, 215, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::HighlightedText, QColor( 255, 255, 255, 255 ) );
-    p.setColor( QPalette::Disabled, QPalette::Link, QColor( 0, 0, 255, 255 ) );
-    p.setColor( QPalette::Disabled, QPalette::LinkVisited, QColor( 255, 0, 255, 255 ) );
+    p.setColor( QPalette::Disabled, QPalette::Link, QColor( 105, 189, 255, 128 ) );
+    p.setColor( QPalette::Disabled, QPalette::LinkVisited, QColor( 54, 166, 255, 128 ) );
     p.setColor( QPalette::Disabled, QPalette::AlternateBase, QColor( 52, 52, 52, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::ToolTipBase, QColor( 50, 50, 50, 255 ) );
     p.setColor( QPalette::Disabled, QPalette::ToolTipText, QColor( 157, 157, 157, 255 ) );

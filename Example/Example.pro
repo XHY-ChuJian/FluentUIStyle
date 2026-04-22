@@ -25,3 +25,4 @@ win32-msvc {
 }
 
 DESTDIR = $$DESTDIR_BIN
+
