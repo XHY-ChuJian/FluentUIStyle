@@ -10,6 +10,7 @@
 #include "qtreewidget.h"
 
 class QTabBar;
+class ExNavTreeWidget;
 class ExStackedWidget;
 class ExTabWidget;
 class QComboBox;
@@ -74,8 +75,8 @@ private:
     void setupWidgetBackgroundSelector(QToolBar* toolBar);
 
     // Navigation View helpers
-    QTreeWidgetItem* addNavigationItem(QTreeWidget* tree, const QString& text, int pageIndex, const QString& iconCode);
     void addTestNavigationTree();
+    void toggleNavigationViewMode();
 
     // Tab setup helpers
     void setupPivotTabs(QVBoxLayout* mainLayout);
@@ -108,10 +109,12 @@ private:
     QTabBar* m_segmentedBar { nullptr };
     QTabBar* m_segmentedFadeBar { nullptr };
     ExTabWidget* m_navigationTabWidget { nullptr };
+    ExNavTreeWidget* m_navView { nullptr };
     QAction* m_searchAction { nullptr };
 
     QTabBar* m_tabBarWidgetBg { nullptr };
     WidgetBgMode m_widgetBgMode { WidgetBgMode::None };
+    QAction* m_navigationToggleAction { nullptr };
 
 private:
     QPixmap m_bgLight;
