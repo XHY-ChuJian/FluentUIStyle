@@ -48,6 +48,8 @@ enum WINUI3Color
     // TabBar background states for FluentUI3
     tabBarSelectedBackground,
     tabBarHoverBackground,
+    cardBackgroundFillColorDefault,   // Card background color
+    cardStrokeColorDefault,           // Card border color
     count
 };
 

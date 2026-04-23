@@ -30,6 +30,7 @@
 #include <QTextLayout>
 #include <QToolButton>
 #include <QTreeView>
+#include <QMouseEvent>
 #include <QtMath>
 
 #include <array>
@@ -2164,27 +2165,32 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
     painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
     int state = option->state;
-    if (false && option->styleObject && element == PE_IndicatorBranch && (option->state & State_Children))
+    if (transitionsEnabled() && widget && element == PE_IndicatorBranch && (option->state & State_Children))
     {
-        QObject *styleObject = option->styleObject;
-        int oldState = styleObject->property("_q_stylestate").toInt();
-        styleObject->setProperty("_q_stylestate", int(option->state));
-        if ((oldState & State_Open) != (state & State_Open))
+        // 以 widget + 行 y 坐标 拼成唯一 key
+        const QByteArray animKey = QByteArrayLiteral("_q_branch_anim_") + QByteArray::number(option->rect.y());
+        const bool isReverse = option->direction == Qt::RightToLeft;
+        const bool isOpen = option->state & State_Open;
+        const qreal closedAngle = 0.0;
+        const qreal openAngle = isReverse ? -90.0 : 90.0;
+
+        QObject *target = const_cast<QWidget *>(widget);
+        int oldState = target->property("_q_branch_state_" + QByteArray::number(option->rect.y())).toInt();
+        int newState = int(option->state);
+        target->setProperty("_q_branch_state_" + QByteArray::number(option->rect.y()), newState);
+
+        if ((oldState & State_Open) != (newState & State_Open))
         {
-            QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
-            const qreal closedAngle = 0.0;
-            const bool isReverse = option->direction == Qt::RightToLeft;
-            const bool isOpen = option->state & State_Open;
-            const qreal openAngle = isReverse ? -90.0 : 90.0;
-            QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(getAnimation(styleObject));
-            t->setStartValue(animation ? animation->currentValue() : (oldState & State_Open ? openAngle : closedAngle));
+            QNumberStyleAnimation *t = new QNumberStyleAnimation(target);
+            QNumberStyleAnimation *existAnim = qobject_cast<QNumberStyleAnimation *>(getAnimationEx(target, animKey));
+            t->setStartValue(existAnim ? existAnim->currentValue() : (oldState & State_Open ? openAngle : closedAngle));
             t->setEndValue(isOpen ? openAngle : closedAngle);
             t->setDuration(120);
-            // t->setEasingCurve( QEasingCurve::InOutCubic );
-            startAnimation(t);
+            t->setEasingCurve(QEasingCurve::InOutCubic);
+            startAnimationEx(t, target, animKey);
         }
     }
-    else if (transitionsEnabled() && option->styleObject && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton))
+    if (transitionsEnabled() && option->styleObject && (element == PE_IndicatorCheckBox || element == PE_IndicatorRadioButton))
     {
         QObject *styleObject = option->styleObject; // Can be widget or qquickitem
         int oldState = styleObject->property("_q_stylestate").toInt();
@@ -2344,21 +2350,28 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             const bool isReverse = option->direction == Qt::RightToLeft;
             const bool isOpen = option->state & QStyle::State_Open;
             QFont f(assetFont);
-            f.setPointSize(12);
+            f.setPointSize(10);
             painter->setFont(f);
             painter->setPen(option->palette.color(isOpen ? QPalette::Active : QPalette::Disabled, QPalette::WindowText));
-            QNumberStyleAnimation *animation = qobject_cast<QNumberStyleAnimation *>(getAnimation(option->styleObject));
+            // 用每行唯一的 key 读取动画值，避免节点间动画状态共享
+            const QByteArray animKey = QByteArrayLiteral("_q_branch_anim_") + QByteArray::number(option->rect.y());
+            QNumberStyleAnimation *animation = widget
+                                                   ? qobject_cast<QNumberStyleAnimation *>(getAnimationEx(const_cast<QWidget *>(widget), animKey))
+                                                   : nullptr;
             qreal angle = isOpen ? (isReverse ? -90.0 : 90.0) : 0.0;
             if (animation)
             {
                 angle = animation->currentValue();
             }
             painter->save();
-            const QPointF c = option->rect.center();
+            // 使用 rect 中心旋转，但用方形绘制区域以避免旋转后 width/height 互换导致字体位置偏移
+            // 绘制范围限制在分支 rect 内（取宽高最小值的方形）
+            // 向右偏移 4px 以增大与左侧蓝色 indicator 竖条的视觉间距
+            const QPointF c = option->rect.center() + QPointF(isReverse ? -4.0 : 4.0, 0.0);
             painter->translate(c);
             painter->rotate(angle);
-
-            QRect r(-option->rect.width() / 2, -option->rect.height() / 2, option->rect.width(), option->rect.height());
+            const int half = qMin(option->rect.width(), option->rect.height()) / 2;
+            QRect r(-half, -half, half * 2, half * 2);
             painter->drawText(r, Qt::AlignCenter, isReverse ? ChevronLeftMed : ChevronRightMed);
             painter->restore();
         }
@@ -2652,19 +2665,17 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             }
 
             bool hightlightCurrent = (vopt->state & (State_Selected | State_MouseOver)) != 0;
-            if (const QTableView *tv = qobject_cast<const QTableView *>(widget);
-                !tv && hightlightCurrent && !highContrastTheme)
-            {
-                // keep in sync with CE_ItemViewItem QListView indicator
-                // painting
-                if (auto treeView = qobject_cast<const QTreeView *>(widget))
-                {
-                    if (treeView->property(NavigationViewStyleProperty).toBool() == false)
-                    {
-                        drawTreeViewIndicator(vopt, painter, widget);
-                    }
-                }
+            const bool isNonTableHighlight = !qobject_cast<const QTableView *>(widget) && hightlightCurrent && !highContrastTheme;
+            const bool isNavView = qobject_cast<const QTreeView *>(widget) && widget->property(NavigationViewStyleProperty).toBool();
+            const bool isPlainTreeView = qobject_cast<const QTreeView *>(widget) && !isNavView;
 
+            if (isPlainTreeView && isNonTableHighlight)
+            {
+                // 普通 QTreeView：只画蓝色 indicator 竖条，背景由 CE_ItemViewItem 负责
+                drawTreeViewIndicator(vopt, painter, widget);
+            }
+            else if (isNonTableHighlight)
+            {
                 bool isDecorationColumn = false;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
                 isDecorationColumn = vopt->features.testFlag(QStyleOptionViewItem::IsDecoratedRootColumn);
@@ -2720,23 +2731,32 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
         break;
     case PE_Widget:
     {
-        if (widget && widget->property("fluentBorder").toBool())
+        if (widget && widget->property("isCard").toBool())
         {
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
 
             QRect r = option->rect.adjusted(1, 1, -1, -1);
 
-            QColor borderColor = winUI3Color(frameColorStrongDisabled);
+            const bool isHovered = option->state & State_MouseOver;
 
-            QPen pen(borderColor);
+            const auto frameCol = highContrastTheme ?
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+                                                    option->palette.color(isHovered ? QPalette::Accent : QPalette::ButtonText)
+#else
+                                                    option->palette.color(isHovered ? QPalette::Highlight : QPalette::ButtonText)
+#endif
+                                                    : winUI3Color(cardStrokeColorDefault);
+
+            QPen pen(frameCol);
             pen.setWidth(1);
             painter->setPen(pen);
 
-            auto brColor = option->palette.brush(widget->backgroundRole()).color();
-            brColor.setAlpha(50);
-            painter->setBrush( brColor );
-            painter->drawRoundedRect(r, 6, 6);
+            // CardBackgroundFillColorDefault
+            QColor brColor = highContrastTheme ? option->palette.base().color() : winUI3Color(cardBackgroundFillColorDefault);
+
+            painter->setBrush(brColor);
+            painter->drawRoundedRect(r, 4, 4);
 
             painter->restore();
             return;
@@ -2856,6 +2876,7 @@ QRect FluentUI3Style::subElementRect(SubElement element, const QStyleOption *opt
     QRect ret;
     switch (element)
     {
+
     case SE_RadioButtonIndicator:
     case SE_CheckBoxIndicator:
     {
@@ -4525,13 +4546,13 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
             QNumberStyleAnimation *t = new QNumberStyleAnimation(stateObject);
             t->setStartValue(0.0);
             t->setEndValue(1.0);
-            t->setDuration(600);
+            t->setDuration(550);
             t->setFrameRate(QStyleAnimation::DefaultFps);
             startAnimationEx(t, stateObject, animKey);
         }
         else
         {
-            // 同一个选中项，只是视口滚动导致坐标变化，静默更新坐标不触发动画
+            // 同一个选中项，只是视口滚动导致坐标变化，不触发动画
             toX = targetX;
             toTop = targetTop;
             toH = targetH;
@@ -5876,26 +5897,39 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             viewItemDrawText(painter, vopt, textRect);
 
             drawListViewIndicator(vopt, painter, widget);
-            if (const QTreeView *treeView = qobject_cast<const QTreeView *>(widget))
+            if (isNavigationTreeView)
             {
-                if (treeView->property(NavigationViewStyleProperty).toBool())
+                const bool isIconMode = widget->property("navigationIconMode").toBool();
+                if ((vopt->state & State_Children) && !isIconMode)
                 {
-                    if (vopt->state & State_Children)
-                    {
-                        const bool isReverse = option->direction == Qt::RightToLeft;
-                        const bool isOpen = vopt->state & State_Open;
-                        QFont f(assetFont);
-                        f.setPointSize(10);
-                        painter->setFont(f);
-                        painter->setPen(vopt->palette.text().color());
+                    const bool isReverse = option->direction == Qt::RightToLeft;
+                    const bool isOpen = vopt->state & State_Open;
+                    QFont f(assetFont);
+                    f.setPointSize(10);
+                    painter->setFont(f);
+                    painter->setPen(vopt->palette.text().color());
 
-                        QRect arrowRect =
-                            rect.adjusted(isReverse ? 6 : rect.width() - 22, 0, isReverse ? -(rect.width() - 22) : -6, 0);
-                        painter->drawText(
-                            arrowRect, Qt::AlignCenter, isOpen ? ChevronDownMed : (isReverse ? ChevronLeftMed : ChevronRightMed));
+                    QRect arrowRect =
+                        rect.adjusted(isReverse ? 6 : rect.width() - 22, 0, isReverse ? -(rect.width() - 22) : -6, 0);
+
+                    const QByteArray animKey = QByteArrayLiteral("_q_nav_branch_anim_") + QByteArray::number(vopt->rect.y());
+                    const QNumberStyleAnimation *animation =
+                        qobject_cast<QNumberStyleAnimation *>(getAnimationEx(const_cast<QWidget *>(widget), animKey));
+                    qreal angle = isOpen ? 180.0 : 0.0;
+                    if (animation)
+                    {
+                        angle = animation->currentValue();
                     }
-                    drawNavigationViewIndicator(vopt, painter, widget);
+
+                    PainterStateGuard arrowGuard(painter);
+                    QRectF arrowRectF(arrowRect);
+                    const QPointF center = arrowRectF.center();
+                    painter->translate(center);
+                    painter->rotate(angle);
+                    QRect r(-arrowRect.width() / 2, -arrowRect.height() / 2, arrowRect.width(), arrowRect.height());
+                    painter->drawText(r, Qt::AlignCenter, ChevronDownMed);
                 }
+                drawNavigationViewIndicator(vopt, painter, widget);
             }
         }
         break;
@@ -6564,6 +6598,8 @@ void FluentUI3Style::polish(QPalette &result)
 #endif
 }
 
+
+
 void FluentUI3Style::polish(QWidget *widget)
 {
 #if QT_CONFIG(commandlinkbutton)
@@ -6674,6 +6710,55 @@ void FluentUI3Style::polish(QWidget *widget)
             table->viewport()->setAttribute(Qt::WA_Hover, true);
         }
     }
+
+    // QTreeView 提前连接展开/折叠信号，在节点展开/折叠时立即启动箭头旋转动画，
+    // 避免先折叠后箭头才开始动画的时序问题。
+    // 用 context QObject 管理连接生命周期：unpolish 时 delete context 即可自动断开所有连接，
+    if (auto treeView = qobject_cast<QTreeView *>(widget))
+    {
+        auto *ctx = new QObject(treeView); // 以 treeView 为父，treeView 销毁时自动清理
+        treeView->setProperty("_q_branch_anim_ctx", QVariant::fromValue(ctx));
+
+
+
+
+
+        auto triggerBranchAnimation = [treeView](const QModelIndex &index, bool opening)
+        {
+            if (!treeView || !transitionsEnabled())
+            {
+                return;
+            }
+            const QRect vr = treeView->visualRect(index);
+            const bool isNavView = treeView->property(NavigationViewStyleProperty).toBool();
+            const QByteArray animKey = (isNavView ? QByteArrayLiteral("_q_nav_branch_anim_")
+                                                  : QByteArrayLiteral("_q_branch_anim_")) +
+                                       QByteArray::number(vr.y());
+
+            const bool isReverse = treeView->layoutDirection() == Qt::RightToLeft;
+            const qreal closedAngle = 0.0;
+            const qreal openAngle = isNavView ? 180.0 : (isReverse ? -90.0 : 90.0);
+
+            QNumberStyleAnimation *existAnim =
+                qobject_cast<QNumberStyleAnimation *>(getAnimationEx(treeView, animKey));
+            qreal startAngle = existAnim ? existAnim->currentValue() : (opening ? closedAngle : openAngle);
+
+            QNumberStyleAnimation *t = new QNumberStyleAnimation(treeView);
+            t->setStartValue(startAngle);
+            t->setEndValue(opening ? openAngle : closedAngle);
+            t->setDuration(120);
+            t->setEasingCurve(QEasingCurve::InOutCubic);
+            startAnimationEx(t, treeView, animKey);
+        };
+
+        // 信号连接到 ctx，delete ctx 时自动断开
+        QObject::connect(treeView, &QTreeView::expanded, ctx,
+                         [triggerBranchAnimation](const QModelIndex &index)
+                         { triggerBranchAnimation(index, true); });
+        QObject::connect(treeView, &QTreeView::collapsed, ctx,
+                         [triggerBranchAnimation](const QModelIndex &index)
+                         { triggerBranchAnimation(index, false); });
+    }
 }
 
 void FluentUI3Style::unpolish(QWidget *widget)
@@ -6696,6 +6781,17 @@ void FluentUI3Style::unpolish(QWidget *widget)
         const auto origStyledBackground = vp->property("_q_original_styled_background").toBool();
         vp->setAttribute(Qt::WA_StyledBackground, origStyledBackground);
         vp->setProperty("_q_original_styled_background", QVariant());
+    }
+
+    // 断开 QTreeView 的 branch 动画信号连接：delete context 即可自动断开所有连接
+    if (auto treeView = qobject_cast<QTreeView *>(widget))
+    {
+        auto *ctx = treeView->property("_q_branch_anim_ctx").value<QObject *>();
+        if (ctx)
+        {
+            delete ctx;
+            treeView->setProperty("_q_branch_anim_ctx", QVariant());
+        }
     }
 }
 

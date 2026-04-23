@@ -39,8 +39,9 @@ const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
     QColor(0x5A, 0x5A, 0x5A, 0xFF),                  // switchThumbOff
     QColor(0x5A, 0x5A, 0x5A, percentToAlpha(40)),    // switchThumbDisabled
     QColor(230, 230, 230),                           // tabBarSelectedBackground
-    QColor(0, 0, 0, 18)                              // tabBarHoverBackground
-
+    QColor(0, 0, 0, 18),                             // tabBarHoverBackground
+    QColor(255, 255, 255, 179),                      // cardBackgroundFillColorDefault
+    QColor(0, 0, 0, 15)                              // cardStrokeColorDefault
 };
 
 const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
@@ -82,7 +83,9 @@ const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
     QColor(0x5A, 0x5A, 0x5A, 0xFF),                  // switchThumbOff
     QColor(0x5A, 0x5A, 0x5A, percentToAlpha(40)),    // switchThumbDisabled
     QColor(60, 60, 60),                              // tabBarSelectedBackground
-    QColor(255, 255, 255, 18)                        // tabBarHoverBackground
+    QColor(255, 255, 255, 18),                       // tabBarHoverBackground
+    QColor(255, 255, 255, 13),                       // cardBackgroundFillColorDefault
+    QColor(0, 0, 0, 25)                              // cardStrokeColorDefault
 };
 
 // Color of close Button in Titlebar (default + hover)
