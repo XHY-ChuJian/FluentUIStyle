@@ -623,6 +623,9 @@ static void drawArrow(const QStyle *style,
 
 #endif // QT_CONFIG(toolbutton)
 
+/// 颜色线性插值前向声明（实现见文件末部）
+QColor blend(const QColor &fg, const QColor &bg, double alpha);
+
 //------------------单动画-------------------------------//
 QHash<QObject *, QStyleAnimation *> animations;
 
@@ -2715,11 +2718,11 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
 
             const auto frameCol = highContrastTheme ?
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-            option->palette.color(isHovered ? QPalette::Accent : QPalette::ButtonText)
+                                                    option->palette.color(isHovered ? QPalette::Accent : QPalette::ButtonText)
 #else
-            option->palette.color(isHovered ? QPalette::Highlight : QPalette::ButtonText)
+                                                    option->palette.color(isHovered ? QPalette::Highlight : QPalette::ButtonText)
 #endif
-            : winUI3Color(cardStrokeColorDefault);
+                                                    : winUI3Color(cardStrokeColorDefault);
 
             QPen pen(frameCol);
             pen.setWidth(1);
@@ -4874,8 +4877,7 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             // Arrow type always overrules and is always shown
             // FluentUI don't have arrow type
             bool hasArrow = /*toolbutton->features & QStyleOptionToolButton::Arrow*/ false;
-            if (((!hasArrow && toolbutton->icon.isNull())  && !toolbutton->text.isEmpty())
-                 || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly)
+            if (((!hasArrow && toolbutton->icon.isNull()) && !toolbutton->text.isEmpty()) || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly)
             {
                 int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, toolbutton, widget))
@@ -4929,7 +4931,8 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                     pm = toolbutton->icon.pixmap(
                         toolbutton->rect.size().boundedTo(tBtnIconSize), painter->device()->devicePixelRatio(), mode, state);
 #else
-                    auto qt_getWindow = [](const QWidget* widget){return widget ? widget->window()->windowHandle() : nullptr;};
+                    auto qt_getWindow = [](const QWidget *widget)
+                    { return widget ? widget->window()->windowHandle() : nullptr; };
                     pm = toolbutton->icon.pixmap(qt_getWindow(widget), toolbutton->rect.size().boundedTo(tBtnIconSize), mode, state);
 #endif
 
@@ -4977,7 +4980,7 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                         pr.translate(shiftX + leftMargin, shiftY);
                         if (!hasArrow)
                         {
-                            proxy()->drawItemPixmap( painter, QStyle::visualRect(toolbutton->direction, rect, pr), Qt::AlignCenter, pm);
+                            proxy()->drawItemPixmap(painter, QStyle::visualRect(toolbutton->direction, rect, pr), Qt::AlignCenter, pm);
                         }
                         else
                         {
@@ -5358,20 +5361,95 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             else
             {
                 bool accent = widget && widget->property("accent").toBool();
+
+                // ── 状态分类，用于判断是否需要触发淡入淡出动画 ──
+                // 将当前 hover/pressed/checked 状态编码为整数，便于比较
+                const bool isCurrentHover = flags & State_MouseOver;
+                const bool isCurrentPressed = flags & (State_Sunken | State_On);
+                const bool isCurrentChecked = checkable && checked;
+                const int currentBtnState = option->state;
+
+                QObject *styleObject = option->styleObject;
+
+                // 计算当前目标背景颜色（目标状态对应的"to"色）
+                QColor targetBgColor;
                 if (accent)
                 {
-                    painter->setBrush(calculateAccentColor(option));
+                    targetBgColor = calculateAccentColor(option);
                     painter->setPen(Qt::NoPen);
+                }
+                else if (isCurrentChecked)
+                {
+                    targetBgColor = calculateAccentColor(option);
                 }
                 else
                 {
-                    painter->setBrush(controlFillBrush(option, ControlType::Control));
+                    targetBgColor = controlFillBrush(option, ControlType::Control).color();
                 }
 
-                if (checkable && checked)
+                QColor bgColor = targetBgColor;
+                if (styleObject)
                 {
-                    painter->setBrush(calculateAccentColor(option));
+                    const int oldBtnState = styleObject->property("_q_btn_state").toInt();
+                    if (oldBtnState != currentBtnState)
+                    {
+                        // 状态发生变化：把当前实际渲染颜色（含动画进度）存为 from-color
+                        QColor fromColor;
+                        if (QNumberStyleAnimation *prevAnim = qobject_cast<QNumberStyleAnimation *>(getAnimation(styleObject)))
+                        {
+                            // 若上一个动画还未完成，以当前插值色作为 from-color（支持中断过渡）
+                            const QColor prevFromColor = styleObject->property("_q_btn_from_color").value<QColor>();
+                            const QColor prevTargetColor = styleObject->property("_q_btn_target_color").value<QColor>();
+                            if (prevFromColor.isValid() && prevTargetColor.isValid())
+                            {
+                                fromColor = blend(prevTargetColor, prevFromColor, prevAnim->currentValue());
+                            }
+                            else
+                            {
+                                fromColor = prevFromColor.isValid() ? prevFromColor : targetBgColor;
+                            }
+                        }
+                        else
+                        {
+                            // 上一动画已结束，from-color 就是当前目标色（静止状态色）
+                            fromColor = styleObject->property("_q_btn_from_color").value<QColor>();
+                            if (!fromColor.isValid())
+                            {
+                                fromColor = targetBgColor;
+                            }
+                        }
+
+                        styleObject->setProperty("_q_btn_state", currentBtnState);
+                        styleObject->setProperty("_q_btn_from_color", fromColor);
+                        styleObject->setProperty("_q_btn_target_color", targetBgColor);
+
+                        QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
+                        t->setStartValue(0.0f);
+                        t->setEndValue(1.0f);
+                        t->setDuration(200);
+                        t->setEasingCurve(QEasingCurve::OutCubic);
+                        startAnimation(t);
+                    }
+
+                    // 读取进度，做颜色插值
+                    if (QNumberStyleAnimation *anim = qobject_cast<QNumberStyleAnimation *>(getAnimation(styleObject)))
+                    {
+                        const qreal progress = anim->currentValue();
+                        const QColor fromColor = styleObject->property("_q_btn_from_color").value<QColor>();
+                        if (fromColor.isValid() && progress < 1.0f)
+                        {
+                            bgColor = blend(targetBgColor, fromColor, progress);
+                        }
+                    }
+                    else
+                    {
+                        // 无动画时，记录静止颜色供下次动画使用
+                        styleObject->setProperty("_q_btn_from_color", targetBgColor);
+                        styleObject->setProperty("_q_btn_target_color", targetBgColor);
+                    }
                 }
+
+                painter->setBrush(bgColor);
 
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 
@@ -6562,8 +6640,6 @@ void FluentUI3Style::polish(QPalette &result)
 #endif
 }
 
-
-
 void FluentUI3Style::polish(QWidget *widget)
 {
 #if QT_CONFIG(commandlinkbutton)
@@ -7017,7 +7093,7 @@ QColor blend(const QColor &fg, const QColor &bg, double alpha)
     return QColor(int(bg.red() + (fg.red() - bg.red()) * alpha),
                   int(bg.green() + (fg.green() - bg.green()) * alpha),
                   int(bg.blue() + (fg.blue() - bg.blue()) * alpha),
-                  fg.alpha());
+                  int(bg.alpha() + (fg.alpha() - bg.alpha()) * alpha));
 }
 
 QColor FluentUI3Style::calculateAccentColor(const QStyleOption *option) const
