@@ -904,6 +904,10 @@ void MainWindow::setupTabs()
     contentWidget->setAutoFillBackground(false);
     pageLayout->addWidget(scrollArea);
 
+    QLabel* lab = new QLabel("TabBar多种样式示例");
+    lab->setStyleSheet("font-size:18pt; font-weight:bold;");
+    mainLayout->addWidget(lab);
+
     // Setup various tab styles
     setupPivotTabs(mainLayout);
     setupSegmentedTabs(mainLayout);

@@ -2742,19 +2742,17 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
 
             const auto frameCol = highContrastTheme ?
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-                                                    option->palette.color(isHovered ? QPalette::Accent : QPalette::ButtonText)
+            option->palette.color(isHovered ? QPalette::Accent : QPalette::ButtonText)
 #else
-                                                    option->palette.color(isHovered ? QPalette::Highlight : QPalette::ButtonText)
+            option->palette.color(isHovered ? QPalette::Highlight : QPalette::ButtonText)
 #endif
-                                                    : winUI3Color(cardStrokeColorDefault);
+            : winUI3Color(cardStrokeColorDefault);
 
             QPen pen(frameCol);
             pen.setWidth(1);
             painter->setPen(pen);
 
-            // CardBackgroundFillColorDefault
             QColor brColor = highContrastTheme ? option->palette.base().color() : winUI3Color(cardBackgroundFillColorDefault);
-
             painter->setBrush(brColor);
             painter->drawRoundedRect(r, 4, 4);
 
@@ -4885,10 +4883,6 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
         break;
     case CE_ToolButtonLabel:
 #if QT_CONFIG(toolbutton)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QProxyStyle::drawControl(element, option, painter, widget);
-        break;
-#endif
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option))
         {
             QRect rect = toolbutton->rect;
@@ -4907,7 +4901,8 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             // Arrow type always overrules and is always shown
             // FluentUI don't have arrow type
             bool hasArrow = /*toolbutton->features & QStyleOptionToolButton::Arrow*/ false;
-            if (((!hasArrow && toolbutton->icon.isNull()) && !toolbutton->text.isEmpty()) || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly)
+            if (((!hasArrow && toolbutton->icon.isNull())  && !toolbutton->text.isEmpty())
+                 || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly)
             {
                 int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, toolbutton, widget))
@@ -4961,8 +4956,8 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                     pm = toolbutton->icon.pixmap(
                         toolbutton->rect.size().boundedTo(tBtnIconSize), painter->device()->devicePixelRatio(), mode, state);
 #else
-                    pm = toolbutton->icon.pixmap(toolbutton->rect.size().boundedTo(tBtnIconSize), mode, state);
-                    pm.setDevicePixelRatio(painter->device()->devicePixelRatio());
+                    auto qt_getWindow = [](const QWidget* widget){return widget ? widget->window()->windowHandle() : nullptr;};
+                    pm = toolbutton->icon.pixmap(qt_getWindow(widget), toolbutton->rect.size().boundedTo(tBtnIconSize), mode, state);
 #endif
 
                     pmSize = pm.size() / pm.devicePixelRatio();
@@ -5009,8 +5004,7 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                         pr.translate(shiftX + leftMargin, shiftY);
                         if (!hasArrow)
                         {
-                            proxy()->drawItemPixmap(
-                                painter, QStyle::visualRect(toolbutton->direction, rect, pr), Qt::AlignCenter, pm);
+                            proxy()->drawItemPixmap( painter, QStyle::visualRect(toolbutton->direction, rect, pr), Qt::AlignCenter, pm);
                         }
                         else
                         {
@@ -6712,17 +6706,10 @@ void FluentUI3Style::polish(QWidget *widget)
     }
 
     // QTreeView 提前连接展开/折叠信号，在节点展开/折叠时立即启动箭头旋转动画，
-    // 避免先折叠后箭头才开始动画的时序问题。
-    // 用 context QObject 管理连接生命周期：unpolish 时 delete context 即可自动断开所有连接，
     if (auto treeView = qobject_cast<QTreeView *>(widget))
     {
-        auto *ctx = new QObject(treeView); // 以 treeView 为父，treeView 销毁时自动清理
+        auto *ctx = new QObject(treeView);
         treeView->setProperty("_q_branch_anim_ctx", QVariant::fromValue(ctx));
-
-
-
-
-
         auto triggerBranchAnimation = [treeView](const QModelIndex &index, bool opening)
         {
             if (!treeView || !transitionsEnabled())
@@ -6751,7 +6738,6 @@ void FluentUI3Style::polish(QWidget *widget)
             startAnimationEx(t, treeView, animKey);
         };
 
-        // 信号连接到 ctx，delete ctx 时自动断开
         QObject::connect(treeView, &QTreeView::expanded, ctx,
                          [triggerBranchAnimation](const QModelIndex &index)
                          { triggerBranchAnimation(index, true); });
@@ -6783,7 +6769,6 @@ void FluentUI3Style::unpolish(QWidget *widget)
         vp->setProperty("_q_original_styled_background", QVariant());
     }
 
-    // 断开 QTreeView 的 branch 动画信号连接：delete context 即可自动断开所有连接
     if (auto treeView = qobject_cast<QTreeView *>(widget))
     {
         auto *ctx = treeView->property("_q_branch_anim_ctx").value<QObject *>();

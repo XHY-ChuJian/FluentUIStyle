@@ -251,13 +251,11 @@ void ExNavTreeWidget::updateNavigationItemExpansion(QTreeWidgetItem *item, bool 
     {
         if (!showText)
         {
-            // 切换到图标模式：记录并折叠
             item->setData(0, NavigationWasExpandedRole, item->isExpanded());
             item->setExpanded(false);
         }
         else
         {
-            // 切换回文本模式：恢复先前的折叠状态（默认不展开）
             QVariant wasExpanded = item->data(0, NavigationWasExpandedRole);
             item->setExpanded(wasExpanded.isValid() ? wasExpanded.toBool() : false);
             item->setData(0, NavigationWasExpandedRole, QVariant());
