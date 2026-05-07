@@ -1,6 +1,8 @@
 set(EXWIDGETS_SOURCES
     exnavtreewidget.cpp
     exnavtreewidget.h
+    exwinuinavigationview.cpp
+    exwinuinavigationview.h
     exstackedwidget.cpp
     exstackedwidget.h
     extabwidget.cpp

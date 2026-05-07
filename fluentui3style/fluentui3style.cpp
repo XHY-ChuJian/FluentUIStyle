@@ -83,6 +83,86 @@ static constexpr int cBShadowBorderWidth = 2;
 static constexpr int cBRoundingRadius = 4;
 
 static constexpr int ProgressBarThickness = 4;
+static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
+static constexpr int NavigationIconRole = Qt::UserRole + 1;
+QStyleAnimation *getAnimationEx(QObject *target, const QByteArray &key);
+void startAnimationEx(QStyleAnimation *animation, QObject *target, const QByteArray &key);
+
+static QByteArray navigationSettingsAnimKey(const QTreeView *treeView, const QModelIndex &index)
+{
+    if (!treeView || !index.isValid())
+    {
+        return QByteArray();
+    }
+    QByteArray key = QByteArrayLiteral("_q_nav_settings_spin_");
+    QModelIndex current = index;
+    while (current.isValid())
+    {
+        key.append(QByteArray::number(current.row()));
+        key.append('/');
+        current = current.parent();
+    }
+    return key;
+}
+
+static QPixmap navigationGlyphPixmapCached(const QString &iconCode, int glyphSide, const QColor &color)
+{
+    static QHash<QString, QPixmap> cache;
+    const QString cacheKey =
+        iconCode + QLatin1Char('|') + QString::number(glyphSide) + QLatin1Char('|') + QString::number(color.rgba());
+    auto it = cache.constFind(cacheKey);
+    if (it != cache.constEnd())
+    {
+        return *it;
+    }
+
+    QPixmap glyphPixmap(glyphSide, glyphSide);
+    glyphPixmap.fill(Qt::transparent);
+
+    QPainter glyphPainter(&glyphPixmap);
+    glyphPainter.setRenderHint(QPainter::Antialiasing, true);
+    glyphPainter.setRenderHint(QPainter::TextAntialiasing, true);
+    glyphPainter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    QFont iconFont("Segoe Fluent Icons");
+    iconFont.setPixelSize(qMax(12, qRound(glyphSide * 0.78)));
+    iconFont.setHintingPreference(QFont::PreferNoHinting);
+    glyphPainter.setFont(iconFont);
+    glyphPainter.setPen(color);
+    glyphPainter.drawText(glyphPixmap.rect(), Qt::AlignCenter, iconCode);
+
+    if (cache.size() > 128)
+    {
+        cache.clear();
+    }
+    cache.insert(cacheKey, glyphPixmap);
+    return glyphPixmap;
+}
+
+static void startNavigationSettingsSpin(QObject *target,
+                                        const QTreeView *treeView,
+                                        const QModelIndex &index,
+                                        qreal deltaDegrees,
+                                        int durationMs)
+{
+    if (!target || !treeView || !index.isValid() || durationMs <= 0)
+    {
+        return;
+    }
+
+    const QByteArray animKey = navigationSettingsAnimKey(treeView, index);
+    qreal start = 0.0;
+    if (QNumberStyleAnimation *existAnim = qobject_cast<QNumberStyleAnimation *>(getAnimationEx(target, animKey)))
+    {
+        start = existAnim->currentValue();
+    }
+
+    QNumberStyleAnimation *t = new QNumberStyleAnimation(target);
+    t->setStartValue(start);
+    t->setEndValue(start + deltaDegrees);
+    t->setDuration(durationMs);
+    t->setFrameRate(QStyleAnimation::DefaultFps);
+    startAnimationEx(t, target, animKey);
+}
 
 enum
 {
@@ -4614,6 +4694,15 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
     }
 
     const QTreeView *treeView = qobject_cast<const QTreeView *>(widget);
+    if (!treeView && widget)
+    {
+        const QWidget *p = widget->parentWidget();
+        while (p && !treeView)
+        {
+            treeView = qobject_cast<const QTreeView *>(p);
+            p = p->parentWidget();
+        }
+    }
     if (!treeView)
     {
         return;
@@ -4636,7 +4725,7 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
     }
 
     QObject *stateObject = treeView->viewport() ? static_cast<QObject *>(treeView->viewport()) : const_cast<QTreeView *>(treeView);
-    const QByteArray animKey = "_q_tree_indicator_slide";
+    const QByteArray slideKey = "_q_tree_indicator_slide";
 
     const bool isRtl = option->direction == Qt::RightToLeft;
     const qreal targetX = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
@@ -4645,75 +4734,122 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
     const qreal targetH = rect.height() - normalInset * 2.0;
     const qreal targetW = 2.0;
 
-    qreal fromX = stateObject->property("_q_tree_indicator_from_x").toReal();
-    qreal fromTop = stateObject->property("_q_tree_indicator_from_top").toReal();
-    qreal fromH = stateObject->property("_q_tree_indicator_from_height").toReal();
-    qreal toX = stateObject->property("_q_tree_indicator_to_x").toReal();
-    qreal toTop = stateObject->property("_q_tree_indicator_to_top").toReal();
-    qreal toH = stateObject->property("_q_tree_indicator_to_height").toReal();
+    const QRectF fromRect = stateObject->property("_q_tree_indicator_from_rect").toRectF();
+    const QRectF toRect = stateObject->property("_q_tree_indicator_to_rect").toRectF();
+    qreal fromX = fromRect.x();
+    qreal fromTop = fromRect.y();
+    qreal fromH = fromRect.height();
+    qreal toX = toRect.x();
+    qreal toTop = toRect.y();
+    qreal toH = toRect.height();
     QModelIndex fromIndex = stateObject->property("_q_tree_indicator_from_index").toModelIndex();
     QModelIndex toIndex = stateObject->property("_q_tree_indicator_to_index").toModelIndex();
+    QString phase = stateObject->property("_q_nav_phase").toString();
+    bool wasSelected = stateObject->property("_q_nav_had_selection").toBool();
+    const bool hasSelection = treeView->selectionModel() && treeView->selectionModel()->hasSelection();
+    const bool inAnimation = getAnimationEx(stateObject, slideKey) != nullptr;
 
-    if (toH <= 0.0)
+    if (!inAnimation && !phase.isEmpty())
+    {
+        if (phase == QStringLiteral("exiting"))
+        {
+            toIndex = QModelIndex();
+            fromIndex = QModelIndex();
+        }
+        phase.clear();
+    }
+
+    if (!hasSelection && !wasSelected && phase.isEmpty())
+    {
+        if (toIndex.isValid())
+        {
+            stateObject->setProperty("_q_tree_indicator_to_index", QModelIndex());
+            stateObject->setProperty("_q_tree_indicator_from_index", QModelIndex());
+        }
+        return;
+    }
+
+    auto kickSlideAnim = [&]() {
+        QNumberStyleAnimation *t = new QNumberStyleAnimation(stateObject);
+        t->setStartValue(0.0);
+        t->setEndValue(1.0);
+        t->setDuration(550);
+        t->setFrameRate(QStyleAnimation::DefaultFps);
+        startAnimationEx(t, stateObject, slideKey);
+    };
+
+    if (toH <= 0.0 && hasSelection && phase.isEmpty() && treeView->property("navigationDirection").toString().isEmpty())
     {
         QModelIndex seedIndex;
-        if (treeView->selectionModel() && treeView->selectionModel()->hasSelection())
-        {
-            const auto sel = treeView->selectionModel()->selectedIndexes();
-            if (!sel.isEmpty())
-                seedIndex = sel.first();
-        }
+        const auto sel = treeView->selectionModel()->selectedIndexes();
+        if (!sel.isEmpty())
+            seedIndex = sel.first();
         if (!seedIndex.isValid())
             seedIndex = treeView->currentIndex();
-
         if (!seedIndex.isValid())
             return;
 
         const QRect seedVr = treeView->visualRect(seedIndex);
         if (seedVr.width() > 0 && seedVr.height() > 0)
         {
-            const bool seedIsRtl = option->direction == Qt::RightToLeft;
-            const qreal seedTargetX = seedIsRtl ? seedVr.right() - 4.5f : seedVr.left() + 3.5f;
-            const qreal seedNormalInset = seedVr.height() / 3.5f;
-            const qreal seedTargetTop = seedVr.top() + seedNormalInset;
-            const qreal seedTargetH = seedVr.height() - seedNormalInset * 2.0;
-
-            fromX = seedTargetX;
-            fromTop = seedTargetTop;
-            fromH = seedTargetH;
-            toX = seedTargetX;
-            toTop = seedTargetTop;
-            toH = seedTargetH;
-            fromIndex = seedIndex;
-            toIndex = seedIndex;
+            const qreal sX = isRtl ? seedVr.right() - 4.5f : seedVr.left() + 3.5f;
+            const qreal sInset = seedVr.height() / 3.5f;
+            fromX = toX = sX;
+            fromTop = toTop = seedVr.top() + sInset;
+            fromH = toH = seedVr.height() - sInset * 2.0;
+            fromIndex = toIndex = seedIndex;
+            wasSelected = true;
+            stateObject->setProperty("_q_nav_had_selection", true);
+        }
+        else if (seedIndex == option->index && (option->state & State_Selected))
+        {
+            fromX = toX = targetX;
+            fromTop = toTop = targetTop;
+            fromH = toH = targetH;
+            fromIndex = toIndex = seedIndex;
+            wasSelected = true;
+            stateObject->setProperty("_q_nav_had_selection", true);
         }
         else
         {
-            // 如果选中项不在 viewport 中，visualRect 可能为空。
-            // 只有当当前正在绘制选中行时，才用 option->rect 初始化。
-            if (seedIndex == option->index && (option->state & State_Selected))
-            {
-                fromX = targetX;
-                fromTop = targetTop;
-                fromH = targetH;
-                toX = targetX;
-                toTop = targetTop;
-                toH = targetH;
-                fromIndex = seedIndex;
-                toIndex = seedIndex;
-            }
-            else
-            {
-                return;
-            }
+            return;
         }
     }
 
-    if (option->state & State_Selected)
+    if (!inAnimation && phase.isEmpty())
     {
-        // 用 index 判断选中项是否真正切换，避免滚动时坐标变化误触发动画
-        const bool selectionChanged = (option->index != toIndex);
-        if (selectionChanged)
+        const QString navDir = treeView->property("navigationDirection").toString();
+
+        if (wasSelected && !hasSelection && toIndex.isValid() && toH > 0.0)
+        {
+            fromX = toX;
+            fromTop = toTop;
+            fromH = toH;
+            fromIndex = toIndex;
+            toTop = (navDir == QStringLiteral("up")) ? (fromTop - normalInset)
+                                                    : (fromTop + fromH + normalInset);
+            toH = 0.0;
+            phase = QStringLiteral("exiting");
+            kickSlideAnim();
+            wasSelected = false;
+            stateObject->setProperty("_q_nav_had_selection", false);
+        }
+        else if (!wasSelected && hasSelection && (option->state & State_Selected))
+        {
+            toX = targetX;
+            toTop = targetTop;
+            toH = targetH;
+            toIndex = option->index;
+            fromX = toX;
+            fromTop = (navDir == QStringLiteral("up")) ? qreal(rect.top()) : qreal(rect.bottom());
+            fromH = 0.0;
+            fromIndex = toIndex;
+            phase = QStringLiteral("entering");
+            kickSlideAnim();
+            wasSelected = true;
+            stateObject->setProperty("_q_nav_had_selection", true);
+        }
+        else if (wasSelected && hasSelection && (option->state & State_Selected) && option->index != toIndex)
         {
             fromX = toX;
             fromTop = toTop;
@@ -4723,70 +4859,59 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
             toH = targetH;
             fromIndex = toIndex;
             toIndex = option->index;
-
-            QNumberStyleAnimation *t = new QNumberStyleAnimation(stateObject);
-            t->setStartValue(0.0);
-            t->setEndValue(1.0);
-            t->setDuration(550);
-            t->setFrameRate(QStyleAnimation::DefaultFps);
-            startAnimationEx(t, stateObject, animKey);
+            phase = QStringLiteral("sliding");
+            kickSlideAnim();
         }
-        else
+        else if ((option->state & State_Selected) && option->index == toIndex)
         {
-            // 同一个选中项，只是视口滚动导致坐标变化，不触发动画
+            // 同一行刷新（处理滚动）：实时同步坐标
             toX = targetX;
             toTop = targetTop;
             toH = targetH;
-            // from 与 to 同步，确保动画结束后坐标与当前视口一致
-            if (animationValue(stateObject, animKey, 1.0f) >= 1.0f)
-            {
-                fromX = targetX;
-                fromTop = targetTop;
-                fromH = targetH;
-            }
+            fromX = targetX;
+            fromTop = targetTop;
+            fromH = targetH;
         }
     }
 
-    const qreal progress = clamp01(animationValue(stateObject, animKey, 1.0f));
+    const qreal progress = clamp01(animationValue(stateObject, slideKey, 1.0f));
+
+    qreal drawTop = toTop;
+    qreal drawBottom = toTop + toH;
+    qreal drawX = toX;
+    
+    //离场和入场时，只画前半段或后半段
+    bool shouldDraw = false;
+
+    const bool drawFirstHalf = (phase != QStringLiteral("entering"));
+    const bool drawSecondHalf = (phase != QStringLiteral("exiting"));
+
     const bool movingDown = toTop >= fromTop;
     const qreal fromBottom = fromTop + fromH;
     const qreal toBottom = toTop + toH;
-
-    // item 的边缘坐标（inset 为 0 时的位置）
     const qreal fromItemTop = fromTop - normalInset;
     const qreal fromItemBottom = fromBottom + normalInset;
     const qreal toItemTop = toTop - normalInset;
     const qreal toItemBottom = toBottom + normalInset;
 
-    bool shouldDraw = false;
-    qreal drawTop = toTop;
-    qreal drawBottom = toBottom;
-    const qreal drawX = progress < 0.5 ? fromX : toX;
-
+    drawX = (progress < 0.5) ? fromX : toX;
     const bool isFromItem = fromIndex.isValid() && option->index == fromIndex;
     const bool isToItem = toIndex.isValid() && option->index == toIndex;
-    if (!isFromItem && !isToItem)
-    {
-        return;
-    }
 
-    // 固定状态（没有跨 item 位移）：直接平滑过渡
-    if (qAbs(toTop - fromTop) < 0.5)
+    if (isFromItem || isToItem)
     {
-        shouldDraw = true;
-        const qreal t = smoothStep(progress);
-        drawTop = lerp(fromTop, toTop, t);
-        drawBottom = lerp(fromBottom, toBottom, t);
-    }
-    else if (progress < 0.5)
-    {
-        // 阶段1：只绘制 fromItem，向目标方向伸展到 item 边缘
-        // easeIn（二次方）：开始慢、结束快，切换点有速度直接衔接阶段2
-        if (isFromItem)
+        if (qAbs(toTop - fromTop) < 0.5)
+        {
+            shouldDraw = true;
+            const qreal t = smoothStep(progress);
+            drawTop = lerp(fromTop, toTop, t);
+            drawBottom = lerp(fromBottom, toBottom, t);
+        }
+        else if (progress < 0.5 && drawFirstHalf && isFromItem)
         {
             shouldDraw = true;
             const qreal p = progress / 0.5;
-            const qreal t = p * p; // easeIn quadratic
+            const qreal t = p * p;
             if (movingDown)
             {
                 drawTop = fromTop;
@@ -4798,16 +4923,11 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
                 drawBottom = fromBottom;
             }
         }
-    }
-    else
-    {
-        // 阶段2：只绘制 toItem，从 item 边缘收缩到正常位置
-        // easeOut（二次方）：开始快、结束慢，衔接阶段1结束时的速度
-        if (isToItem)
+        else if (progress >= 0.5 && drawSecondHalf && isToItem)
         {
             shouldDraw = true;
             const qreal p = (progress - 0.5) / 0.5;
-            const qreal t = p * (2.0 - p); // easeOut quadratic
+            const qreal t = p * (2.0 - p);
             if (movingDown)
             {
                 drawTop = lerp(toItemTop, toTop, t);
@@ -4821,14 +4941,11 @@ void FluentUI3Style::drawNavigationViewIndicator(const QStyleOptionViewItem *opt
         }
     }
 
-    stateObject->setProperty("_q_tree_indicator_from_x", fromX);
-    stateObject->setProperty("_q_tree_indicator_from_top", fromTop);
-    stateObject->setProperty("_q_tree_indicator_from_height", fromH);
-    stateObject->setProperty("_q_tree_indicator_to_x", toX);
-    stateObject->setProperty("_q_tree_indicator_to_top", toTop);
-    stateObject->setProperty("_q_tree_indicator_to_height", toH);
+    stateObject->setProperty("_q_tree_indicator_from_rect", QRectF(fromX, fromTop, targetW, fromH));
+    stateObject->setProperty("_q_tree_indicator_to_rect", QRectF(toX, toTop, targetW, toH));
     stateObject->setProperty("_q_tree_indicator_from_index", fromIndex);
     stateObject->setProperty("_q_tree_indicator_to_index", toIndex);
+    stateObject->setProperty("_q_nav_phase", phase);
 
     if (!shouldDraw)
     {
@@ -6027,18 +6144,16 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             const QTreeView *itemTreeView = qobject_cast<const QTreeView *>(widget);
             if (!itemTreeView && widget)
             {
-                const QWidget *pwidget = widget->parentWidget();
+                const QWidget *pwidget = widget;
                 while (pwidget && !itemTreeView)
                 {
                     itemTreeView = qobject_cast<const QTreeView *>(pwidget);
                     pwidget = pwidget->parentWidget();
                 }
             }
+
             const bool isNavigationTreeView =
-                itemTreeView &&
-                (widget->property(NavigationViewStyleProperty).toBool() ||
-                 itemTreeView->property(NavigationViewStyleProperty).toBool() ||
-                 (itemTreeView->viewport() && itemTreeView->viewport()->property(NavigationViewStyleProperty).toBool()));
+                itemTreeView && itemTreeView->property(NavigationViewStyleProperty).toBool();
 
             if (isNavigationTreeView && (vopt->state & State_Children))
             {
@@ -6164,12 +6279,55 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                 {
                     mode = QIcon::Disabled;
                 }
-                // else if ( vopt->state & QStyle::State_Selected )
-                // {
-                //     mode = QIcon::Selected;
-                // }
                 QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-                vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+                const bool isSettingsSpinItem = vopt->index.isValid() && vopt->index.data(NavigationSettingsSpinRole).toBool();
+                if (isNavigationTreeView && isSettingsSpinItem)
+                {
+                    PainterStateGuard psg(painter);
+                    const QByteArray animKey = navigationSettingsAnimKey(itemTreeView, vopt->index);
+                    qreal iconAngle = 0.0;
+                    if (const QNumberStyleAnimation *animation =
+                            qobject_cast<QNumberStyleAnimation *>(getAnimationEx(const_cast<QTreeView *>(itemTreeView), animKey)))
+                    {
+                        iconAngle = animation->currentValue();
+                    }
+                    const int side = qMin(iconRect.width(), iconRect.height());
+                    const QRect squareRect(iconRect.x() + (iconRect.width() - side) / 2,
+                                           iconRect.y() + (iconRect.height() - side) / 2,
+                                           side,
+                                           side);
+                    const QPointF center = squareRect.center();
+                    QRectF drawRect(-side / 2.0, -side / 2.0, side, side);
+                    painter->translate(center);
+                    painter->rotate(iconAngle);
+                    const QString iconCode = vopt->index.data(NavigationIconRole).toString();
+                    if (!iconCode.isEmpty())
+                    {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        const int supersample = 2;
+                        const int glyphSide = qMax(16, side * supersample);
+                        const QPixmap glyphPixmap =
+                            navigationGlyphPixmapCached(iconCode, glyphSide, vopt->palette.text().color());
+                        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+                        painter->drawPixmap(drawRect, glyphPixmap, QRectF(glyphPixmap.rect()));
+#else
+                        QFont iconFont(assetFont);
+                        iconFont.setPixelSize(17);
+                        painter->setFont(iconFont);
+                        painter->setPen(vopt->palette.text().color());
+                        painter->setRenderHint(QPainter::TextAntialiasing, true);
+                        painter->drawText(drawRect, Qt::AlignCenter, iconCode);
+#endif
+                    }
+                    else
+                    {
+                        vopt->icon.paint(painter, drawRect.toRect(), vopt->decorationAlignment, mode, state);
+                    }
+                }
+                else
+                {
+                    vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+                }
             }
 
             painter->setPen(highlightCurrent && highContrastTheme ? vopt->palette.base().color() : vopt->palette.text().color());
@@ -6906,7 +7064,7 @@ void FluentUI3Style::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_NoSystemBackground, false);
     }
 
-    // 没有动态更新主题的需求，可屏蔽
+    ///没有动态更新主题的需求，可屏蔽
     if (auto le = qobject_cast<QLineEdit *>(widget))
     {
         if (!le->isClearButtonEnabled())
@@ -6930,6 +7088,12 @@ void FluentUI3Style::polish(QWidget *widget)
     if (qobject_cast<QTabBar *>(widget) && widget->property(TabBarStyleProperty).toInt() == TabBarStyle::Segmented_WinUI3)
     {
         widget->installEventFilter(this);
+    }
+    if (auto *treeView = qobject_cast<QTreeView *>(widget);
+        treeView && treeView->property(NavigationViewStyleProperty).toBool())
+    {
+        if (treeView->viewport())
+            treeView->viewport()->installEventFilter(this);
     }
 
     const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
@@ -7060,6 +7224,12 @@ void FluentUI3Style::unpolish(QWidget *widget)
     if (qobject_cast<QTabBar *>(widget) && widget->property("TabBarStyle").toInt() == TabBarStyle::Segmented_WinUI3)
     {
         widget->removeEventFilter(this);
+    }
+    if (auto *treeView = qobject_cast<QTreeView *>(widget);
+        treeView && treeView->property(NavigationViewStyleProperty).toBool())
+    {
+        if (treeView->viewport())
+            treeView->viewport()->removeEventFilter(this);
     }
 
     if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget); scrollarea
@@ -7668,6 +7838,45 @@ bool FluentUI3Style::eventFilter(QObject *watched, QEvent *event)
         {
             tabBar->setProperty("_q_segmented_winui3_pressed_index", -1);
             tabBar->update();
+        }
+    }
+    else if (auto *viewport = qobject_cast<QWidget *>(watched))
+    {
+        auto *treeView = qobject_cast<QTreeView *>(viewport->parent());
+        if (treeView && treeView->viewport() == viewport &&
+            treeView->property(NavigationViewStyleProperty).toBool() &&
+            (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease))
+        {
+            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+            if (me->button() == Qt::LeftButton && transitionsEnabled())
+            {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                const QPoint viewportPos = me->position().toPoint();
+#else
+                const QPoint viewportPos = me->pos();
+#endif
+                const QModelIndex index = treeView->indexAt(viewportPos);
+
+                if (event->type() == QEvent::MouseButtonPress)
+                {
+                    if (index.isValid() && index.data(NavigationSettingsSpinRole).toBool())
+                    {
+                        treeView->setProperty("_q_nav_settings_spin_pressed", QVariant::fromValue(index));
+                        startNavigationSettingsSpin(treeView, treeView, index, 30.0, 200);
+                        viewport->update(treeView->visualRect(index));
+                    }
+                }
+                else
+                {
+                    const QModelIndex pressed = treeView->property("_q_nav_settings_spin_pressed").toModelIndex();
+                    treeView->setProperty("_q_nav_settings_spin_pressed", QModelIndex());
+                    if (pressed.isValid() && pressed.data(NavigationSettingsSpinRole).toBool())
+                    {
+                        startNavigationSettingsSpin(treeView, treeView, pressed, 360.0, 600);
+                        viewport->update(treeView->visualRect(pressed));
+                    }
+                }
+            }
         }
     }
     return QProxyStyle::eventFilter(watched, event);

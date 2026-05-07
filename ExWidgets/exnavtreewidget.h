@@ -6,12 +6,18 @@
 
 #include "exwidgets_global.h"
 
-class QStackedWidget;
 class ExNavTreeWidgetPrivate;
 
+/**
+ * @brief The ExNavTreeWidget class
+ */
 class EXWIDGETS_EXPORT ExNavTreeWidget : public QTreeWidget
 {
     Q_OBJECT
+    Q_PROPERTY(bool navigationExpanded READ navigationExpanded WRITE setNavigationExpanded)
+    Q_PROPERTY(int compactWidth READ compactWidth WRITE setCompactWidth)
+    Q_PROPERTY(int expandedWidth READ expandedWidth WRITE setExpandedWidth)
+    Q_PROPERTY(bool autoHeightByItemsEnabled READ isAutoHeightByItemsEnabled WRITE setAutoHeightByItemsEnabled)
 
 public:
     explicit ExNavTreeWidget(QWidget *parent = nullptr);
@@ -30,8 +36,9 @@ public:
     bool navigationExpanded() const;
     void toggleNavigationMode();
 
-    void setStackedWidget(QStackedWidget *stack);
-    QStackedWidget *stackedWidget() const;
+    void setAutoHeightByItemsEnabled(bool enabled);
+    bool isAutoHeightByItemsEnabled() const;
+    // Compatibility alias for previous naming.
     void setFixedHeightByItems(bool enabled);
 
 signals:

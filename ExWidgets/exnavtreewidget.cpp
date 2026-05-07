@@ -11,13 +11,11 @@
 #include <QPixmap>
 #include <QStyle>
 #include <QMouseEvent>
-#include <QStackedWidget>
 
 class ExNavTreeWidgetPrivate
 {
 public:
     QVariantAnimation *navigationWidthAnimation{nullptr};
-    QStackedWidget *stackedWidget{nullptr};
     bool navigationExpanded{false};
     bool autoFixedHeight{false};
     int navigationCompactWidth{44};
@@ -63,11 +61,6 @@ ExNavTreeWidget::ExNavTreeWidget(QWidget *parent)
     Q_D(ExNavTreeWidget);
     setObjectName("ExNavTreeWidget");
 
-    // QFont navFont = font();
-    // navFont.setFamily("Microsoft YaHei UI");
-    // // navFont.setHintingPreference(QFont::PreferFullHinting);
-    // setFont(navFont);
-
     setAnimated(true);
     setIconSize(QSize(20, 20));
     setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -79,6 +72,7 @@ ExNavTreeWidget::ExNavTreeWidget(QWidget *parent)
     setProperty("navigationViewIndicator", true);
     setProperty("ItemHeight", 38);
     header()->setSectionResizeMode(0, QHeaderView::Fixed);
+    setHeaderHidden(true);
     setColumnWidth(0, d->navigationCompactWidth);
     setFixedWidth(d->navigationCompactWidth);
 
@@ -209,23 +203,22 @@ void ExNavTreeWidget::toggleNavigationMode()
     setNavigationExpanded(!d->navigationExpanded, true);
 }
 
-void ExNavTreeWidget::setStackedWidget(QStackedWidget *stack)
-{
-    Q_D(ExNavTreeWidget);
-    d->stackedWidget = stack;
-}
-
-QStackedWidget *ExNavTreeWidget::stackedWidget() const
-{
-    Q_D(const ExNavTreeWidget);
-    return d->stackedWidget;
-}
-
 void ExNavTreeWidget::setFixedHeightByItems(bool enabled)
+{
+    setAutoHeightByItemsEnabled(enabled);
+}
+
+void ExNavTreeWidget::setAutoHeightByItemsEnabled(bool enabled)
 {
     Q_D(ExNavTreeWidget);
     d->autoFixedHeight = enabled;
     updateFixedHeight();
+}
+
+bool ExNavTreeWidget::isAutoHeightByItemsEnabled() const
+{
+    Q_D(const ExNavTreeWidget);
+    return d->autoFixedHeight;
 }
 
 void ExNavTreeWidget::updateFixedHeight()
@@ -254,13 +247,6 @@ void ExNavTreeWidget::handleItemSelection(QTreeWidgetItem *current)
     }
 
     const int pageIndex = pageData.toInt();
-
-    Q_D(ExNavTreeWidget);
-    if (d->stackedWidget)
-    {
-        d->stackedWidget->setCurrentIndex(pageIndex);
-    }
-
     emit pageIndexChanged(pageIndex);
 }
 
@@ -367,8 +353,6 @@ void ExNavTreeWidget::updateNavigationViewByWidth(int width)
     bool oldIconMode = property("navigationIconMode").toBool();
     bool willBeIconMode = !showText;
     bool modeFlipped = (oldIconMode != willBeIconMode);
-
-    // 仅在真实发生模式翻转时处理
     if (modeFlipped)
     {
         if (willBeIconMode)

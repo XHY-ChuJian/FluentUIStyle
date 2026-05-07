@@ -1,3 +1,31 @@
 {
-    "C_Cpp.intelliSenseEngine": "default"
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include",
+        "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtCore",
+        "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtGui",
+        "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtWidgets",
+        "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtSvg"
+    ],
+    "cmake.configureOnOpen": true,
+    "cmake.configureSettings": {
+        "CMAKE_PREFIX_PATH": "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019",
+        "Qt6_DIR": "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019/lib/cmake/Qt6"
+    },
+    "clangd.path": "C:/Program Files/LLVM/bin/clangd.exe",
+    "clangd.arguments": [
+        "--background-index",
+        "--clang-tidy",
+        "--completion-style=detailed",
+        "--header-insertion=never"
+    ],
+    "clangd.fallbackFlags": [
+        "-ID:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include",
+        "-ID:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtCore",
+        "-ID:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtGui",
+        "-ID:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtWidgets",
+        "-ID:/app/Qt/Qt6.6.3/6.6.3/msvc2019/include/QtSvg"
+    ]
 }

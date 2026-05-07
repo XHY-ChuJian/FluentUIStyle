@@ -76,6 +76,8 @@
 // Project Headers
 #include <exstackedwidget.h>
 #include <extabwidget.h>
+#include <exnavtreewidget.h>
+#include <exwinuinavigationview.h>
 
 #ifndef FLUENT_USE_QT_STYLE
 #include <fluentui3style.h>
@@ -586,9 +588,10 @@ void MainWindow::initializeMenuAndToolBar()
             &QAction::triggered,
             [=](bool checked)
             {
-                bool expand = m_navView->navigationExpanded();
-                m_navView->setNavigationExpanded(!expand);
-                ui->footerNavView->setNavigationExpanded(!expand);
+                if (!m_winUINavigationView)
+                    return;
+                const bool expand = m_winUINavigationView->navigationExpanded();
+                m_winUINavigationView->setNavigationExpanded(!expand);
                 ui->rBOnlyIcon->setChecked(expand);
                 ui->rBIconAndText->setChecked(!expand);
             });
@@ -795,47 +798,51 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
 
 void MainWindow::initializeNavigationView()
 {
-    m_navView = ui->navView;
-    
-    // 添加导航项
-    QTreeWidgetItem *basicItem = m_navView->addNavigationItem("基础控件", 0, "\uE80F");
-    m_navView->addNavigationItem("表格控件", 1, "\uE99A");
-    m_navView->addNavigationItem("列表控件", 2, "\uE71D");
-    m_navView->addNavigationItem("树形控件", 3, "\uED28");
-    m_navView->addNavigationItem("导航控件", 4, "\uE8B0");
-    m_navView->addNavigationItem("Mdi", 5, "\uE9D9");
+    if (!m_winUINavigationView)
+    {
+        m_winUINavigationView = new ExWinUINavigationView(this);
+        m_winUINavigationView->setObjectName(QStringLiteral("winUINavigationView"));
+        m_winUINavigationView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+        ui->navigationPaneLayout->addWidget(m_winUINavigationView, 0, 0);
+    }
+
+    m_navView = m_winUINavigationView->mainNavView();
+
+    m_winUINavigationView->addNavigationItem("基础控件", 0, "\uE80F");
+    m_winUINavigationView->addNavigationItem("表格控件", 1, "\uE99A");
+    m_winUINavigationView->addNavigationItem("列表控件", 2, "\uE71D");
+    m_winUINavigationView->addNavigationItem("树形控件", 3, "\uED28");
+    m_winUINavigationView->addNavigationItem("导航控件", 4, "\uE8B0");
+    m_winUINavigationView->addNavigationItem("Mdi", 5, "\uE9D9");
     addTestNavigationTree();
 
-    ui->footerNavView->addNavigationItem("关于", 0, "\uE77B");
-    ui->footerNavView->addNavigationItem("设置", 6, "\uE713");
-    ui->footerNavView->setFixedHeightByItems(true);
+    m_winUINavigationView->addFooterNavigationItem("关于", 0, "\uE77B");
+    if (QTreeWidgetItem *settingsItem = m_winUINavigationView->addFooterNavigationItem("设置", 6, "\uE713"))
+    {
+        settingsItem->setData(0, Qt::UserRole + 1001, true);
+    }
 
-    // 共享同一个 QStackedWidget 用于页面切换
-    m_navView->setStackedWidget(ui->stackedWidget);
-    ui->footerNavView->setStackedWidget(ui->stackedWidget);
+    m_winUINavigationView->setStackedWidget(ui->stackedWidget);
 
-    m_navView->setCurrentItem(basicItem);
-    m_navView->setNavigationExpanded(false, false);
+    m_winUINavigationView->setNavigationExpanded(false, false);
 
-    ui->footerNavView->clearSelection();
-    ui->footerNavView->setCurrentIndex(QModelIndex());
-    ui->footerNavView->setNavigationExpanded(false, false);
+    m_winUINavigationView->clearFooterSelection();
 }
 
 void MainWindow::addTestNavigationTree()
 {
-    QTreeWidgetItem *testItem = new QTreeWidgetItem(ui->navView);
-    ui->navView->configureNavigationItem(testItem, "测试节点", 6, "\uE9F5");
+    QTreeWidgetItem *testItem = new QTreeWidgetItem(m_navView);
+    m_navView->configureNavigationItem(testItem, "测试节点", 6, "\uE9F5");
 
     for (int i = 0; i < 5; ++i)
     {
         QTreeWidgetItem *childItem = new QTreeWidgetItem(testItem);
-        ui->navView->configureNavigationItem(childItem, QString("子节点%1").arg(i + 1), 6);
+        m_navView->configureNavigationItem(childItem, QString("子节点%1").arg(i + 1), 6);
 
         for (int j = 0; j < 3; ++j)
         {
             QTreeWidgetItem *subChildItem = new QTreeWidgetItem(childItem);
-            ui->navView->configureNavigationItem(subChildItem, QString("子节点%1-%2").arg(i + 1).arg(j + 1), 6);
+            m_navView->configureNavigationItem(subChildItem, QString("子节点%1-%2").arg(i + 1).arg(j + 1), 6);
         }
     }
 }
@@ -1361,9 +1368,9 @@ void MainWindow::updateNavigationItemIcons()
         }
     };
 
-    for (int i = 0; i < ui->navView->topLevelItemCount(); ++i)
+    for (int i = 0; i < m_navView->topLevelItemCount(); ++i)
     {
-        updateItemIcon(ui->navView->topLevelItem(i));
+        updateItemIcon(m_navView->topLevelItem(i));
     }
 }
 
@@ -1680,14 +1687,14 @@ void MainWindow::on_rBWidgetModePixmap_clicked(bool checked)
 
 void MainWindow::on_rBOnlyIcon_clicked(bool checked)
 {
-    m_navView->setNavigationExpanded(false);
-    ui->footerNavView->setNavigationExpanded(false);
+    if (m_winUINavigationView)
+        m_winUINavigationView->setNavigationExpanded(false);
 }
 
 void MainWindow::on_rBIconAndText_clicked(bool checked)
 {
-    m_navView->setNavigationExpanded(true);
-    ui->footerNavView->setNavigationExpanded(true);
+    if (m_winUINavigationView)
+        m_winUINavigationView->setNavigationExpanded(true);
 }
 
 void MainWindow::setupAccentColorWidget()

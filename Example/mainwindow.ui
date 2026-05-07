@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1583</width>
-    <height>840</height>
+    <width>1408</width>
+    <height>718</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,8 +86,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1037</width>
-             <height>1032</height>
+             <width>1126</width>
+             <height>957</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -835,6 +835,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
                     <property name="text">
                      <string>SwitchButton</string>
                     </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
                     <property name="isSwitchButton" stdset="0">
                      <bool>true</bool>
                     </property>
@@ -1092,7 +1095,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <bool>true</bool>
                     </property>
                     <property name="checked">
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -1652,8 +1655,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>173</width>
-             <height>421</height>
+             <width>151</width>
+             <height>422</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -1848,126 +1851,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </widget>
     </item>
     <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout_31">
+     <layout class="QGridLayout" name="navigationPaneLayout">
       <property name="verticalSpacing">
        <number>0</number>
       </property>
-      <item row="0" column="0">
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="leftMargin">
-         <number>6</number>
-        </property>
-        <property name="topMargin">
-         <number>6</number>
-        </property>
-        <property name="rightMargin">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>6</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="ExNavTreeWidget" name="navView">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LayoutDirection::LeftToRight</enum>
-          </property>
-          <property name="autoFillBackground">
-           <bool>false</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Shape::NoFrame</enum>
-          </property>
-          <property name="indentation">
-           <number>20</number>
-          </property>
-          <property name="headerHidden">
-           <bool>true</bool>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-          <column>
-           <property name="text">
-            <string>1</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <layout class="QGridLayout" name="gridLayout_30">
-        <property name="leftMargin">
-         <number>6</number>
-        </property>
-        <property name="topMargin">
-         <number>6</number>
-        </property>
-        <property name="rightMargin">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>6</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="ExNavTreeWidget" name="footerNavView">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Shape::NoFrame</enum>
-          </property>
-          <property name="indentation">
-           <number>20</number>
-          </property>
-          <property name="animated">
-           <bool>false</bool>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-          <column>
-           <property name="text">
-            <string notr="true">1</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-       </layout>
-      </item>
      </layout>
     </item>
    </layout>
@@ -2064,11 +1951,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <extends>QStackedWidget</extends>
    <header location="global">exstackedwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ExNavTreeWidget</class>
-   <extends>QTreeWidget</extends>
-   <header>exnavtreewidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -11,6 +11,7 @@
 
 class QTabBar;
 class ExNavTreeWidget;
+class ExWinUINavigationView;
 class ExStackedWidget;
 class ExTabWidget;
 class QComboBox;
@@ -121,6 +122,7 @@ private:
     QTabBar *m_winui3IconBar{nullptr};
     ExTabWidget *m_navigationTabWidget{nullptr};
     ExNavTreeWidget *m_navView{nullptr};
+    ExWinUINavigationView *m_winUINavigationView{nullptr};
     QAction *m_searchAction{nullptr};
 
     QTabBar *m_tabBarWidgetBg{nullptr};
