@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Segoe Fluent Icons Viewer</title>
+<style>
+@font-face {
+    font-family: 'Segoe Fluent Icons';
+    src: url('Segoe Fluent Icons.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+body { font-family: Arial, sans-serif; padding: 20px; }
+input[type=text] { width: 300px; padding:5px; margin-bottom:20px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding:8px; text-align:center; vertical-align:middle; }
+.icon { font-family: 'Segoe Fluent Icons'; font-size: 32px; }
+</style>
+</head>
+<body>
+<h2>Segoe Fluent Icons Viewer</h2>
+<input type="text" id="search" placeholder="Search by name...">
+<table id="iconTable">
+<thead>
+<tr>
+<th>Icon 1</th><th>Name 1</th><th>Unicode 1</th><th>Icon 2</th><th>Name 2</th><th>Unicode 2</th><th>Icon 3</th><th>Name 3</th><th>Unicode 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="icon"></td><td>Accept</td><td>U+E8FB</td><td class="icon"></td><td>AcceptMedium</td><td>U+F78C</td><td class="icon"></td><td>Accident</td><td>U+E81F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AccidentSolid</td><td>U+EA8E</td><td class="icon"></td><td>Accounts</td><td>U+E910</td><td class="icon"></td><td>ActionCenter</td><td>U+E91C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ActionCenterAsterisk</td><td>U+EA21</td><td class="icon"></td><td>ActionCenterMirrored</td><td>U+ED0D</td><td class="icon"></td><td>ActionCenterNotification</td><td>U+E7E7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ActionCenterNotificationMirrored</td><td>U+ED0C</td><td class="icon"></td><td>ActionCenterQuiet</td><td>U+EE79</td><td class="icon"></td><td>ActionCenterQuietNotification</td><td>U+EE7A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Add</td><td>U+E710</td><td class="icon"></td><td>AddBold</td><td>U+F8AA</td><td class="icon"></td><td>AddFriend</td><td>U+E8FA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AddNewLine</td><td>U+F7B7</td><td class="icon"></td><td>AddNewLineFill</td><td>U+F7B8</td><td class="icon"></td><td>AddRemoteDevice</td><td>U+E836</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AddSurfaceHub</td><td>U+ECC4</td><td class="icon"></td><td>AddTo</td><td>U+ECC8</td><td class="icon"></td><td>AdjustHologram</td><td>U+EBD2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Admin</td><td>U+E7EF</td><td class="icon"></td><td>Airplane</td><td>U+E709</td><td class="icon"></td><td>AirplaneSolid</td><td>U+EB4C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AlignCenter</td><td>U+E8E3</td><td class="icon"></td><td>AlignLeft</td><td>U+E8E4</td><td class="icon"></td><td>AlignRight</td><td>U+E8E2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AllApps</td><td>U+E71D</td><td class="icon"></td><td>AllAppsMirrored</td><td>U+EA40</td><td class="icon"></td><td>Annotation</td><td>U+E924</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AppIconDefault</td><td>U+ECAA</td><td class="icon"></td><td>ApplicationGuard</td><td>U+F0EF</td><td class="icon"></td><td>Apps</td><td>U+ED35</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AreaChart</td><td>U+E9D2</td><td class="icon"></td><td>ArrowDown8</td><td>U+F0AE</td><td class="icon"></td><td>ArrowLeft8</td><td>U+F0B0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ArrowRight8</td><td>U+F0AF</td><td class="icon"></td><td>ArrowUp8</td><td>U+F0AD</td><td class="icon"></td><td>AspectRatio</td><td>U+E799</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Asterisk</td><td>U+EA38</td><td class="icon"></td><td>AsteriskBadge12</td><td>U+EDAD</td><td class="icon"></td><td>Attach</td><td>U+E723</td>
+</tr>
+<tr>
+<td class="icon"></td><td>AttachCamera</td><td>U+E8A2</td><td class="icon"></td><td>Audio</td><td>U+E8D6</td><td class="icon"></td><td>Back</td><td>U+E72B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BackMirrored</td><td>U+F0D2</td><td class="icon"></td><td>BackSolidBold</td><td>U+F8AC</td><td class="icon"></td><td>BackSpaceQWERTY</td><td>U+E750</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BackSpaceQWERTYLg</td><td>U+EB96</td><td class="icon"></td><td>BackSpaceQWERTYMd</td><td>U+E926</td><td class="icon"></td><td>BackSpaceQWERTYSm</td><td>U+E925</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BackToWindow</td><td>U+E73F</td><td class="icon"></td><td>BackgroundToggle</td><td>U+EF1F</td><td class="icon"></td><td>Badge</td><td>U+EC1B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BandBattery0</td><td>U+ECB9</td><td class="icon"></td><td>BandBattery1</td><td>U+ECBA</td><td class="icon"></td><td>BandBattery2</td><td>U+ECBB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BandBattery3</td><td>U+ECBC</td><td class="icon"></td><td>BandBattery4</td><td>U+ECBD</td><td class="icon"></td><td>BandBattery5</td><td>U+ECBE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BandBattery6</td><td>U+ECBF</td><td class="icon"></td><td>Bank</td><td>U+E825</td><td class="icon"></td><td>BarcodeScanner</td><td>U+EC5A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Battery0</td><td>U+E850</td><td class="icon"></td><td>Battery1</td><td>U+E851</td><td class="icon"></td><td>Battery10</td><td>U+E83F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Battery2</td><td>U+E852</td><td class="icon"></td><td>Battery3</td><td>U+E853</td><td class="icon"></td><td>Battery4</td><td>U+E854</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Battery5</td><td>U+E855</td><td class="icon"></td><td>Battery6</td><td>U+E856</td><td class="icon"></td><td>Battery7</td><td>U+E857</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Battery8</td><td>U+E858</td><td class="icon"></td><td>Battery9</td><td>U+E859</td><td class="icon"></td><td>BatteryCharging0</td><td>U+E85A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatteryCharging1</td><td>U+E85B</td><td class="icon"></td><td>BatteryCharging10</td><td>U+EA93</td><td class="icon"></td><td>BatteryCharging2</td><td>U+E85C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatteryCharging3</td><td>U+E85D</td><td class="icon"></td><td>BatteryCharging4</td><td>U+E85E</td><td class="icon"></td><td>BatteryCharging5</td><td>U+E85F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatteryCharging6</td><td>U+E860</td><td class="icon"></td><td>BatteryCharging7</td><td>U+E861</td><td class="icon"></td><td>BatteryCharging8</td><td>U+E862</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatteryCharging9</td><td>U+E83E</td><td class="icon"></td><td>BatterySaver0</td><td>U+E863</td><td class="icon"></td><td>BatterySaver1</td><td>U+E864</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatterySaver10</td><td>U+EA95</td><td class="icon"></td><td>BatterySaver2</td><td>U+E865</td><td class="icon"></td><td>BatterySaver3</td><td>U+E866</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatterySaver4</td><td>U+E867</td><td class="icon"></td><td>BatterySaver5</td><td>U+E868</td><td class="icon"></td><td>BatterySaver6</td><td>U+E869</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatterySaver7</td><td>U+E86A</td><td class="icon"></td><td>BatterySaver8</td><td>U+E86B</td><td class="icon"></td><td>BatterySaver9</td><td>U+EA94</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BatteryUnknown</td><td>U+E996</td><td class="icon"></td><td>Beta</td><td>U+EA24</td><td class="icon"></td><td>BidiLtr</td><td>U+E9AA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BidiRtl</td><td>U+E9AB</td><td class="icon"></td><td>BlockContact</td><td>U+E8F8</td><td class="icon"></td><td>Blocked2</td><td>U+ECE4</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BlueLight</td><td>U+F08C</td><td class="icon"></td><td>Bluetooth</td><td>U+E702</td><td class="icon"></td><td>BodyCam</td><td>U+EC80</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Bold</td><td>U+E8DD</td><td class="icon"></td><td>Bookmarks</td><td>U+E8A4</td><td class="icon"></td><td>BookmarksMirrored</td><td>U+EA41</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Brightness</td><td>U+E706</td><td class="icon"></td><td>Broom</td><td>U+EA99</td><td class="icon"></td><td>BrowsePhotos</td><td>U+E7C5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BrushSize</td><td>U+EDA8</td><td class="icon"></td><td>Bug</td><td>U+EBE8</td><td class="icon"></td><td>BuildingEnergy</td><td>U+EC0B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BulletedList</td><td>U+E8FD</td><td class="icon"></td><td>BulletedListMirrored</td><td>U+EA42</td><td class="icon"></td><td>Bullseye</td><td>U+F272</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BumperLeft</td><td>U+F10C</td><td class="icon"></td><td>BumperRight</td><td>U+F10D</td><td class="icon"></td><td>Bus</td><td>U+E806</td>
+</tr>
+<tr>
+<td class="icon"></td><td>BusSolid</td><td>U+EB47</td><td class="icon"></td><td>ButtonA</td><td>U+F093</td><td class="icon"></td><td>ButtonB</td><td>U+F094</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ButtonMenu</td><td>U+EDE3</td><td class="icon"></td><td>ButtonView2</td><td>U+EECA</td><td class="icon"></td><td>ButtonX</td><td>U+F096</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ButtonY</td><td>U+F095</td><td class="icon"></td><td>CC</td><td>U+E7F0</td><td class="icon"></td><td>CHTLanguageBar</td><td>U+F69E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Cafe</td><td>U+EC32</td><td class="icon"></td><td>Calculator</td><td>U+E8EF</td><td class="icon"></td><td>CalculatorAddition</td><td>U+E948</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalculatorBackspace</td><td>U+E94F</td><td class="icon"></td><td>CalculatorDivide</td><td>U+E94A</td><td class="icon"></td><td>CalculatorEqualTo</td><td>U+E94E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalculatorMultiply</td><td>U+E947</td><td class="icon"></td><td>CalculatorNegate</td><td>U+E94D</td><td class="icon"></td><td>CalculatorPercentage</td><td>U+E94C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalculatorSquareroot</td><td>U+E94B</td><td class="icon"></td><td>CalculatorSubtract</td><td>U+E949</td><td class="icon"></td><td>Calendar</td><td>U+E787</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalendarDay</td><td>U+E8BF</td><td class="icon"></td><td>CalendarMirrored</td><td>U+ED28</td><td class="icon"></td><td>CalendarReply</td><td>U+E8F5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalendarSolid</td><td>U+EA89</td><td class="icon"></td><td>CalendarWeek</td><td>U+E8C0</td><td class="icon"></td><td>CallControl</td><td>U+E80B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CallForwardInternational</td><td>U+E87A</td><td class="icon"></td><td>CallForwardInternationalMirrored</td><td>U+EA43</td><td class="icon"></td><td>CallForwardRoaming</td><td>U+E87B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CallForwardRoamingMirrored</td><td>U+EA44</td><td class="icon"></td><td>CallForwarding</td><td>U+E7F2</td><td class="icon"></td><td>CallForwardingMirrored</td><td>U+EA97</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CalligraphyFill</td><td>U+F0C7</td><td class="icon"></td><td>CalligraphyPen</td><td>U+EDFB</td><td class="icon"></td><td>Calories</td><td>U+ECAD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Camera</td><td>U+E722</td><td class="icon"></td><td>Cancel</td><td>U+E711</td><td class="icon"></td><td>CancelMedium</td><td>U+F78A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Caption</td><td>U+E8BA</td><td class="icon"></td><td>Car</td><td>U+E804</td><td class="icon"></td><td>CaretBottomRightSolidCenter8</td><td>U+F169</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CaretDown8</td><td>U+EDD8</td><td class="icon"></td><td>CaretDownSolid8</td><td>U+EDDC</td><td class="icon"></td><td>CaretLeft8</td><td>U+EDD5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CaretLeftSolid8</td><td>U+EDD9</td><td class="icon"></td><td>CaretRight8</td><td>U+EDD6</td><td class="icon"></td><td>CaretRightSolid8</td><td>U+EDDA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CaretSolidDown</td><td>U+F08E</td><td class="icon"></td><td>CaretSolidLeft</td><td>U+F08D</td><td class="icon"></td><td>CaretSolidRight</td><td>U+F08F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CaretSolidUp</td><td>U+F090</td><td class="icon"></td><td>CaretUp8</td><td>U+EDD7</td><td class="icon"></td><td>CaretUpSolid8</td><td>U+EDDB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CashDrawer</td><td>U+EC59</td><td class="icon"></td><td>CellPhone</td><td>U+E8EA</td><td class="icon"></td><td>Certificate</td><td>U+EB95</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CharacterAppearance</td><td>U+F17F</td><td class="icon"></td><td>Characters</td><td>U+E8C1</td><td class="icon"></td><td>ChatBubbles</td><td>U+E8F2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CheckList</td><td>U+E9D5</td><td class="icon"></td><td>CheckMark</td><td>U+E73E</td><td class="icon"></td><td>Checkbox</td><td>U+E739</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Checkbox14</td><td>U+F16B</td><td class="icon"></td><td>CheckboxComposite</td><td>U+E73A</td><td class="icon"></td><td>CheckboxComposite14</td><td>U+F16C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CheckboxCompositeReversed</td><td>U+E73D</td><td class="icon"></td><td>CheckboxFill</td><td>U+E73B</td><td class="icon"></td><td>CheckboxIndeterminate</td><td>U+E73C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CheckboxIndeterminateCombo</td><td>U+F16E</td><td class="icon"></td><td>CheckboxIndeterminateCombo14</td><td>U+F16D</td><td class="icon"></td><td>ChecklistMirrored</td><td>U+F0B5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronDown</td><td>U+E70D</td><td class="icon"></td><td>ChevronDownMed</td><td>U+E972</td><td class="icon"></td><td>ChevronDownSmall</td><td>U+E96E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronLeft</td><td>U+E76B</td><td class="icon"></td><td>ChevronLeft20</td><td>U+F743</td><td class="icon"></td><td>ChevronLeft32</td><td>U+F744</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronLeftMed</td><td>U+E973</td><td class="icon"></td><td>ChevronLeftSmall</td><td>U+E96F</td><td class="icon"></td><td>ChevronRight</td><td>U+E76C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronRight20</td><td>U+F745</td><td class="icon"></td><td>ChevronRight32</td><td>U+F746</td><td class="icon"></td><td>ChevronRightMed</td><td>U+E974</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronRightSmall</td><td>U+E970</td><td class="icon"></td><td>ChevronUp</td><td>U+E70E</td><td class="icon"></td><td>ChevronUpMed</td><td>U+E971</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChevronUpSmall</td><td>U+E96D</td><td class="icon"></td><td>ChineseBoPoMoFo</td><td>U+E989</td><td class="icon"></td><td>ChineseChangjie</td><td>U+E981</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChinesePinyin</td><td>U+E98A</td><td class="icon"></td><td>ChinesePunctuation</td><td>U+F111</td><td class="icon"></td><td>ChineseQuick</td><td>U+E984</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChipCardCreditCardReader</td><td>U+EF40</td><td class="icon"></td><td>ChromeAnnotate</td><td>U+E931</td><td class="icon"></td><td>ChromeAnnotateContrast</td><td>U+F0F9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeBack</td><td>U+E830</td><td class="icon"></td><td>ChromeBackContrast</td><td>U+F0D5</td><td class="icon"></td><td>ChromeBackContrastMirrored</td><td>U+F0D6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeBackMirrored</td><td>U+EA47</td><td class="icon"></td><td>ChromeBackToWindow</td><td>U+E92C</td><td class="icon"></td><td>ChromeBackToWindowContrast</td><td>U+F0D7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeClose</td><td>U+E8BB</td><td class="icon"></td><td>ChromeCloseContrast</td><td>U+EF2C</td><td class="icon"></td><td>ChromeFullScreen</td><td>U+E92D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeFullScreenContrast</td><td>U+F0D8</td><td class="icon"></td><td>ChromeMaximize</td><td>U+E922</td><td class="icon"></td><td>ChromeMaximizeContrast</td><td>U+EF2E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeMinimize</td><td>U+E921</td><td class="icon"></td><td>ChromeMinimizeContrast</td><td>U+EF2D</td><td class="icon"></td><td>ChromeRestore</td><td>U+E923</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ChromeRestoreContrast</td><td>U+EF2F</td><td class="icon"></td><td>ChromeSwitch</td><td>U+F1CB</td><td class="icon"></td><td>ChromeSwitchContast</td><td>U+F1CC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CircleFill</td><td>U+EA3B</td><td class="icon"></td><td>CircleFillBadge12</td><td>U+EDB0</td><td class="icon"></td><td>CircleRing</td><td>U+EA3A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CircleRingBadge12</td><td>U+EDAF</td><td class="icon"></td><td>CircleShapeSolid</td><td>U+F63C</td><td class="icon"></td><td>CityNext</td><td>U+EC06</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CityNext2</td><td>U+EC07</td><td class="icon"></td><td>Clear</td><td>U+E894</td><td class="icon"></td><td>ClearAllInk</td><td>U+ED62</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ClearAllInkMirrored</td><td>U+EF19</td><td class="icon"></td><td>ClearSelection</td><td>U+E8E6</td><td class="icon"></td><td>ClearSelectionMirrored</td><td>U+EA48</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Click</td><td>U+E8B0</td><td class="icon"></td><td>ClickSolid</td><td>U+F8AF</td><td class="icon"></td><td>ClickedOutLoudSolidBold</td><td>U+F8B3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ClipboardList</td><td>U+F0E3</td><td class="icon"></td><td>ClipboardListMirrored</td><td>U+F0E4</td><td class="icon"></td><td>ClippingTool</td><td>U+F406</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ClosePane</td><td>U+E89F</td><td class="icon"></td><td>ClosePaneMirrored</td><td>U+EA49</td><td class="icon"></td><td>ClosedCaptionsInternational</td><td>U+F15F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Cloud</td><td>U+E753</td><td class="icon"></td><td>CloudDownload</td><td>U+EBD3</td><td class="icon"></td><td>CloudPrinter</td><td>U+EDA6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CloudSearch</td><td>U+EDE4</td><td class="icon"></td><td>Code</td><td>U+E943</td><td class="icon"></td><td>CollapseContent</td><td>U+F165</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CollapseContentSingle</td><td>U+F166</td><td class="icon"></td><td>CollateLandscape</td><td>U+F57B</td><td class="icon"></td><td>CollateLandscapeSeparated</td><td>U+F5AC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CollatePortrait</td><td>U+F57C</td><td class="icon"></td><td>CollatePortraitSeparated</td><td>U+F57D</td><td class="icon"></td><td>Color</td><td>U+E790</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ColorOff</td><td>U+F570</td><td class="icon"></td><td>ColorSolid</td><td>U+F354</td><td class="icon"></td><td>CommaKey</td><td>U+E9AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CommandPrompt</td><td>U+E756</td><td class="icon"></td><td>Comment</td><td>U+E90A</td><td class="icon"></td><td>Communications</td><td>U+E95A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CompanionApp</td><td>U+EC64</td><td class="icon"></td><td>CompanionDeviceFramework</td><td>U+ED5D</td><td class="icon"></td><td>Completed</td><td>U+E930</td>
+</tr>
+<tr>
+<td class="icon"></td><td>CompletedSolid</td><td>U+EC61</td><td class="icon"></td><td>Component</td><td>U+E950</td><td class="icon"></td><td>ComposeMode</td><td>U+F6A9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Connect</td><td>U+E703</td><td class="icon"></td><td>ConnectApp</td><td>U+ED5C</td><td class="icon"></td><td>Connected</td><td>U+F0B9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Construction</td><td>U+E822</td><td class="icon"></td><td>ConstructionCone</td><td>U+E98F</td><td class="icon"></td><td>ConstructionSolid</td><td>U+EA8D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Contact</td><td>U+E77B</td><td class="icon"></td><td>Contact2</td><td>U+E8D4</td><td class="icon"></td><td>ContactInfo</td><td>U+E779</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ContactInfoMirrored</td><td>U+EA4A</td><td class="icon"></td><td>ContactPresence</td><td>U+E8CF</td><td class="icon"></td><td>ContactSolid</td><td>U+EA8C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Copy</td><td>U+E8C8</td><td class="icon"></td><td>CopyTo</td><td>U+F413</td><td class="icon"></td><td>Courthouse</td><td>U+EC08</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Crop</td><td>U+E7A8</td><td class="icon"></td><td>CtrlSpatialLeft</td><td>U+F3E7</td><td class="icon"></td><td>CtrlSpatialRight</td><td>U+F11B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Cut</td><td>U+E8C6</td><td class="icon"></td><td>DMC</td><td>U+E951</td><td class="icon"></td><td>DashKey</td><td>U+E9AE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DataSense</td><td>U+E791</td><td class="icon"></td><td>DataSenseBar</td><td>U+E7A5</td><td class="icon"></td><td>DateTime</td><td>U+EC92</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DateTimeMirrored</td><td>U+EE93</td><td class="icon"></td><td>DeclineCall</td><td>U+F405</td><td class="icon"></td><td>DefaultAPN</td><td>U+F080</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DefenderApp</td><td>U+E83D</td><td class="icon"></td><td>DefenderBadge12</td><td>U+F0FB</td><td class="icon"></td><td>Delete</td><td>U+E74D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DeleteLines</td><td>U+F7AF</td><td class="icon"></td><td>DeleteLinesFill</td><td>U+F7B0</td><td class="icon"></td><td>DeleteWord</td><td>U+F7AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DeleteWordFill</td><td>U+F7AE</td><td class="icon"></td><td>DeliveryOptimization</td><td>U+F785</td><td class="icon"></td><td>Design</td><td>U+EB3C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DetachablePC</td><td>U+F103</td><td class="icon"></td><td>DevUpdate</td><td>U+ECC5</td><td class="icon"></td><td>DeveloperTools</td><td>U+EC7A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DeviceDiscovery</td><td>U+EBDE</td><td class="icon"></td><td>DeviceLaptopNoPic</td><td>U+E7F8</td><td class="icon"></td><td>DeviceLaptopPic</td><td>U+E7F7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DeviceMonitorLeftPic</td><td>U+E7FA</td><td class="icon"></td><td>DeviceMonitorNoPic</td><td>U+E7FB</td><td class="icon"></td><td>DeviceMonitorRightPic</td><td>U+E7F9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Devices</td><td>U+E772</td><td class="icon"></td><td>Devices2</td><td>U+E975</td><td class="icon"></td><td>Devices3</td><td>U+EA6C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Devices4</td><td>U+EB66</td><td class="icon"></td><td>Diagnostic</td><td>U+E9D9</td><td class="icon"></td><td>Dial1</td><td>U+F146</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dial10</td><td>U+F14F</td><td class="icon"></td><td>Dial11</td><td>U+F150</td><td class="icon"></td><td>Dial12</td><td>U+F151</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dial13</td><td>U+F152</td><td class="icon"></td><td>Dial14</td><td>U+F153</td><td class="icon"></td><td>Dial15</td><td>U+F154</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dial16</td><td>U+F155</td><td class="icon"></td><td>Dial2</td><td>U+F147</td><td class="icon"></td><td>Dial3</td><td>U+F148</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dial4</td><td>U+F149</td><td class="icon"></td><td>Dial5</td><td>U+F14A</td><td class="icon"></td><td>Dial6</td><td>U+F14B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dial7</td><td>U+F14C</td><td class="icon"></td><td>Dial8</td><td>U+F14D</td><td class="icon"></td><td>Dial9</td><td>U+F14E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DialShape1</td><td>U+F156</td><td class="icon"></td><td>DialShape2</td><td>U+F157</td><td class="icon"></td><td>DialShape3</td><td>U+F158</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DialShape4</td><td>U+F159</td><td class="icon"></td><td>DialUp</td><td>U+E83C</td><td class="icon"></td><td>Dialpad</td><td>U+E75F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dictionary</td><td>U+E82D</td><td class="icon"></td><td>DictionaryAdd</td><td>U+E82E</td><td class="icon"></td><td>DictionaryCloud</td><td>U+EBC3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DirectAccess</td><td>U+E83B</td><td class="icon"></td><td>Directions</td><td>U+E8F0</td><td class="icon"></td><td>DisableUpdates</td><td>U+E8D8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DisconnectDisplay</td><td>U+EA14</td><td class="icon"></td><td>DisconnectDrive</td><td>U+E8CD</td><td class="icon"></td><td>Dislike</td><td>U+E8E0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Dock</td><td>U+E952</td><td class="icon"></td><td>DockBottom</td><td>U+E90E</td><td class="icon"></td><td>DockLeft</td><td>U+E90C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DockLeftMirrored</td><td>U+EA4C</td><td class="icon"></td><td>DockRight</td><td>U+E90D</td><td class="icon"></td><td>DockRightMirrored</td><td>U+EA4B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Document</td><td>U+E8A5</td><td class="icon"></td><td>DocumentApproval</td><td>U+F28B</td><td class="icon"></td><td>DoublePinyin</td><td>U+F085</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Down</td><td>U+E74B</td><td class="icon"></td><td>DownShiftKey</td><td>U+E84A</td><td class="icon"></td><td>Download</td><td>U+E896</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DownloadMap</td><td>U+E826</td><td class="icon"></td><td>Dpad</td><td>U+F10E</td><td class="icon"></td><td>Draw</td><td>U+EC87</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DrawSolid</td><td>U+EC88</td><td class="icon"></td><td>DrivingMode</td><td>U+E7EC</td><td class="icon"></td><td>Drop</td><td>U+EB42</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DullSound</td><td>U+E911</td><td class="icon"></td><td>DullSoundKey</td><td>U+E9AF</td><td class="icon"></td><td>DuplexLandscapeOneSided</td><td>U+F57E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DuplexLandscapeOneSidedMirrored</td><td>U+F57F</td><td class="icon"></td><td>DuplexLandscapeTwoSidedLongEdge</td><td>U+F580</td><td class="icon"></td><td>DuplexLandscapeTwoSidedLongEdgeMirrored</td><td>U+F581</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DuplexLandscapeTwoSidedShortEdge</td><td>U+F582</td><td class="icon"></td><td>DuplexLandscapeTwoSidedShortEdgeMirrored</td><td>U+F583</td><td class="icon"></td><td>DuplexPortraitOneSided</td><td>U+F584</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DuplexPortraitOneSidedMirrored</td><td>U+F585</td><td class="icon"></td><td>DuplexPortraitTwoSidedLongEdge</td><td>U+F586</td><td class="icon"></td><td>DuplexPortraitTwoSidedLongEdgeMirrored</td><td>U+F587</td>
+</tr>
+<tr>
+<td class="icon"></td><td>DuplexPortraitTwoSidedShortEdge</td><td>U+F588</td><td class="icon"></td><td>DuplexPortraitTwoSidedShortEdgeMirrored</td><td>U+F589</td><td class="icon"></td><td>DynamicLock</td><td>U+F439</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EMI</td><td>U+E731</td><td class="icon"></td><td>Ear</td><td>U+F270</td><td class="icon"></td><td>Earbud</td><td>U+F4C0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EaseOfAccess</td><td>U+E776</td><td class="icon"></td><td>Edit</td><td>U+E70F</td><td class="icon"></td><td>EditMirrored</td><td>U+EB7E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Education</td><td>U+E7BE</td><td class="icon"></td><td>EducationIcon</td><td>U+F7BB</td><td class="icon"></td><td>Eject</td><td>U+F847</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Emoji</td><td>U+E899</td><td class="icon"></td><td>Emoji2</td><td>U+E76E</td><td class="icon"></td><td>EmojiSwatch</td><td>U+ED5B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EmojiTabCelebrationObjects</td><td>U+ED55</td><td class="icon"></td><td>EmojiTabFavorites</td><td>U+ED5A</td><td class="icon"></td><td>EmojiTabFoodPlants</td><td>U+ED56</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EmojiTabMoreSymbols</td><td>U+F6BA</td><td class="icon"></td><td>EmojiTabPeople</td><td>U+ED53</td><td class="icon"></td><td>EmojiTabSmilesAnimals</td><td>U+ED54</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EmojiTabSymbols</td><td>U+ED58</td><td class="icon"></td><td>EmojiTabTextSmiles</td><td>U+ED59</td><td class="icon"></td><td>EmojiTabTransitPlaces</td><td>U+ED57</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EndPoint</td><td>U+E81B</td><td class="icon"></td><td>EndPointSolid</td><td>U+EB4B</td><td class="icon"></td><td>EnglishPunctuation</td><td>U+F110</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Equalizer</td><td>U+E9E9</td><td class="icon"></td><td>EraseTool</td><td>U+E75C</td><td class="icon"></td><td>EraseToolFill</td><td>U+E82B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EraseToolFill2</td><td>U+E82C</td><td class="icon"></td><td>Error</td><td>U+E783</td><td class="icon"></td><td>ErrorBadge</td><td>U+EA39</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ErrorBadge12</td><td>U+EDAE</td><td class="icon"></td><td>Ethernet</td><td>U+E839</td><td class="icon"></td><td>EthernetError</td><td>U+EB55</td>
+</tr>
+<tr>
+<td class="icon"></td><td>EthernetWarning</td><td>U+EB56</td><td class="icon"></td><td>Event12</td><td>U+F763</td><td class="icon"></td><td>ExpandTile</td><td>U+E976</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ExpandTileMirrored</td><td>U+EA4E</td><td class="icon"></td><td>ExploitProtection</td><td>U+F8A6</td><td class="icon"></td><td>ExploitProtectionSettings</td><td>U+F259</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ExploreContent</td><td>U+ECCD</td><td class="icon"></td><td>ExploreContentSingle</td><td>U+F164</td><td class="icon"></td><td>Export</td><td>U+EDE1</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ExportMirrored</td><td>U+EDE2</td><td class="icon"></td><td>ExpressiveInputEntry</td><td>U+F6B8</td><td class="icon"></td><td>EyeGaze</td><td>U+F19D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Eyedropper</td><td>U+EF3C</td><td class="icon"></td><td>Family</td><td>U+EBDA</td><td class="icon"></td><td>FastForward</td><td>U+EB9D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Favicon</td><td>U+E737</td><td class="icon"></td><td>Favicon2</td><td>U+EC6C</td><td class="icon"></td><td>FavoriteList</td><td>U+E728</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FavoriteStar</td><td>U+E734</td><td class="icon"></td><td>FavoriteStarFill</td><td>U+E735</td><td class="icon"></td><td>Feedback</td><td>U+ED15</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FeedbackApp</td><td>U+E939</td><td class="icon"></td><td>Ferry</td><td>U+E7E3</td><td class="icon"></td><td>FerrySolid</td><td>U+EB48</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FileExplorer</td><td>U+EC50</td><td class="icon"></td><td>FileExplorerApp</td><td>U+EC51</td><td class="icon"></td><td>Filter</td><td>U+E71C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FingerInking</td><td>U+ED5F</td><td class="icon"></td><td>Fingerprint</td><td>U+E928</td><td class="icon"></td><td>FitPage</td><td>U+E9A6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Flag</td><td>U+E7C1</td><td class="icon"></td><td>Flashlight</td><td>U+E754</td><td class="icon"></td><td>FlickDown</td><td>U+E935</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FlickLeft</td><td>U+E937</td><td class="icon"></td><td>FlickRight</td><td>U+E938</td><td class="icon"></td><td>FlickUp</td><td>U+E936</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Flow</td><td>U+EF90</td><td class="icon"></td><td>Folder</td><td>U+E8B7</td><td class="icon"></td><td>FolderFill</td><td>U+E8D5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FolderHorizontal</td><td>U+F12B</td><td class="icon"></td><td>FolderOpen</td><td>U+E838</td><td class="icon"></td><td>FolderSelect</td><td>U+F89A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Font</td><td>U+E8D2</td><td class="icon"></td><td>FontColor</td><td>U+E8D3</td><td class="icon"></td><td>FontDecrease</td><td>U+E8E7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FontIncrease</td><td>U+E8E8</td><td class="icon"></td><td>FontSize</td><td>U+E8E9</td><td class="icon"></td><td>Forward</td><td>U+E72A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ForwardCall</td><td>U+EAC2</td><td class="icon"></td><td>ForwardMirrored</td><td>U+F0D3</td><td class="icon"></td><td>ForwardSm</td><td>U+E9AC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ForwardSolidBold</td><td>U+F8AD</td><td class="icon"></td><td>FourBars</td><td>U+E908</td><td class="icon"></td><td>FreeFormClipping</td><td>U+F408</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Frigid</td><td>U+E9CA</td><td class="icon"></td><td>Full20</td><td>U+F741</td><td class="icon"></td><td>FullAlpha</td><td>U+E97F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FullCircleMask</td><td>U+E91F</td><td class="icon"></td><td>FullHiragana</td><td>U+E986</td><td class="icon"></td><td>FullKatakana</td><td>U+E987</td>
+</tr>
+<tr>
+<td class="icon"></td><td>FullScreen</td><td>U+E740</td><td class="icon"></td><td>FuzzyReading</td><td>U+F5EF</td><td class="icon"></td><td>GIF</td><td>U+F4A9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Game</td><td>U+E7FC</td><td class="icon"></td><td>GameConsole</td><td>U+E967</td><td class="icon"></td><td>GatewayRouter</td><td>U+EB77</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GenericScan</td><td>U+EE6F</td><td class="icon"></td><td>GiftboxOpen</td><td>U+F133</td><td class="icon"></td><td>GlobalNavButton</td><td>U+E700</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Globe</td><td>U+E774</td><td class="icon"></td><td>Globe2</td><td>U+F49A</td><td class="icon"></td><td>Go</td><td>U+E8AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GoMirrored</td><td>U+EA4F</td><td class="icon"></td><td>GoToMessage</td><td>U+F716</td><td class="icon"></td><td>GoToStart</td><td>U+E8FC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GotoToday</td><td>U+E8D1</td><td class="icon"></td><td>GridView</td><td>U+F0E2</td><td class="icon"></td><td>GripperBarHorizontal</td><td>U+E76F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GripperBarVertical</td><td>U+E784</td><td class="icon"></td><td>GripperResize</td><td>U+E788</td><td class="icon"></td><td>GripperResizeMirrored</td><td>U+EA50</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GripperTool</td><td>U+E75E</td><td class="icon"></td><td>Groceries</td><td>U+EC09</td><td class="icon"></td><td>Group</td><td>U+E902</td>
+</tr>
+<tr>
+<td class="icon"></td><td>GroupList</td><td>U+F168</td><td class="icon"></td><td>GuestUser</td><td>U+EE57</td><td class="icon"></td><td>HMD</td><td>U+F119</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HWPInsert</td><td>U+F461</td><td class="icon"></td><td>HWPJoin</td><td>U+F460</td><td class="icon"></td><td>HWPNewLine</td><td>U+F465</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HWPOverwrite</td><td>U+F466</td><td class="icon"></td><td>HWPScratchOut</td><td>U+F463</td><td class="icon"></td><td>HWPSplit</td><td>U+F464</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HWPStrikeThrough</td><td>U+F462</td><td class="icon"></td><td>HalfAlpha</td><td>U+E97E</td><td class="icon"></td><td>HalfDullSound</td><td>U+E9B0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HalfKatakana</td><td>U+E988</td><td class="icon"></td><td>HalfStarLeft</td><td>U+E7C6</td><td class="icon"></td><td>HalfStarRight</td><td>U+E7C7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Handwriting</td><td>U+E929</td><td class="icon"></td><td>Handwriting20</td><td>U+F742</td><td class="icon"></td><td>HangUp</td><td>U+E778</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HardDrive</td><td>U+EDA2</td><td class="icon"></td><td>HeadlessDevice</td><td>U+F191</td><td class="icon"></td><td>Headphone</td><td>U+E7F6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Headphone0</td><td>U+ED30</td><td class="icon"></td><td>Headphone1</td><td>U+ED31</td><td class="icon"></td><td>Headphone2</td><td>U+ED32</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Headphone3</td><td>U+ED33</td><td class="icon"></td><td>Headset</td><td>U+E95B</td><td class="icon"></td><td>Health</td><td>U+E95E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Heart</td><td>U+EB51</td><td class="icon"></td><td>HeartBroken</td><td>U+EA92</td><td class="icon"></td><td>HeartFill</td><td>U+EB52</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Help</td><td>U+E897</td><td class="icon"></td><td>HelpMirrored</td><td>U+EA51</td><td class="icon"></td><td>Hide</td><td>U+ED1A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HideBcc</td><td>U+E8C5</td><td class="icon"></td><td>Highlight</td><td>U+E7E6</td><td class="icon"></td><td>HighlightFill</td><td>U+E891</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HighlightFill2</td><td>U+E82A</td><td class="icon"></td><td>History</td><td>U+E81C</td><td class="icon"></td><td>HolePunchLandscapeBottom</td><td>U+F597</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HolePunchLandscapeLeft</td><td>U+F594</td><td class="icon"></td><td>HolePunchLandscapeRight</td><td>U+F595</td><td class="icon"></td><td>HolePunchLandscapeTop</td><td>U+F596</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HolePunchOff</td><td>U+F58F</td><td class="icon"></td><td>HolePunchPortraitBottom</td><td>U+F593</td><td class="icon"></td><td>HolePunchPortraitLeft</td><td>U+F590</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HolePunchPortraitRight</td><td>U+F591</td><td class="icon"></td><td>HolePunchPortraitTop</td><td>U+F592</td><td class="icon"></td><td>HoloLens</td><td>U+EC94</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HoloLensSelected</td><td>U+F4BF</td><td class="icon"></td><td>Home</td><td>U+E80F</td><td class="icon"></td><td>HomeGroup</td><td>U+EC26</td>
+</tr>
+<tr>
+<td class="icon"></td><td>HomeSolid</td><td>U+EA8A</td><td class="icon"></td><td>HorizontalTabKey</td><td>U+E7FD</td><td class="icon"></td><td>IBeam</td><td>U+E933</td>
+</tr>
+<tr>
+<td class="icon"></td><td>IBeamOutline</td><td>U+E934</td><td class="icon"></td><td>IDBadge</td><td>U+F427</td><td class="icon"></td><td>IOT</td><td>U+F22C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ImageExport</td><td>U+EE71</td><td class="icon"></td><td>Import</td><td>U+E8B5</td><td class="icon"></td><td>ImportAll</td><td>U+E8B6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ImportAllMirrored</td><td>U+EA53</td><td class="icon"></td><td>ImportMirrored</td><td>U+EA52</td><td class="icon"></td><td>Important</td><td>U+E8C9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ImportantBadge12</td><td>U+EDB1</td><td class="icon"></td><td>InPrivate</td><td>U+E727</td><td class="icon"></td><td>IncidentTriangle</td><td>U+E814</td>
+</tr>
+<tr>
+<td class="icon"></td><td>IncomingCall</td><td>U+E77E</td><td class="icon"></td><td>Info</td><td>U+E946</td><td class="icon"></td><td>Info2</td><td>U+EA1F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>InfoSolid</td><td>U+F167</td><td class="icon"></td><td>InkingCaret</td><td>U+ED65</td><td class="icon"></td><td>InkingColorFill</td><td>U+ED67</td>
+</tr>
+<tr>
+<td class="icon"></td><td>InkingColorOutline</td><td>U+ED66</td><td class="icon"></td><td>InkingTool</td><td>U+E76D</td><td class="icon"></td><td>InkingToolFill</td><td>U+E88F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>InkingToolFill2</td><td>U+E829</td><td class="icon"></td><td>Input</td><td>U+E961</td><td class="icon"></td><td>InsiderHubApp</td><td>U+EC24</td>
+</tr>
+<tr>
+<td class="icon"></td><td>InstertWords</td><td>U+F7B1</td><td class="icon"></td><td>InstertWordsFill</td><td>U+F7B2</td><td class="icon"></td><td>InteractiveDashboard</td><td>U+F404</td>
+</tr>
+<tr>
+<td class="icon"></td><td>InternetSharing</td><td>U+E704</td><td class="icon"></td><td>Italic</td><td>U+E8DB</td><td class="icon"></td><td>Japanese</td><td>U+E985</td>
+</tr>
+<tr>
+<td class="icon"></td><td>JoinWords</td><td>U+F7B3</td><td class="icon"></td><td>JoinWordsFill</td><td>U+F7B4</td><td class="icon"></td><td>JpnRomanji</td><td>U+E87C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>JpnRomanjiLock</td><td>U+E87D</td><td class="icon"></td><td>JpnRomanjiShift</td><td>U+E87E</td><td class="icon"></td><td>JpnRomanjiShiftLock</td><td>U+E87F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Key12On</td><td>U+E980</td><td class="icon"></td><td>Keyboard12Key</td><td>U+F261</td><td class="icon"></td><td>KeyboardBrightness</td><td>U+ED39</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardClassic</td><td>U+E765</td><td class="icon"></td><td>KeyboardDismiss</td><td>U+E92F</td><td class="icon"></td><td>KeyboardDock</td><td>U+F26B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardFull</td><td>U+EC31</td><td class="icon"></td><td>KeyboardLeftAligned</td><td>U+F20C</td><td class="icon"></td><td>KeyboardLeftDock</td><td>U+F26D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardLeftHanded</td><td>U+E763</td><td class="icon"></td><td>KeyboardLowerBrightness</td><td>U+ED3A</td><td class="icon"></td><td>KeyboardNarrow</td><td>U+F260</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardOneHanded</td><td>U+ED4C</td><td class="icon"></td><td>KeyboardRightAligned</td><td>U+F20D</td><td class="icon"></td><td>KeyboardRightDock</td><td>U+F26E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardRightHanded</td><td>U+E764</td><td class="icon"></td><td>KeyboardSettings</td><td>U+F210</td><td class="icon"></td><td>KeyboardShortcut</td><td>U+EDA7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>KeyboardSplit</td><td>U+E766</td><td class="icon"></td><td>KeyboardStandard</td><td>U+E92E</td><td class="icon"></td><td>KeyboardUndock</td><td>U+F26C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Keyboardsettings20</td><td>U+F73D</td><td class="icon"></td><td>Kiosk</td><td>U+F712</td><td class="icon"></td><td>KnowledgeArticle</td><td>U+F000</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Korean</td><td>U+E97D</td><td class="icon"></td><td>LEDLight</td><td>U+E781</td><td class="icon"></td><td>Label</td><td>U+E932</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LandscapeOrientation</td><td>U+EF6B</td><td class="icon"></td><td>LandscapeOrientationMirrored</td><td>U+F56F</td><td class="icon"></td><td>LangJPN</td><td>U+E7DE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LanguageChs</td><td>U+E88D</td><td class="icon"></td><td>LanguageCht</td><td>U+E88C</td><td class="icon"></td><td>LanguageJpn</td><td>U+EC45</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LanguageKor</td><td>U+E88B</td><td class="icon"></td><td>LaptopSecure</td><td>U+F552</td><td class="icon"></td><td>LaptopSelected</td><td>U+EC76</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LargeErase</td><td>U+F12A</td><td class="icon"></td><td>Leaf</td><td>U+E8BE</td><td class="icon"></td><td>LeaveChat</td><td>U+E89B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LeaveChatMirrored</td><td>U+EA54</td><td class="icon"></td><td>LeftArrowKeyTime0</td><td>U+EC52</td><td class="icon"></td><td>LeftDoubleQuote</td><td>U+E9B2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LeftQuote</td><td>U+E848</td><td class="icon"></td><td>LeftStick</td><td>U+F108</td><td class="icon"></td><td>Lexicon</td><td>U+F180</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Library</td><td>U+E8F1</td><td class="icon"></td><td>Light</td><td>U+E793</td><td class="icon"></td><td>Lightbulb</td><td>U+EA80</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LightningBolt</td><td>U+E945</td><td class="icon"></td><td>Like</td><td>U+E8E1</td><td class="icon"></td><td>LikeDislike</td><td>U+E8DF</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LineDisplay</td><td>U+EF3D</td><td class="icon"></td><td>Link</td><td>U+E71B</td><td class="icon"></td><td>List</td><td>U+EA37</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ListMirrored</td><td>U+EA55</td><td class="icon"></td><td>LocaleLanguage</td><td>U+F2B7</td><td class="icon"></td><td>Location</td><td>U+E81D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Lock</td><td>U+E72E</td><td class="icon"></td><td>LockFeedback</td><td>U+EBDB</td><td class="icon"></td><td>LockScreenGlance</td><td>U+EE65</td>
+</tr>
+<tr>
+<td class="icon"></td><td>LockscreenDesktop</td><td>U+EE3F</td><td class="icon"></td><td>LowerBrightness</td><td>U+EC8A</td><td class="icon"></td><td>MagStripeReader</td><td>U+EC5C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Mail</td><td>U+E715</td><td class="icon"></td><td>MailBadge12</td><td>U+EDB3</td><td class="icon"></td><td>MailFill</td><td>U+E8A8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MailForward</td><td>U+E89C</td><td class="icon"></td><td>MailForwardMirrored</td><td>U+EA56</td><td class="icon"></td><td>MailReply</td><td>U+E8CA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MailReplyAll</td><td>U+E8C2</td><td class="icon"></td><td>MailReplyAllMirrored</td><td>U+EA58</td><td class="icon"></td><td>MailReplyMirrored</td><td>U+EA57</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Manage</td><td>U+E912</td><td class="icon"></td><td>MapCompassBottom</td><td>U+E813</td><td class="icon"></td><td>MapCompassTop</td><td>U+E812</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MapDirections</td><td>U+E816</td><td class="icon"></td><td>MapDrive</td><td>U+E8CE</td><td class="icon"></td><td>MapLayers</td><td>U+E81E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MapPin</td><td>U+E707</td><td class="icon"></td><td>MapPin2</td><td>U+E7B7</td><td class="icon"></td><td>Marker</td><td>U+ED64</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Market</td><td>U+EAFC</td><td class="icon"></td><td>MarketDown</td><td>U+EF42</td><td class="icon"></td><td>Marquee</td><td>U+EF20</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Media</td><td>U+EA69</td><td class="icon"></td><td>MediaStorageTower</td><td>U+E965</td><td class="icon"></td><td>Megaphone</td><td>U+E789</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Memo</td><td>U+E77C</td><td class="icon"></td><td>MergeCall</td><td>U+EA3C</td><td class="icon"></td><td>Message</td><td>U+E8BD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MicClipping</td><td>U+EC72</td><td class="icon"></td><td>MicError</td><td>U+EC56</td><td class="icon"></td><td>MicLocationCombo</td><td>U+F47F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MicOff</td><td>U+EC54</td><td class="icon"></td><td>MicOff2</td><td>U+F781</td><td class="icon"></td><td>MicOn</td><td>U+EC71</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MicSleep</td><td>U+EC55</td><td class="icon"></td><td>Microphone</td><td>U+E720</td><td class="icon"></td><td>MicrophoneListening</td><td>U+F12E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MicrophoneSolidBold</td><td>U+F8B1</td><td class="icon"></td><td>MiniContract2Mirrored</td><td>U+EE49</td><td class="icon"></td><td>MiniExpand2Mirrored</td><td>U+EE47</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MiracastLogoLarge</td><td>U+EC16</td><td class="icon"></td><td>MiracastLogoSmall</td><td>U+EC15</td><td class="icon"></td><td>MixVolumes</td><td>U+F4C3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MixedMediaBadge</td><td>U+EA0D</td><td class="icon"></td><td>MobActionCenter</td><td>U+EC42</td><td class="icon"></td><td>MobAirplane</td><td>U+EC40</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBattery0</td><td>U+EBA0</td><td class="icon"></td><td>MobBattery1</td><td>U+EBA1</td><td class="icon"></td><td>MobBattery10</td><td>U+EBAA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBattery2</td><td>U+EBA2</td><td class="icon"></td><td>MobBattery3</td><td>U+EBA3</td><td class="icon"></td><td>MobBattery4</td><td>U+EBA4</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBattery5</td><td>U+EBA5</td><td class="icon"></td><td>MobBattery6</td><td>U+EBA6</td><td class="icon"></td><td>MobBattery7</td><td>U+EBA7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBattery8</td><td>U+EBA8</td><td class="icon"></td><td>MobBattery9</td><td>U+EBA9</td><td class="icon"></td><td>MobBatteryCharging0</td><td>U+EBAB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatteryCharging1</td><td>U+EBAC</td><td class="icon"></td><td>MobBatteryCharging10</td><td>U+EBB5</td><td class="icon"></td><td>MobBatteryCharging2</td><td>U+EBAD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatteryCharging3</td><td>U+EBAE</td><td class="icon"></td><td>MobBatteryCharging4</td><td>U+EBAF</td><td class="icon"></td><td>MobBatteryCharging5</td><td>U+EBB0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatteryCharging6</td><td>U+EBB1</td><td class="icon"></td><td>MobBatteryCharging7</td><td>U+EBB2</td><td class="icon"></td><td>MobBatteryCharging8</td><td>U+EBB3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatteryCharging9</td><td>U+EBB4</td><td class="icon"></td><td>MobBatterySaver0</td><td>U+EBB6</td><td class="icon"></td><td>MobBatterySaver1</td><td>U+EBB7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatterySaver10</td><td>U+EBC0</td><td class="icon"></td><td>MobBatterySaver2</td><td>U+EBB8</td><td class="icon"></td><td>MobBatterySaver3</td><td>U+EBB9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatterySaver4</td><td>U+EBBA</td><td class="icon"></td><td>MobBatterySaver5</td><td>U+EBBB</td><td class="icon"></td><td>MobBatterySaver6</td><td>U+EBBC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatterySaver7</td><td>U+EBBD</td><td class="icon"></td><td>MobBatterySaver8</td><td>U+EBBE</td><td class="icon"></td><td>MobBatterySaver9</td><td>U+EBBF</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobBatteryUnknown</td><td>U+EC02</td><td class="icon"></td><td>MobBluetooth</td><td>U+EC41</td><td class="icon"></td><td>MobCallForwarding</td><td>U+EC7E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobCallForwardingMirrored</td><td>U+EC7F</td><td class="icon"></td><td>MobDrivingMode</td><td>U+EC47</td><td class="icon"></td><td>MobLocation</td><td>U+EC43</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobQuietHours</td><td>U+EC46</td><td class="icon"></td><td>MobSIMError</td><td>U+F5AB</td><td class="icon"></td><td>MobSIMLock</td><td>U+E875</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobSIMMissing</td><td>U+E876</td><td class="icon"></td><td>MobSignal1</td><td>U+EC37</td><td class="icon"></td><td>MobSignal2</td><td>U+EC38</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobSignal3</td><td>U+EC39</td><td class="icon"></td><td>MobSignal4</td><td>U+EC3A</td><td class="icon"></td><td>MobSignal5</td><td>U+EC3B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobWifi1</td><td>U+EC3C</td><td class="icon"></td><td>MobWifi2</td><td>U+EC3D</td><td class="icon"></td><td>MobWifi3</td><td>U+EC3E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobWifi4</td><td>U+EC3F</td><td class="icon"></td><td>MobWifiCall0</td><td>U+EBD5</td><td class="icon"></td><td>MobWifiCall1</td><td>U+EBD6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobWifiCall2</td><td>U+EBD7</td><td class="icon"></td><td>MobWifiCall3</td><td>U+EBD8</td><td class="icon"></td><td>MobWifiCall4</td><td>U+EBD9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobWifiCallBars</td><td>U+EBD4</td><td class="icon"></td><td>MobWifiHotspot</td><td>U+EC44</td><td class="icon"></td><td>MobWifiWarning1</td><td>U+F473</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobWifiWarning2</td><td>U+F474</td><td class="icon"></td><td>MobWifiWarning3</td><td>U+F475</td><td class="icon"></td><td>MobWifiWarning4</td><td>U+F476</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobeSIM</td><td>U+ED2A</td><td class="icon"></td><td>MobeSIMBusy</td><td>U+ED2D</td><td class="icon"></td><td>MobeSIMLocked</td><td>U+ED2C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobeSIMNoProfile</td><td>U+ED2B</td><td class="icon"></td><td>MobileLocked</td><td>U+EC20</td><td class="icon"></td><td>MobileSelected</td><td>U+EC75</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MobileTablet</td><td>U+E8CC</td><td class="icon"></td><td>More</td><td>U+E712</td><td class="icon"></td><td>Mouse</td><td>U+E962</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Move</td><td>U+E7C2</td><td class="icon"></td><td>MoveToFolder</td><td>U+E8DE</td><td class="icon"></td><td>Movies</td><td>U+E8B2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MultiSelect</td><td>U+E762</td><td class="icon"></td><td>MultiSelectMirrored</td><td>U+EA98</td><td class="icon"></td><td>MultimediaDMP</td><td>U+ED47</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MultimediaDMS</td><td>U+E953</td><td class="icon"></td><td>MultimediaDVR</td><td>U+E954</td><td class="icon"></td><td>MultimediaPMP</td><td>U+E955</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MusicAlbum</td><td>U+E93C</td><td class="icon"></td><td>MusicInfo</td><td>U+E90B</td><td class="icon"></td><td>MusicNote</td><td>U+EC4F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MusicSharing</td><td>U+F623</td><td class="icon"></td><td>MusicSharingOff</td><td>U+F624</td><td class="icon"></td><td>Mute</td><td>U+E74F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>MyNetwork</td><td>U+EC27</td><td class="icon"></td><td>NUIFPContinueSlideAction</td><td>U+EB85</td><td class="icon"></td><td>NUIFPContinueSlideHand</td><td>U+EB84</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NUIFPPressAction</td><td>U+EB8B</td><td class="icon"></td><td>NUIFPPressHand</td><td>U+EB8A</td><td class="icon"></td><td>NUIFPPressRepeatAction</td><td>U+EB8D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NUIFPPressRepeatHand</td><td>U+EB8C</td><td class="icon"></td><td>NUIFPRollLeftAction</td><td>U+EB89</td><td class="icon"></td><td>NUIFPRollLeftHand</td><td>U+EB88</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NUIFPRollRightHand</td><td>U+EB86</td><td class="icon"></td><td>NUIFPRollRightHandAction</td><td>U+EB87</td><td class="icon"></td><td>NUIFPStartSlideAction</td><td>U+EB83</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NUIFPStartSlideHand</td><td>U+EB82</td><td class="icon"></td><td>NUIFace</td><td>U+EB68</td><td class="icon"></td><td>NUIIris</td><td>U+EB67</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Narrator</td><td>U+ED4D</td><td class="icon"></td><td>NarratorApp</td><td>U+F83B</td><td class="icon"></td><td>NarratorForward</td><td>U+EDA9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NarratorForwardMirrored</td><td>U+EDAA</td><td class="icon"></td><td>NearbySharing</td><td>U+F3E2</td><td class="icon"></td><td>Network</td><td>U+E968</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NetworkAdapter</td><td>U+EDA3</td><td class="icon"></td><td>NetworkConnected</td><td>U+F385</td><td class="icon"></td><td>NetworkConnectedCheckmark</td><td>U+F386</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NetworkOffline</td><td>U+F384</td><td class="icon"></td><td>NetworkPhysical</td><td>U+F211</td><td class="icon"></td><td>NetworkPrinter</td><td>U+EDA5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NetworkSharing</td><td>U+F193</td><td class="icon"></td><td>NetworkTower</td><td>U+EC05</td><td class="icon"></td><td>NewFolder</td><td>U+E8F4</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NewWindow</td><td>U+E78B</td><td class="icon"></td><td>Next</td><td>U+E893</td><td class="icon"></td><td>NoiseCancelation</td><td>U+F61F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>NoiseCancelationOff</td><td>U+F620</td><td class="icon"></td><td>OEM</td><td>U+E74C</td><td class="icon"></td><td>OneBar</td><td>U+E905</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OneHandedLeft20</td><td>U+F73F</td><td class="icon"></td><td>OneHandedRight20</td><td>U+F73E</td><td class="icon"></td><td>OpenFile</td><td>U+E8E5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OpenFolderHorizontal</td><td>U+ED25</td><td class="icon"></td><td>OpenInNewWindow</td><td>U+E8A7</td><td class="icon"></td><td>OpenLocal</td><td>U+E8DA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OpenPane</td><td>U+E8A0</td><td class="icon"></td><td>OpenPaneMirrored</td><td>U+EA5B</td><td class="icon"></td><td>OpenWith</td><td>U+E7AC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OpenWithMirrored</td><td>U+EA5C</td><td class="icon"></td><td>Orientation</td><td>U+E8B4</td><td class="icon"></td><td>OtherUser</td><td>U+E7EE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OutlineHalfStarLeft</td><td>U+F0E7</td><td class="icon"></td><td>OutlineHalfStarRight</td><td>U+F0E8</td><td class="icon"></td><td>OutlineQuarterStarLeft</td><td>U+F0E5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OutlineQuarterStarRight</td><td>U+F0E6</td><td class="icon"></td><td>OutlineStarLeftHalf</td><td>U+F0F7</td><td class="icon"></td><td>OutlineStarRightHalf</td><td>U+F0F8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OutlineThreeQuarterStarLeft</td><td>U+F0E9</td><td class="icon"></td><td>OutlineThreeQuarterStarRight</td><td>U+F0EA</td><td class="icon"></td><td>OverwriteWords</td><td>U+F7B5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>OverwriteWordsFill</td><td>U+F7B6</td><td class="icon"></td><td>OverwriteWordsFillKorean</td><td>U+F7BA</td><td class="icon"></td><td>OverwriteWordsKorean</td><td>U+F7B9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PC1</td><td>U+E977</td><td class="icon"></td><td>PDF</td><td>U+EA90</td><td class="icon"></td><td>PINPad</td><td>U+EF3E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PLAP</td><td>U+EC19</td><td class="icon"></td><td>POI</td><td>U+ECAF</td><td class="icon"></td><td>PPSFourLandscape</td><td>U+F58D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PPSFourPortrait</td><td>U+F58E</td><td class="icon"></td><td>PPSOneLandscape</td><td>U+F58A</td><td class="icon"></td><td>PPSOnePortrait</td><td>U+F5AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PPSTwoLandscape</td><td>U+F58B</td><td class="icon"></td><td>PPSTwoPortrait</td><td>U+F58C</td><td class="icon"></td><td>Package</td><td>U+E7B8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Page</td><td>U+E7C3</td><td class="icon"></td><td>PageLeft</td><td>U+E760</td><td class="icon"></td><td>PageMarginLandscapeModerate</td><td>U+F579</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PageMarginLandscapeNarrow</td><td>U+F577</td><td class="icon"></td><td>PageMarginLandscapeNormal</td><td>U+F578</td><td class="icon"></td><td>PageMarginLandscapeWide</td><td>U+F57A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PageMarginPortraitModerate</td><td>U+F575</td><td class="icon"></td><td>PageMarginPortraitNarrow</td><td>U+F573</td><td class="icon"></td><td>PageMarginPortraitNormal</td><td>U+F574</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PageMarginPortraitWide</td><td>U+F576</td><td class="icon"></td><td>PageMirrored</td><td>U+F56E</td><td class="icon"></td><td>PageRight</td><td>U+E761</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PageSolid</td><td>U+E729</td><td class="icon"></td><td>PaginationDotOutline10</td><td>U+F126</td><td class="icon"></td><td>PaginationDotSolid10</td><td>U+F127</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PanMode</td><td>U+ECE9</td><td class="icon"></td><td>ParkingLocation</td><td>U+E811</td><td class="icon"></td><td>ParkingLocationMirrored</td><td>U+EA5E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ParkingLocationSolid</td><td>U+EA8B</td><td class="icon"></td><td>PartyLeader</td><td>U+ECA7</td><td class="icon"></td><td>PassiveAuthentication</td><td>U+F32A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PasswordKeyHide</td><td>U+E9A9</td><td class="icon"></td><td>PasswordKeyShow</td><td>U+E9A8</td><td class="icon"></td><td>Paste</td><td>U+E77F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Pause</td><td>U+E769</td><td class="icon"></td><td>PauseBadge12</td><td>U+EDB4</td><td class="icon"></td><td>PauseBold</td><td>U+F8AE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PaymentCard</td><td>U+E8C7</td><td class="icon"></td><td>PenPalette</td><td>U+EE56</td><td class="icon"></td><td>PenPaletteMirrored</td><td>U+EF16</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PenTips</td><td>U+F45E</td><td class="icon"></td><td>PenTipsMirrored</td><td>U+F45F</td><td class="icon"></td><td>PenWorkspace</td><td>U+EDC6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PenWorkspaceMirrored</td><td>U+EF15</td><td class="icon"></td><td>Pencil</td><td>U+ED63</td><td class="icon"></td><td>PencilFill</td><td>U+F0C6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>People</td><td>U+E716</td><td class="icon"></td><td>PeriodKey</td><td>U+E843</td><td class="icon"></td><td>Permissions</td><td>U+E8D7</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PersonalFolder</td><td>U+EC25</td><td class="icon"></td><td>Personalize</td><td>U+E771</td><td class="icon"></td><td>Phone</td><td>U+E717</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PhoneBook</td><td>U+E780</td><td class="icon"></td><td>Photo</td><td>U+E91B</td><td class="icon"></td><td>Photo2</td><td>U+EB9F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Picture</td><td>U+E8B9</td><td class="icon"></td><td>PieSingle</td><td>U+EB05</td><td class="icon"></td><td>Pin</td><td>U+E718</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PinFill</td><td>U+E841</td><td class="icon"></td><td>Pinned</td><td>U+E840</td><td class="icon"></td><td>PinnedFill</td><td>U+E842</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PinyinIMELogo</td><td>U+EDE5</td><td class="icon"></td><td>Play</td><td>U+E768</td><td class="icon"></td><td>Play36</td><td>U+EE4A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PlayBadge12</td><td>U+EDB5</td><td class="icon"></td><td>PlaySolid</td><td>U+F5B0</td><td class="icon"></td><td>PlaybackRate1x</td><td>U+EC57</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PlaybackRateOther</td><td>U+EC58</td><td class="icon"></td><td>PlayerSettings</td><td>U+EF58</td><td class="icon"></td><td>PointErase</td><td>U+ED61</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PointEraseMirrored</td><td>U+EF18</td><td class="icon"></td><td>PointerHand</td><td>U+F271</td><td class="icon"></td><td>PoliceCar</td><td>U+EC81</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PostUpdate</td><td>U+E8F3</td><td class="icon"></td><td>PowerButton</td><td>U+E7E8</td><td class="icon"></td><td>PowerButtonUpdate</td><td>U+F83D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PresenceChicklet</td><td>U+E978</td><td class="icon"></td><td>PresenceChickletVideo</td><td>U+E979</td><td class="icon"></td><td>Preview</td><td>U+E8FF</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PreviewLink</td><td>U+E8A1</td><td class="icon"></td><td>Previous</td><td>U+E892</td><td class="icon"></td><td>Print</td><td>U+E749</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PrintAllPages</td><td>U+F571</td><td class="icon"></td><td>PrintCustomRange</td><td>U+F572</td><td class="icon"></td><td>PrintDefault</td><td>U+F56D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Printer3D</td><td>U+E914</td><td class="icon"></td><td>PrintfaxPrinterFile</td><td>U+E956</td><td class="icon"></td><td>Priority</td><td>U+E8D0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PrivateCall</td><td>U+EA3D</td><td class="icon"></td><td>Process</td><td>U+E9F3</td><td class="icon"></td><td>Processing</td><td>U+E9F5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ProductivityMode</td><td>U+F71E</td><td class="icon"></td><td>ProgressRingDots</td><td>U+F16A</td><td class="icon"></td><td>Project</td><td>U+EBC6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Projector</td><td>U+E95D</td><td class="icon"></td><td>ProtectedDocument</td><td>U+E8A6</td><td class="icon"></td><td>Protractor</td><td>U+F0B4</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ProvisioningPackage</td><td>U+E835</td><td class="icon"></td><td>PuncKey</td><td>U+E844</td><td class="icon"></td><td>PuncKey0</td><td>U+E84C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PuncKey1</td><td>U+E9B4</td><td class="icon"></td><td>PuncKey2</td><td>U+E9B5</td><td class="icon"></td><td>PuncKey3</td><td>U+E9B6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PuncKey4</td><td>U+E9B7</td><td class="icon"></td><td>PuncKey5</td><td>U+E9B8</td><td class="icon"></td><td>PuncKey6</td><td>U+E9B9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PuncKey7</td><td>U+E9BB</td><td class="icon"></td><td>PuncKey8</td><td>U+E9BC</td><td class="icon"></td><td>PuncKey9</td><td>U+E9BA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>PuncKeyLeftBottom</td><td>U+E84D</td><td class="icon"></td><td>PuncKeyRightBottom</td><td>U+E9B3</td><td class="icon"></td><td>Puzzle</td><td>U+EA86</td>
+</tr>
+<tr>
+<td class="icon"></td><td>QRCode</td><td>U+ED14</td><td class="icon"></td><td>QWERTYOff</td><td>U+E983</td><td class="icon"></td><td>QWERTYOn</td><td>U+E982</td>
+</tr>
+<tr>
+<td class="icon"></td><td>QuarentinedItems</td><td>U+F0B2</td><td class="icon"></td><td>QuarentinedItemsMirrored</td><td>U+F0B3</td><td class="icon"></td><td>QuarterStarLeft</td><td>U+F0CA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>QuarterStarRight</td><td>U+F0CB</td><td class="icon"></td><td>QuickNote</td><td>U+E70B</td><td class="icon"></td><td>QuietHours</td><td>U+E708</td>
+</tr>
+<tr>
+<td class="icon"></td><td>QuietHoursBadge12</td><td>U+F0CE</td><td class="icon"></td><td>RTTLogo</td><td>U+F714</td><td class="icon"></td><td>Radar</td><td>U+EB44</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RadioBtnOff</td><td>U+ECCA</td><td class="icon"></td><td>RadioBtnOn</td><td>U+ECCB</td><td class="icon"></td><td>RadioBullet</td><td>U+E915</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RadioBullet2</td><td>U+ECCC</td><td class="icon"></td><td>Read</td><td>U+E8C3</td><td class="icon"></td><td>ReadingList</td><td>U+E7BC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ReadingMode</td><td>U+E736</td><td class="icon"></td><td>ReceiptPrinter</td><td>U+EC5B</td><td class="icon"></td><td>Recent</td><td>U+E823</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Record</td><td>U+E7C8</td><td class="icon"></td><td>Record2</td><td>U+EA3F</td><td class="icon"></td><td>RectangularClipping</td><td>U+F407</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RedEye</td><td>U+E7B3</td><td class="icon"></td><td>Redo</td><td>U+E7A6</td><td class="icon"></td><td>Refresh</td><td>U+E72C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Relationship</td><td>U+F003</td><td class="icon"></td><td>RememberedDevice</td><td>U+E70C</td><td class="icon"></td><td>Reminder</td><td>U+EB50</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ReminderFill</td><td>U+EB4F</td><td class="icon"></td><td>Remote</td><td>U+E8AF</td><td class="icon"></td><td>Remove</td><td>U+E738</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RemoveFrom</td><td>U+ECC9</td><td class="icon"></td><td>Rename</td><td>U+E8AC</td><td class="icon"></td><td>Repair</td><td>U+E90F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RepeatAll</td><td>U+E8EE</td><td class="icon"></td><td>RepeatOff</td><td>U+F5E7</td><td class="icon"></td><td>RepeatOne</td><td>U+E8ED</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Replay</td><td>U+EF3B</td><td class="icon"></td><td>Reply</td><td>U+E97A</td><td class="icon"></td><td>ReplyMirrored</td><td>U+EE35</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ReportDocument</td><td>U+E9F9</td><td class="icon"></td><td>ReportHacked</td><td>U+E730</td><td class="icon"></td><td>ResetDevice</td><td>U+ED10</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ResetDrive</td><td>U+EBC4</td><td class="icon"></td><td>Reshare</td><td>U+E8EB</td><td class="icon"></td><td>ResizeMouseLarge</td><td>U+E747</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ResizeMouseMedium</td><td>U+E744</td><td class="icon"></td><td>ResizeMouseMediumMirrored</td><td>U+EA5F</td><td class="icon"></td><td>ResizeMouseSmall</td><td>U+E743</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ResizeMouseSmallMirrored</td><td>U+EA60</td><td class="icon"></td><td>ResizeMouseTall</td><td>U+E746</td><td class="icon"></td><td>ResizeMouseTallMirrored</td><td>U+EA61</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ResizeMouseWide</td><td>U+E745</td><td class="icon"></td><td>ResizeTouchLarger</td><td>U+E741</td><td class="icon"></td><td>ResizeTouchNarrower</td><td>U+E7EA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ResizeTouchNarrowerMirrored</td><td>U+EA62</td><td class="icon"></td><td>ResizeTouchShorter</td><td>U+E7EB</td><td class="icon"></td><td>ResizeTouchSmaller</td><td>U+E742</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RestartUpdate</td><td>U+F83E</td><td class="icon"></td><td>ReturnKey</td><td>U+E751</td><td class="icon"></td><td>ReturnKeyLg</td><td>U+EB97</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ReturnKeySm</td><td>U+E966</td><td class="icon"></td><td>ReturnToCall</td><td>U+F71A</td><td class="icon"></td><td>ReturnToWindow</td><td>U+E944</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RevToggleKey</td><td>U+E845</td><td class="icon"></td><td>RevealPasswordMedium</td><td>U+F78D</td><td class="icon"></td><td>Rewind</td><td>U+EB9E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RightArrowKeyTime0</td><td>U+EBE7</td><td class="icon"></td><td>RightArrowKeyTime1</td><td>U+E846</td><td class="icon"></td><td>RightArrowKeyTime2</td><td>U+E847</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RightArrowKeyTime3</td><td>U+E84E</td><td class="icon"></td><td>RightArrowKeyTime4</td><td>U+E84F</td><td class="icon"></td><td>RightDoubleQuote</td><td>U+E9B1</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RightQuote</td><td>U+E849</td><td class="icon"></td><td>RightStick</td><td>U+F109</td><td class="icon"></td><td>Ringer</td><td>U+EA8F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RingerBadge12</td><td>U+EDAC</td><td class="icon"></td><td>RingerSilent</td><td>U+E7ED</td><td class="icon"></td><td>RoamingDomestic</td><td>U+E879</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RoamingInternational</td><td>U+E878</td><td class="icon"></td><td>Robot</td><td>U+E99A</td><td class="icon"></td><td>Rotate</td><td>U+E7AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RotateCamera</td><td>U+E89E</td><td class="icon"></td><td>RotateMapLeft</td><td>U+E80D</td><td class="icon"></td><td>RotateMapRight</td><td>U+E80C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>RotationLock</td><td>U+E755</td><td class="icon"></td><td>Ruler</td><td>U+ED5E</td><td class="icon"></td><td>SDCard</td><td>U+E7F1</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SIMError</td><td>U+F618</td><td class="icon"></td><td>SIMLock</td><td>U+F61A</td><td class="icon"></td><td>SIMMissing</td><td>U+F619</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SIPMove</td><td>U+E759</td><td class="icon"></td><td>SIPRedock</td><td>U+E75B</td><td class="icon"></td><td>SIPUndock</td><td>U+E75A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Safe</td><td>U+F540</td><td class="icon"></td><td>Save</td><td>U+E74E</td><td class="icon"></td><td>SaveAs</td><td>U+E792</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SaveCopy</td><td>U+EA35</td><td class="icon"></td><td>SaveLocal</td><td>U+E78C</td><td class="icon"></td><td>Scan</td><td>U+E8FE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ScreenTime</td><td>U+F182</td><td class="icon"></td><td>ScrollMode</td><td>U+ECE7</td><td class="icon"></td><td>ScrollUpDown</td><td>U+EC8F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Search</td><td>U+E721</td><td class="icon"></td><td>SearchAndApps</td><td>U+E773</td><td class="icon"></td><td>SearchMedium</td><td>U+F78B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SelectAll</td><td>U+E8B3</td><td class="icon"></td><td>Send</td><td>U+E724</td><td class="icon"></td><td>SendFill</td><td>U+E725</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SendFillMirrored</td><td>U+EA64</td><td class="icon"></td><td>SendMirrored</td><td>U+EA63</td><td class="icon"></td><td>Sensor</td><td>U+E957</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Set</td><td>U+F5ED</td><td class="icon"></td><td>SetHistoryStatus</td><td>U+F738</td><td class="icon"></td><td>SetHistoryStatus2</td><td>U+F739</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SetSolid</td><td>U+F5EE</td><td class="icon"></td><td>SetTile</td><td>U+E97B</td><td class="icon"></td><td>SetlockScreen</td><td>U+E7B5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Settings</td><td>U+E713</td><td class="icon"></td><td>SettingsBattery</td><td>U+EE63</td><td class="icon"></td><td>SettingsDisplaySound</td><td>U+E7F3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SettingsSolid</td><td>U+F8B0</td><td class="icon"></td><td>Share</td><td>U+E72D</td><td class="icon"></td><td>ShareBroadband</td><td>U+E83A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Shield</td><td>U+EA18</td><td class="icon"></td><td>Shop</td><td>U+E719</td><td class="icon"></td><td>ShoppingCart</td><td>U+E7BF</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ShowBcc</td><td>U+E8C4</td><td class="icon"></td><td>ShowResults</td><td>U+E8BC</td><td class="icon"></td><td>ShowResultsMirrored</td><td>U+EA65</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Shuffle</td><td>U+E8B1</td><td class="icon"></td><td>SignOut</td><td>U+F3B1</td><td class="icon"></td><td>SignalBars1</td><td>U+E86C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SignalBars2</td><td>U+E86D</td><td class="icon"></td><td>SignalBars3</td><td>U+E86E</td><td class="icon"></td><td>SignalBars4</td><td>U+E86F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SignalBars5</td><td>U+E870</td><td class="icon"></td><td>SignalError</td><td>U+ED2E</td><td class="icon"></td><td>SignalNotConnected</td><td>U+E871</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SignalRoaming</td><td>U+EC1E</td><td class="icon"></td><td>SignatureCapture</td><td>U+EF3F</td><td class="icon"></td><td>SkipBack10</td><td>U+ED3C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SkipForward30</td><td>U+ED3D</td><td class="icon"></td><td>SliderThumb</td><td>U+EC13</td><td class="icon"></td><td>Slideshow</td><td>U+E786</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SlowMotionOn</td><td>U+EA79</td><td class="icon"></td><td>SmallErase</td><td>U+F129</td><td class="icon"></td><td>SmartScreen</td><td>U+F8A5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Smartcard</td><td>U+E963</td><td class="icon"></td><td>SmartcardVirtual</td><td>U+E964</td><td class="icon"></td><td>Sort</td><td>U+E8CB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SpatialVolume0</td><td>U+F0EB</td><td class="icon"></td><td>SpatialVolume1</td><td>U+F0EC</td><td class="icon"></td><td>SpatialVolume2</td><td>U+F0ED</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SpatialVolume3</td><td>U+F0EE</td><td class="icon"></td><td>Speakers</td><td>U+E7F5</td><td class="icon"></td><td>SpecialEffectSize</td><td>U+F4A5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Speech</td><td>U+EFA9</td><td class="icon"></td><td>SpeechSolidBold</td><td>U+F8B2</td><td class="icon"></td><td>SpeedHigh</td><td>U+EC4A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SpeedMedium</td><td>U+EC49</td><td class="icon"></td><td>SpeedOff</td><td>U+EC48</td><td class="icon"></td><td>Spelling</td><td>U+F87B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SpellingChinese</td><td>U+F87E</td><td class="icon"></td><td>SpellingKorean</td><td>U+F87C</td><td class="icon"></td><td>SpellingSerbian</td><td>U+F87D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Split20</td><td>U+F740</td><td class="icon"></td><td>StaplingLandscapeBookBinding</td><td>U+F5A9</td><td class="icon"></td><td>StaplingLandscapeBottomLeft</td><td>U+F5A3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingLandscapeBottomRight</td><td>U+F5A4</td><td class="icon"></td><td>StaplingLandscapeTopLeft</td><td>U+F5A1</td><td class="icon"></td><td>StaplingLandscapeTopRight</td><td>U+F5A2</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingLandscapeTwoBottom</td><td>U+F5A8</td><td class="icon"></td><td>StaplingLandscapeTwoLeft</td><td>U+F5A5</td><td class="icon"></td><td>StaplingLandscapeTwoRight</td><td>U+F5A6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingLandscapeTwoTop</td><td>U+F5A7</td><td class="icon"></td><td>StaplingOff</td><td>U+F598</td><td class="icon"></td><td>StaplingPortraitBookBinding</td><td>U+F5A0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingPortraitBottomLeft</td><td>U+F5AE</td><td class="icon"></td><td>StaplingPortraitBottomRight</td><td>U+F59B</td><td class="icon"></td><td>StaplingPortraitTopLeft</td><td>U+F599</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingPortraitTopRight</td><td>U+F59A</td><td class="icon"></td><td>StaplingPortraitTwoBottom</td><td>U+F59F</td><td class="icon"></td><td>StaplingPortraitTwoLeft</td><td>U+F59C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StaplingPortraitTwoRight</td><td>U+F59D</td><td class="icon"></td><td>StaplingPortraitTwoTop</td><td>U+F59E</td><td class="icon"></td><td>StartPoint</td><td>U+E819</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StartPointSolid</td><td>U+EB49</td><td class="icon"></td><td>StartPresenting</td><td>U+F71C</td><td class="icon"></td><td>StatusCheckmark</td><td>U+F1D8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCheckmark7</td><td>U+F0B7</td><td class="icon"></td><td>StatusCheckmarkLeft</td><td>U+F1D9</td><td class="icon"></td><td>StatusCircle</td><td>U+EA81</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCircle7</td><td>U+F0B6</td><td class="icon"></td><td>StatusCircleBlock</td><td>U+F140</td><td class="icon"></td><td>StatusCircleBlock2</td><td>U+F141</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCircleCheckmark</td><td>U+F13E</td><td class="icon"></td><td>StatusCircleErrorX</td><td>U+F13D</td><td class="icon"></td><td>StatusCircleExclamation</td><td>U+F13C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCircleInfo</td><td>U+F13F</td><td class="icon"></td><td>StatusCircleInner</td><td>U+F137</td><td class="icon"></td><td>StatusCircleLeft</td><td>U+EBFD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCircleOuter</td><td>U+F136</td><td class="icon"></td><td>StatusCircleQuestionMark</td><td>U+F142</td><td class="icon"></td><td>StatusCircleRing</td><td>U+F138</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusCircleSync</td><td>U+F143</td><td class="icon"></td><td>StatusConnecting1</td><td>U+EB57</td><td class="icon"></td><td>StatusConnecting2</td><td>U+EB58</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusDataTransfer</td><td>U+E880</td><td class="icon"></td><td>StatusDataTransferRoaming</td><td>U+F5AA</td><td class="icon"></td><td>StatusDataTransferVPN</td><td>U+E881</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusDualSIM1</td><td>U+E884</td><td class="icon"></td><td>StatusDualSIM1VPN</td><td>U+E885</td><td class="icon"></td><td>StatusDualSIM2</td><td>U+E882</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusDualSIM2VPN</td><td>U+E883</td><td class="icon"></td><td>StatusError</td><td>U+EA83</td><td class="icon"></td><td>StatusErrorCircle7</td><td>U+F0B8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusErrorFull</td><td>U+EB90</td><td class="icon"></td><td>StatusErrorLeft</td><td>U+EBFF</td><td class="icon"></td><td>StatusExclamationCircle7</td><td>U+F12F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusInfo</td><td>U+F3CC</td><td class="icon"></td><td>StatusInfoLeft</td><td>U+F3CD</td><td class="icon"></td><td>StatusPause7</td><td>U+F175</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusSGLTE</td><td>U+E886</td><td class="icon"></td><td>StatusSGLTECell</td><td>U+E887</td><td class="icon"></td><td>StatusSGLTEDataVPN</td><td>U+E888</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusSecured</td><td>U+F809</td><td class="icon"></td><td>StatusTriangle</td><td>U+EA82</td><td class="icon"></td><td>StatusTriangleExclamation</td><td>U+F13B</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusTriangleInner</td><td>U+F13A</td><td class="icon"></td><td>StatusTriangleLeft</td><td>U+EBFE</td><td class="icon"></td><td>StatusTriangleOuter</td><td>U+F139</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusUnsecure</td><td>U+EB59</td><td class="icon"></td><td>StatusVPN</td><td>U+E889</td><td class="icon"></td><td>StatusWarning</td><td>U+EA84</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StatusWarningLeft</td><td>U+EC00</td><td class="icon"></td><td>Sticker2</td><td>U+F4AA</td><td class="icon"></td><td>StockDown</td><td>U+EB11</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StockUp</td><td>U+EB0F</td><td class="icon"></td><td>Stop</td><td>U+E71A</td><td class="icon"></td><td>StopPoint</td><td>U+E81A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StopPointSolid</td><td>U+EB4A</td><td class="icon"></td><td>StopPresenting</td><td>U+F71D</td><td class="icon"></td><td>Stopwatch</td><td>U+E916</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StorageNetworkWireless</td><td>U+E969</td><td class="icon"></td><td>StorageOptical</td><td>U+E958</td><td class="icon"></td><td>StorageTape</td><td>U+E96A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Streaming</td><td>U+E93E</td><td class="icon"></td><td>StreamingEnterprise</td><td>U+ED2F</td><td class="icon"></td><td>Street</td><td>U+E913</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StreetsideSplitExpand</td><td>U+E803</td><td class="icon"></td><td>StreetsideSplitMinimize</td><td>U+E802</td><td class="icon"></td><td>Strikethrough</td><td>U+EDE0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>StrokeErase</td><td>U+ED60</td><td class="icon"></td><td>StrokeErase2</td><td>U+F128</td><td class="icon"></td><td>StrokeEraseMirrored</td><td>U+EF17</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SubscriptionAdd</td><td>U+ED0E</td><td class="icon"></td><td>SubscriptionAddMirrored</td><td>U+ED11</td><td class="icon"></td><td>Subtitles</td><td>U+ED1E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SubtitlesAudio</td><td>U+ED1F</td><td class="icon"></td><td>SubtractBold</td><td>U+F8AB</td><td class="icon"></td><td>SurfaceHub</td><td>U+E8AE</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SurfaceHubSelected</td><td>U+F4BE</td><td class="icon"></td><td>Sustainable</td><td>U+EC0A</td><td class="icon"></td><td>Swipe</td><td>U+E927</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SwipeRevealArt</td><td>U+EC6D</td><td class="icon"></td><td>Switch</td><td>U+E8AB</td><td class="icon"></td><td>SwitchApps</td><td>U+E8F9</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SwitchUser</td><td>U+E748</td><td class="icon"></td><td>Sync</td><td>U+E895</td><td class="icon"></td><td>SyncBadge12</td><td>U+EDAB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>SyncError</td><td>U+EA6A</td><td class="icon"></td><td>SyncFolder</td><td>U+E8F7</td><td class="icon"></td><td>System</td><td>U+E770</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TVMonitor</td><td>U+E7F4</td><td class="icon"></td><td>TVMonitorSelected</td><td>U+EC77</td><td class="icon"></td><td>Tablet</td><td>U+E70A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TabletMode</td><td>U+EBFC</td><td class="icon"></td><td>TabletSelected</td><td>U+EC74</td><td class="icon"></td><td>Tag</td><td>U+E8EC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TapAndSend</td><td>U+E9A1</td><td class="icon"></td><td>TaskView</td><td>U+E7C4</td><td class="icon"></td><td>TaskViewExpanded</td><td>U+EB91</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TaskViewSettings</td><td>U+EE40</td><td class="icon"></td><td>TaskbarPhone</td><td>U+EE64</td><td class="icon"></td><td>ThisPC</td><td>U+EC4E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ThoughtBubble</td><td>U+EA91</td><td class="icon"></td><td>ThreeBars</td><td>U+E907</td><td class="icon"></td><td>ThreeQuarterStarLeft</td><td>U+F0CC</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ThreeQuarterStarRight</td><td>U+F0CD</td><td class="icon"></td><td>Tiles</td><td>U+ECA5</td><td class="icon"></td><td>TiltDown</td><td>U+E80A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TiltUp</td><td>U+E809</td><td class="icon"></td><td>TimeLanguage</td><td>U+E775</td><td class="icon"></td><td>ToggleBorder</td><td>U+EC12</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ToggleFilled</td><td>U+EC11</td><td class="icon"></td><td>ToggleLeft</td><td>U+F19E</td><td class="icon"></td><td>ToggleRight</td><td>U+F19F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ToggleThumb</td><td>U+EC14</td><td class="icon"></td><td>TollSolid</td><td>U+F161</td><td class="icon"></td><td>ToolTip</td><td>U+E82F</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Touch</td><td>U+E815</td><td class="icon"></td><td>TouchPointer</td><td>U+E7C9</td><td class="icon"></td><td>Touchpad</td><td>U+EFA5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Touchscreen</td><td>U+EDA4</td><td class="icon"></td><td>Trackers</td><td>U+EADF</td><td class="icon"></td><td>TrackersMirrored</td><td>U+EE92</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TrafficCongestionSolid</td><td>U+F163</td><td class="icon"></td><td>TrafficLight</td><td>U+EF31</td><td class="icon"></td><td>Train</td><td>U+E7C0</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TrainSolid</td><td>U+EB4D</td><td class="icon"></td><td>TreeFolderFolder</td><td>U+ED41</td><td class="icon"></td><td>TreeFolderFolderFill</td><td>U+ED42</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TreeFolderFolderOpen</td><td>U+ED43</td><td class="icon"></td><td>TreeFolderFolderOpenFill</td><td>U+ED44</td><td class="icon"></td><td>TriggerLeft</td><td>U+F10A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TriggerRight</td><td>U+F10B</td><td class="icon"></td><td>Trim</td><td>U+E78A</td><td class="icon"></td><td>TwoBars</td><td>U+E906</td>
+</tr>
+<tr>
+<td class="icon"></td><td>TwoPage</td><td>U+E89A</td><td class="icon"></td><td>Type</td><td>U+E97C</td><td class="icon"></td><td>USB</td><td>U+E88E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>USBSafeConnect</td><td>U+ECF3</td><td class="icon"></td><td>Underline</td><td>U+E8DC</td><td class="icon"></td><td>UnderscoreSpace</td><td>U+E75D</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Undo</td><td>U+E7A7</td><td class="icon"></td><td>Unfavorite</td><td>U+E8D9</td><td class="icon"></td><td>Unit</td><td>U+ECC6</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Unknown</td><td>U+E9CE</td><td class="icon"></td><td>UnknownMirrored</td><td>U+F22E</td><td class="icon"></td><td>Unlock</td><td>U+E785</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Unpin</td><td>U+E77A</td><td class="icon"></td><td>UnsyncFolder</td><td>U+E8F6</td><td class="icon"></td><td>Up</td><td>U+E74A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>UpArrowShiftKey</td><td>U+E752</td><td class="icon"></td><td>UpShiftKey</td><td>U+E84B</td><td class="icon"></td><td>UpdateRestore</td><td>U+E777</td>
+</tr>
+<tr>
+<td class="icon"></td><td>UpdateStatusDot</td><td>U+F83F</td><td class="icon"></td><td>Upload</td><td>U+E898</td><td class="icon"></td><td>UserAPN</td><td>U+F081</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VPN</td><td>U+E705</td><td class="icon"></td><td>VerticalBattery0</td><td>U+F5F2</td><td class="icon"></td><td>VerticalBattery1</td><td>U+F5F3</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBattery10</td><td>U+F5FC</td><td class="icon"></td><td>VerticalBattery2</td><td>U+F5F4</td><td class="icon"></td><td>VerticalBattery3</td><td>U+F5F5</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBattery4</td><td>U+F5F6</td><td class="icon"></td><td>VerticalBattery5</td><td>U+F5F7</td><td class="icon"></td><td>VerticalBattery6</td><td>U+F5F8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBattery7</td><td>U+F5F9</td><td class="icon"></td><td>VerticalBattery8</td><td>U+F5FA</td><td class="icon"></td><td>VerticalBattery9</td><td>U+F5FB</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBatteryCharging0</td><td>U+F5FD</td><td class="icon"></td><td>VerticalBatteryCharging1</td><td>U+F5FE</td><td class="icon"></td><td>VerticalBatteryCharging10</td><td>U+F607</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBatteryCharging2</td><td>U+F5FF</td><td class="icon"></td><td>VerticalBatteryCharging3</td><td>U+F600</td><td class="icon"></td><td>VerticalBatteryCharging4</td><td>U+F601</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBatteryCharging5</td><td>U+F602</td><td class="icon"></td><td>VerticalBatteryCharging6</td><td>U+F603</td><td class="icon"></td><td>VerticalBatteryCharging7</td><td>U+F604</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VerticalBatteryCharging8</td><td>U+F605</td><td class="icon"></td><td>VerticalBatteryCharging9</td><td>U+F606</td><td class="icon"></td><td>VerticalBatteryUnknown</td><td>U+F608</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Vibrate</td><td>U+E877</td><td class="icon"></td><td>Video</td><td>U+E714</td><td class="icon"></td><td>Video360</td><td>U+F131</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VideoCapture</td><td>U+F7EE</td><td class="icon"></td><td>VideoChat</td><td>U+E8AA</td><td class="icon"></td><td>VideoSolid</td><td>U+EA0C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>View</td><td>U+E890</td><td class="icon"></td><td>ViewAll</td><td>U+E8A9</td><td class="icon"></td><td>ViewDashboard</td><td>U+F246</td>
+</tr>
+<tr>
+<td class="icon"></td><td>VirtualMachineGroup</td><td>U+EEA3</td><td class="icon"></td><td>VoiceCall</td><td>U+F715</td><td class="icon"></td><td>Volume</td><td>U+E767</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Volume0</td><td>U+E992</td><td class="icon"></td><td>Volume1</td><td>U+E993</td><td class="icon"></td><td>Volume2</td><td>U+E994</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Volume3</td><td>U+E995</td><td class="icon"></td><td>VolumeBars</td><td>U+EBC5</td><td class="icon"></td><td>Walk</td><td>U+E805</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WalkSolid</td><td>U+E726</td><td class="icon"></td><td>Warning</td><td>U+E7BA</td><td class="icon"></td><td>WebSearch</td><td>U+F6FA</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Webcam</td><td>U+E8B8</td><td class="icon"></td><td>Webcam2</td><td>U+E960</td><td class="icon"></td><td>Website</td><td>U+EB41</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Wheel</td><td>U+EE94</td><td class="icon"></td><td>Wifi</td><td>U+E701</td><td class="icon"></td><td>Wifi1</td><td>U+E872</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Wifi2</td><td>U+E873</td><td class="icon"></td><td>Wifi3</td><td>U+E874</td><td class="icon"></td><td>WifiAttentionOverlay</td><td>U+E998</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiCall0</td><td>U+F658</td><td class="icon"></td><td>WifiCall1</td><td>U+F659</td><td class="icon"></td><td>WifiCall2</td><td>U+F65A</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiCall3</td><td>U+F65B</td><td class="icon"></td><td>WifiCall4</td><td>U+F65C</td><td class="icon"></td><td>WifiCallBars</td><td>U+F657</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiError0</td><td>U+EB5A</td><td class="icon"></td><td>WifiError1</td><td>U+EB5B</td><td class="icon"></td><td>WifiError2</td><td>U+EB5C</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiError3</td><td>U+EB5D</td><td class="icon"></td><td>WifiError4</td><td>U+EB5E</td><td class="icon"></td><td>WifiEthernet</td><td>U+EE77</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiHotspot</td><td>U+E88A</td><td class="icon"></td><td>WifiWarning0</td><td>U+EB5F</td><td class="icon"></td><td>WifiWarning1</td><td>U+EB60</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WifiWarning2</td><td>U+EB61</td><td class="icon"></td><td>WifiWarning3</td><td>U+EB62</td><td class="icon"></td><td>WifiWarning4</td><td>U+EB63</td>
+</tr>
+<tr>
+<td class="icon"></td><td>WindDirection</td><td>U+EBE6</td><td class="icon"></td><td>WindowSnipping</td><td>U+F7ED</td><td class="icon"></td><td>WindowsInsider</td><td>U+F1AD</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Wire</td><td>U+E95F</td><td class="icon"></td><td>WiredUSB</td><td>U+ECF0</td><td class="icon"></td><td>WirelessUSB</td><td>U+ECF1</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Work</td><td>U+E821</td><td class="icon"></td><td>WorkSolid</td><td>U+EB4E</td><td class="icon"></td><td>World</td><td>U+E909</td>
+</tr>
+<tr>
+<td class="icon"></td><td>XboxOneConsole</td><td>U+E990</td><td class="icon"></td><td>ZeroBars</td><td>U+E904</td><td class="icon"></td><td>ZipFolder</td><td>U+F012</td>
+</tr>
+<tr>
+<td class="icon"></td><td>Zoom</td><td>U+E71E</td><td class="icon"></td><td>ZoomIn</td><td>U+E8A3</td><td class="icon"></td><td>ZoomMode</td><td>U+ECE8</td>
+</tr>
+<tr>
+<td class="icon"></td><td>ZoomOut</td><td>U+E71F</td><td class="icon"></td><td>eSIM</td><td>U+F61B</td><td class="icon"></td><td>eSIMBusy</td><td>U+F61E</td>
+</tr>
+<tr>
+<td class="icon"></td><td>eSIMLocked</td><td>U+F61D</td><td class="icon"></td><td>eSIMNoProfile</td><td>U+F61C</td><td></td><td></td><td></td>
+</tr>
+</tbody>
+</table>
+<script>
+document.getElementById('search').addEventListener('input', function() {
+  const keyword = this.value.toLowerCase();
+  const tbody = document.querySelector('#iconTable tbody');
+  for (const row of tbody.rows) {
+    let show = false;
+    for (let i = 1; i < row.cells.length; i += 3) {
+      if (row.cells[i].textContent.toLowerCase().includes(keyword)) { show = true; break; }
+    }
+    row.style.display = show ? '' : 'none';
+  }
+});
+</script>
+</body>
+</html>
