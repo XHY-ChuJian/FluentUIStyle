@@ -214,7 +214,6 @@ void TabShowcaseWidget::setupCapsuleTabs(QVBoxLayout *mainLayout)
     m_capsuleTabWidget->setMovable(true);
 
     QTabBar *capTabBar = m_capsuleTabWidget->tabBar();
-    capTabBar->setAttribute(Qt::WA_StyledBackground, true);
     capTabBar->setAutoFillBackground(false);
     capTabBar->setExpanding(false);
     capTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
@@ -262,7 +261,6 @@ void TabShowcaseWidget::setupNavigationTabs(QVBoxLayout *mainLayout)
     m_navigationTabWidget->setMinimumHeight(300);
 
     QTabBar *navTabBar = m_navigationTabWidget->tabBar();
-    navTabBar->setAttribute(Qt::WA_StyledBackground, true);
     navTabBar->setShape(QTabBar::RoundedWest);
     navTabBar->setDrawBase(false);
     m_navigationTabWidget->setMovable(false);

@@ -5,7 +5,8 @@
 4.TabBar(Segmented)可自定义圆角和背景、选中等属性
 5.Example新增图片背景模式
 6.QScrollBar增加鼠标进入动画
-7.优化其他显示效果
+7.TableView重构样式
+8.优化其他显示效果
 
 【更新内容2026-4-10】
 1.新增ProgressBar样式(Ring和Thick)
