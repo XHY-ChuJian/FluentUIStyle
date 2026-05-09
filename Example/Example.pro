@@ -15,10 +15,12 @@ DEFINES += FLUENT_USE_QT_STYLE
 
 SOURCES += main.cpp \
            mainwindow.cpp \
+           tabshowcasewidget.cpp \
            font-icon/fonticon.cpp \
            aboutprojectwidget.cpp \
            segoeicongallerywidget.cpp
 HEADERS += mainwindow.h \
+           tabshowcasewidget.h \
            font-icon/fonticon.h \
            aboutprojectwidget.h \
            segoeicongallerywidget.h

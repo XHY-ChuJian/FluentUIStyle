@@ -13,8 +13,8 @@ class QTabBar;
 class ExNavTreeWidget;
 class ExWinUINavigationView;
 class ExStackedWidget;
-class ExTabWidget;
 class QComboBox;
+class TabShowcaseWidget;
 
 QT_BEGIN_NAMESPACE
 
@@ -90,22 +90,10 @@ private:
     // Navigation View helpers
     void addTestNavigationTree();
 
-    // Tab setup helpers
-    void setupPivotTabs(QVBoxLayout *mainLayout);
-    void setupSegmentedTabs(QVBoxLayout *mainLayout);
-    void setupPillTabs(QVBoxLayout *mainLayout);
-    void setupCapsuleTabs(QVBoxLayout *mainLayout);
-    void setupNavigationTabs(QVBoxLayout *mainLayout);
-    QWidget *createTabWidgetContainer();
-    void addTabBarSection(QVBoxLayout *layout, const QString &title, const QString &description, int tabStyle, QTabBar **outTabBar = nullptr);
-
     // Button helpers
     void setupToolButtonWithMenu();
 
     // Icon update helpers
-    void updateCapsuleTabIcons();
-    void updateSegmentedBarIcons();
-    void updateNavigationTabIcons();
     void updateButtonIcons();
     void updateMenuActionIcons();
     void updateMenuIcons();
@@ -117,12 +105,7 @@ private:
     QMenuBar *m_menuBar{nullptr};
     QToolBar *m_toolBar{nullptr};
 
-    ExTabWidget *m_capsuleTabWidget{nullptr};
-    QTabBar *m_segmentedBar{nullptr};
-    QTabBar *m_segmentedFadeBar{nullptr};
-    QTabBar *m_winui3Bar{nullptr};
-    QTabBar *m_winui3IconBar{nullptr};
-    ExTabWidget *m_navigationTabWidget{nullptr};
+    TabShowcaseWidget *m_tabShowcaseWidget{nullptr};
     ExNavTreeWidget *m_navView{nullptr};
     ExWinUINavigationView *m_winUINavigationView{nullptr};
     QAction *m_searchAction{nullptr};

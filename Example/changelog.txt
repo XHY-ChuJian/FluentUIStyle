@@ -1,3 +1,9 @@
+【更新内容2026-5-9】
+1.新增WinUI3导航控件
+2.SwtichButton完善动画效果
+3.TabBar新增Segmented_WinUI3样式
+4.Example新增图片背景模式
+
 【更新内容2026-4-10】
 1.新增ProgressBar样式(Ring和Thick)
 2.QComboBox弹窗位置与WinUI3一致

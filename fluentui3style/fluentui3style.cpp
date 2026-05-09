@@ -67,6 +67,7 @@ static constexpr int secondLevelRoundingRadius = 4; // Radius for second level i
 static constexpr int contentItemHMargin = 4;        // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin = 2 * 3;        // margin between rounded border and content (= rounded border
                                                     // margin * 3)
+static constexpr int pivotIndicatorPreferredWidth = 24; // Pivot_Grow / Slide / Stretch: fixed bar length, centered
 
 /// 将半透明的 Fluent 颜色与底色预合成，返回完全不透明的颜色。
 /// 用于 input 控件作为 delegate editor 时，防止半透明背景透底。
@@ -388,7 +389,6 @@ static inline QPainterPath buildRoundedPolyline(const QList<QPointF> &points, qr
         QVector2D v1n = v1.normalized();
         QVector2D v2n = v2.normalized();
 
-        // 共线检测
         if (QVector2D::dotProduct(v1n, v2n) > 0.999)
         {
             path.lineTo(p1);
@@ -2866,6 +2866,13 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
             painter->fillRect(buttonRect, option->palette.brush(QPalette::Window));
         }
 #endif
+        // {
+        //     if (auto tabBar = qobject_cast<const QTabBar *>(widget))
+        //     {
+        //         painter->setPen(Qt::red);
+        //         painter->drawRect(tabBar->rect());
+        //     }
+        // }
         if (widget && widget->property("isCard").toBool())
         {
             painter->save();
@@ -3562,11 +3569,11 @@ void FluentUI3Style::drawCapsuleTab(const QStyleOptionTab *tab, QPainter *painte
         QPainterPath path = buildRoundedPolyline(pts, radius);
         painter->fillPath(path, painter->brush());
 
-        QRectF indicatorRect(tabRect.x() + 7.f, tabRect.y() + 7.0f, 2, tabRect.height() - 14.0f);
-        const QColor col = accentColor(tab);
-        painter->setBrush(col);
-        painter->setPen(col);
-        painter->drawRoundedRect(indicatorRect, 1.0, 1.0);
+        // QRectF indicatorRect(tabRect.x() + 7.f, tabRect.y() + 7.0f, 2, tabRect.height() - 14.0f);
+        // const QColor col = accentColor(tab);
+        // painter->setBrush(col);
+        // painter->setPen(col);
+        // painter->drawRoundedRect(indicatorRect, 1.0, 1.0);
     }
     else if (tab->state & State_MouseOver)
     {
@@ -3608,11 +3615,9 @@ void FluentUI3Style::drawPivotGrowingTab(const QStyleOptionTab *tab, QPainter *p
     const QByteArray animKey = "_q_pivot_indicator_grow";
 
     const QRect r = tab->rect;
-    int targetWidth = r.width() - indicatorMargin * 2;
-    if (targetWidth < 0)
-    {
-        targetWidth = 0;
-    }
+    const int innerWidth = qMax(0, r.width() - indicatorMargin * 2);
+    const int targetWidth = qMin(pivotIndicatorPreferredWidth, innerWidth);
+    const qreal contentLeft = r.left() + indicatorMargin + (innerWidth - targetWidth) / 2.0;
 
     int currentTabIndex = -1;
     if (const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget))
@@ -3653,7 +3658,7 @@ void FluentUI3Style::drawPivotGrowingTab(const QStyleOptionTab *tab, QPainter *p
     }
 
     const qreal currentWidth = targetWidth * progress;
-    const QRect indicator(qRound(r.left() + indicatorMargin + (targetWidth - currentWidth) / 2.0),
+    const QRect indicator(qRound(contentLeft + (targetWidth - currentWidth) / 2.0),
                           qRound(r.bottom() - indicatorHeight),
                           qRound(currentWidth),
                           qRound(indicatorHeight));
@@ -3742,13 +3747,10 @@ void FluentUI3Style::drawPivotStretchingTab(const QStyleOptionTab *tab, QPainter
     };
 
     const QRect r = tab->rect;
-    int targetWidth = r.width() - indicatorMargin * 2;
-    if (targetWidth < 0)
-    {
-        targetWidth = 0;
-    }
+    const int innerWidth = qMax(0, r.width() - indicatorMargin * 2);
+    const int targetWidth = qMin(pivotIndicatorPreferredWidth, innerWidth);
 
-    const qreal targetLeft = r.left() + indicatorMargin;
+    const qreal targetLeft = r.left() + indicatorMargin + (innerWidth - targetWidth) / 2.0;
     const qreal targetTop = r.bottom() - indicatorHeight;
     const qreal targetW = targetWidth;
     const qreal targetH = indicatorHeight;
@@ -3954,48 +3956,14 @@ void FluentUI3Style::drawPivotSlidingTab(const QStyleOptionTab *tab, QPainter *p
         const qreal inv = 1.0 - clamped;
         return 1.0 - inv * inv * inv;
     };
-    const auto easeInOutCubic = [&](qreal t)
-    {
-        const qreal clamped = clamp01(t);
-        if (clamped < 0.5)
-        {
-            return 4.0 * clamped * clamped * clamped;
-        }
-
-        const qreal inv = -2.0 * clamped + 2.0;
-        return 1.0 - (inv * inv * inv) / 2.0;
-    };
-    const auto easeOutBack = [&](qreal t)
-    {
-        const qreal clamped = clamp01(t);
-        const qreal x = clamped - 1.0;
-        constexpr qreal s = 0.72;
-        return 1.0 + (s + 1.0) * x * x * x + s * x * x;
-    };
-    const auto delayedProgress = [&](qreal t, qreal delayPortion)
-    {
-        const qreal clamped = clamp01(t);
-        if (clamped <= delayPortion)
-        {
-            return 0.0;
-        }
-
-        return clamp01((clamped - delayPortion) / (1.0 - delayPortion));
-    };
 
     const QRect r = tab->rect;
-    int targetWidth = r.width() - indicatorMargin * 2;
-    if (targetWidth < 0)
-    {
-        targetWidth = 0;
-    }
+    const int innerWidth = qMax(0, r.width() - indicatorMargin * 2);
+    const int targetWidth = qMin(pivotIndicatorPreferredWidth, innerWidth);
 
-    const qreal targetLeft = r.left() + indicatorMargin;
+    const qreal targetLeft = r.left() + indicatorMargin + (innerWidth - targetWidth) / 2.0;
     const qreal targetTop = r.bottom() - indicatorHeight;
     const qreal targetRight = targetLeft + targetWidth;
-    [[maybe_unused]] const qreal fullTabLeft = r.left();
-    [[maybe_unused]] const qreal fullTabRight = r.left() + r.width();
-    [[maybe_unused]] const qreal fullTabWidth = qMax(0.0, qreal(r.width()));
 
     int currentTabIndex = -1;
     if (const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget))
@@ -4062,59 +4030,12 @@ void FluentUI3Style::drawPivotSlidingTab(const QStyleOptionTab *tab, QPainter *p
     const qreal toWidth = qMax(0.0, toRight - toLeft);
     const qreal fromCenter = fromLeft + fromWidth / 2.0;
     const qreal toCenter = toLeft + toWidth / 2.0;
-    const qreal distance = qAbs(toCenter - fromCenter);
-    const bool movingRight = toCenter >= fromCenter;
-    const qreal moveT = easeOutCubic(progress);
-    const qreal edgeSettleT = easeOutBack(delayedProgress(progress, 0.50));
-    const qreal widthBaseT = easeInOutCubic(progress);
-    const qreal widthPulseT = qSin(progress * M_PI);
-    const qreal shrinkT = easeOutCubic(delayedProgress(progress, 0.60));
-    const qreal leadingOvershoot = qMin(6.2, 2.1 + distance * 0.026);
-    const qreal expandedWidth = qMax(qMax(fromWidth, toWidth), fullTabWidth);
-    const qreal widthStretch = leadingOvershoot * widthPulseT * (1.0 - shrinkT * 0.75);
-    const qreal stretchWidth = lerp(lerp(fromWidth, toWidth, widthBaseT), expandedWidth, widthPulseT * (1.0 - shrinkT * 0.72));
-    const qreal currentWidth = stretchWidth + widthStretch * 0.35;
+    // Fixed bar width while sliding (no stretch / pulse); min keeps bar inside both tab slots if widths differ
+    const qreal barW = qMin(fromWidth, toWidth);
+    const qreal center = lerp(fromCenter, toCenter, easeOutCubic(progress));
+    const qreal drawLeft = center - barW / 2.0;
 
-    qreal center = lerp(fromCenter, toCenter, moveT);
-    center = lerp(center, toCenter, edgeSettleT * 0.18);
-
-    qreal drawLeft = center - currentWidth / 2.0;
-    qreal drawRight = center + currentWidth / 2.0;
-
-    if (movingRight)
-    {
-        const qreal anchoredRight = lerp(drawRight, toRight + widthStretch, edgeSettleT * 0.96);
-        drawRight = lerp(anchoredRight, toRight, shrinkT);
-        drawLeft = drawRight - currentWidth;
-        drawLeft = lerp(drawLeft, toLeft, shrinkT);
-
-        if (drawRight >= toRight || center >= toCenter)
-        {
-            drawRight = toRight;
-            drawLeft = drawRight - currentWidth;
-        }
-    }
-    else
-    {
-        const qreal anchoredLeft = lerp(drawLeft, toLeft - widthStretch, edgeSettleT * 0.96);
-        drawLeft = lerp(anchoredLeft, toLeft, shrinkT);
-        drawRight = drawLeft + currentWidth;
-        drawRight = lerp(drawRight, toRight, shrinkT);
-
-        if (drawLeft <= toLeft || center <= toCenter)
-        {
-            drawLeft = toLeft;
-            drawRight = drawLeft + currentWidth;
-        }
-    }
-
-    if (drawRight < drawLeft)
-    {
-        qSwap(drawLeft, drawRight);
-    }
-
-    const QRectF indicatorRectF(
-        drawLeft, lerp(fromTop, toTop, smoothStep(progress)), qMax(0.0, drawRight - drawLeft), indicatorHeight);
+    const QRectF indicatorRectF(drawLeft, lerp(fromTop, toTop, smoothStep(progress)), barW, indicatorHeight);
 
     styleObject->setProperty("_q_pivot_slide_selected_tab_index", currentTabIndex);
     styleObject->setProperty("_q_pivot_slide_from_left", fromLeft);
@@ -4275,7 +4196,6 @@ void FluentUI3Style::drawSegmentedSlideTab(const QStyleOptionTab *tab, QPainter 
         t->setStartValue(0.0);
         t->setEndValue(1.0);
         t->setDuration(300);
-        t->setEasingCurve(QEasingCurve::InOutCubic);
         startAnimationEx(t, styleObject, animKey);
     }
     else if (previousTabIndex < 0)
@@ -4297,7 +4217,16 @@ void FluentUI3Style::drawSegmentedSlideTab(const QStyleOptionTab *tab, QPainter 
     const QColor selectedBrush = highContrastTheme ? tab->palette.highlight().color() : winUI3Color(tabBarSelectedBackground);
     painter->setBrush(selectedBrush);
     drawRect.adjust(0.5, 0.5, -0.5, -0.5);
+    
+    const int tabIndex = tabBar->tabAt(tab->rect.center());
+    QRectF clipRect = QRectF(tab->rect);
+
+    painter->save();
+    painter->setClipRect(clipRect);
+    // Draw behind existing content to avoid repeated overlap darkening/covering.
+    painter->setCompositionMode(QPainter::CompositionMode_Source);
     painter->drawRoundedRect(drawRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+    painter->restore();
 #else
     Q_UNUSED(tab)
     Q_UNUSED(painter)
@@ -4391,7 +4320,7 @@ void FluentUI3Style::drawSegmentedFadeTab(const QStyleOptionTab *tab, QPainter *
         QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
         t->setStartValue(0.0);
         t->setEndValue(1.0);
-        t->setDuration(800);
+        t->setDuration(600);
         t->setFrameRate(QStyleAnimation::DefaultFps);
         t->setEasingCurve(QEasingCurve::InOutCubic);
         startAnimationEx(t, styleObject, animKey);
@@ -6979,7 +6908,31 @@ QSize FluentUI3Style::sizeFromContents(ContentsType type, const QStyleOption *op
     {
         contentSize = QProxyStyle::sizeFromContents(type, option, size, widget);
         contentSize.setHeight(32);
-        if (widget && widget->property(TabBarStyleProperty).toInt() == TabBarStyle::Capsule)
+
+        const int tabBarStyle = widget ? widget->property(TabBarStyleProperty).toInt() : 0;
+        const bool isPivotStyle = tabBarStyle == TabBarStyle::Pivot_Grow || tabBarStyle == TabBarStyle::Pivot_Slide
+                                  || tabBarStyle == TabBarStyle::Pivot_Stretch;
+        if (isPivotStyle)
+        {
+            constexpr int pivotIndicatorHeight = 3;
+            constexpr int pivotTextTopPadding = 6;
+            constexpr int pivotIndicatorTopGap = 5;
+            constexpr int pivotIndicatorBottomPadding = 4;
+
+            int contentVisualHeight = option->fontMetrics.height();
+            if (const auto *tab = qstyleoption_cast<const QStyleOptionTab *>(option))
+            {
+                contentVisualHeight = qMax(contentVisualHeight, tab->iconSize.height());
+            }
+
+            const int pivotHeight = pivotTextTopPadding + contentVisualHeight + pivotIndicatorTopGap + pivotIndicatorHeight
+                                    + pivotIndicatorBottomPadding;
+            constexpr int pivotMinTabWidth = 72;
+            // contentSize.setWidth(qMax(contentSize.width(), pivotMinTabWidth));
+            contentSize.setHeight(qMax(contentSize.height(), pivotHeight));
+        }
+
+        if (widget && tabBarStyle == TabBarStyle::Capsule)
         {
             contentSize.setWidth(contentSize.width() + 30);
         }

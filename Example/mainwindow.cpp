@@ -83,12 +83,12 @@
 
 // Project Headers
 #include <exstackedwidget.h>
-#include <extabwidget.h>
 #include <exnavtreewidget.h>
 #include <exwinuinavigationview.h>
 #include "font-icon/fonticon.h"
 #include "segoeicongallerywidget.h"
 #include "aboutprojectwidget.h"
+#include "tabshowcasewidget.h"
 #include "../FluentUI3Style/fluentui3styleproperties.h"
 
 #ifndef FLUENT_USE_QT_STYLE
@@ -489,7 +489,7 @@ QIcon createFluentIcon(const QString &unicode, QColor color = QColor())
 //=============================================================================
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), m_menuBar(nullptr), m_toolBar(nullptr), m_capsuleTabWidget(nullptr), m_segmentedBar(nullptr), m_segmentedFadeBar(nullptr), m_navigationTabWidget(nullptr), m_searchAction(nullptr), m_tabBarWidgetBg(nullptr), m_widgetBgMode(WidgetBgMode::None)
+    : QMainWindow(parent), ui(new Ui::MainWindow), m_menuBar(nullptr), m_toolBar(nullptr), m_tabShowcaseWidget(nullptr), m_searchAction(nullptr), m_tabBarWidgetBg(nullptr), m_widgetBgMode(WidgetBgMode::None)
 {
     // Setup window attributes
     setAttribute(Qt::WA_StyledBackground);
@@ -1191,231 +1191,11 @@ void MainWindow::setupTabs()
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollArea->viewport()->setAutoFillBackground(false);
     scrollArea->viewport()->setAttribute(Qt::WA_StyledBackground, false);
-
-    QWidget *contentWidget = new QWidget();
-    QVBoxLayout *mainLayout = new QVBoxLayout(contentWidget);
-    mainLayout->setContentsMargins(11, 11, 11, 11);
-    mainLayout->setSpacing(15);
-
-    scrollArea->setWidget(contentWidget);
-    contentWidget->setAutoFillBackground(false);
+    m_tabShowcaseWidget = new TabShowcaseWidget(scrollArea);
+    scrollArea->setWidget(m_tabShowcaseWidget);
+    m_tabShowcaseWidget->setAutoFillBackground(false);
+    m_tabShowcaseWidget->updateTabIcons();
     pageLayout->addWidget(scrollArea);
-
-    QLabel *lab = new QLabel("TabBar多种样式示例");
-    lab->setStyleSheet("font-size:18pt; font-weight:bold;");
-    mainLayout->addWidget(lab);
-
-    // Setup various tab styles
-    setupPivotTabs(mainLayout);
-    setupSegmentedTabs(mainLayout);
-    setupPillTabs(mainLayout);
-    setupCapsuleTabs(mainLayout);
-    setupNavigationTabs(mainLayout);
-
-    mainLayout->addStretch();
-}
-
-void MainWindow::setupPivotTabs(QVBoxLayout *mainLayout)
-{
-    QWidget *pivotWidget = createTabWidgetContainer();
-    QVBoxLayout *pivotLayout = static_cast<QVBoxLayout *>(pivotWidget->layout());
-
-    // Pivot Grow
-    addTabBarSection(pivotLayout, "Pivot Grow TabBar", "特点：选中时会有一个生长动画效果。", Pivot_Grow);
-
-    // Pivot Slide
-    addTabBarSection(pivotLayout, "Pivot Slide TabBar", "特点：选中时会有一个滑动动画效果。", Pivot_Slide);
-
-    // Pivot Stretch
-    addTabBarSection(pivotLayout, "Pivot Stretch TabBar", "特点：选中时会有一个拉伸动画效果。", Pivot_Stretch);
-
-    pivotLayout->addStretch();
-    mainLayout->addWidget(pivotWidget, 1);
-}
-
-void MainWindow::setupSegmentedTabs(QVBoxLayout *mainLayout)
-{
-    QWidget *segmentedWidget = createTabWidgetContainer();
-    QVBoxLayout *segmentedLayout = static_cast<QVBoxLayout *>(segmentedWidget->layout());
-
-    // Segmented Slide
-    addTabBarSection(segmentedLayout, "Segmented Slide TabBar", "特点：Segmented风格，选中时会有一个滑动动画效果。", Segmented_Slide, &m_segmentedBar);
-
-    // Segmented Fade
-    addTabBarSection(segmentedLayout, "Segmented Fade TabBar", "特点：选中时会有一个淡入淡出动画效果。", Segmented_Fade, &m_segmentedFadeBar);
-
-    // Segmented WinUI3
-    addTabBarSection(segmentedLayout,
-                      "Segmented WinUI3 TabBar",
-                      "特点：Segmented风格，使用更接近 WinUI3 的选中指示器效果。",
-                      Segmented_WinUI3,
-                      &m_winui3Bar);
-
-    segmentedLayout->addStretch();
-    mainLayout->addWidget(segmentedWidget, 1);
-}
-
-void MainWindow::setupPillTabs(QVBoxLayout *mainLayout)
-{
-    QWidget *pillWidget = createTabWidgetContainer();
-    QVBoxLayout *pillLayout = static_cast<QVBoxLayout *>(pillWidget->layout());
-
-    QLabel *pillLabel = new QLabel("Pill TabBar");
-    pillLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    pillLayout->addWidget(pillLabel);
-
-    QTabBar *pillBar = new QTabBar();
-    pillBar->setTabsClosable(true);
-    pillBar->setExpanding(false);
-    pillBar->setProperty(TabBarStyleProperty, PillTabs);
-    pillBar->addTab("Home");
-    pillBar->addTab("Search");
-    pillBar->addTab("Settings");
-    pillBar->addTab("Help");
-    pillBar->addTab("About");
-    pillLayout->addWidget(pillBar);
-
-    pillLayout->addStretch();
-    mainLayout->addWidget(pillWidget, 1);
-}
-
-void MainWindow::setupCapsuleTabs(QVBoxLayout *mainLayout)
-{
-    QWidget *capsuleWidget = createTabWidgetContainer();
-    QVBoxLayout *capsuleLayout = static_cast<QVBoxLayout *>(capsuleWidget->layout());
-
-    QLabel *capsuleLabel = new QLabel("Capsule TabBar");
-    capsuleLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    QLabel *capsuleDescLabel = new QLabel("特点：浏览器标签样式。");
-    capsuleDescLabel->setStyleSheet("color: gray; font-size: 12px;");
-    capsuleLayout->addWidget(capsuleLabel);
-    capsuleLayout->addWidget(capsuleDescLabel);
-
-    m_capsuleTabWidget = new ExTabWidget();
-    m_capsuleTabWidget->setMinimumHeight(200);
-    m_capsuleTabWidget->setTabsClosable(true);
-    m_capsuleTabWidget->setMovable(true);
-
-    QTabBar *capTabBar = m_capsuleTabWidget->tabBar();
-    capTabBar->setAttribute(Qt::WA_StyledBackground, true);
-    capTabBar->setAutoFillBackground(false);
-    capTabBar->setExpanding(false);
-    capTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
-    capTabBar->setProperty(TabBarStyleProperty, Capsule);
-    capTabBar->setDrawBase(false);
-
-    const QStringList pageNames = {"Home", "Search", "Settings", "Help", "About"};
-    const QStringList fullNames = {"Home Page", "Search Page", "Settings Page", "Help Page", "About Page"};
-    const QList<QColor> pageColors = {
-        QColor(255, 228, 225), QColor(224, 255, 255), QColor(240, 255, 240), QColor(255, 250, 205), QColor(230, 230, 250)};
-
-    for (int i = 0; i < pageNames.size(); ++i)
-    {
-        QLabel *page = new QLabel(fullNames[i]);
-        page->setAlignment(Qt::AlignCenter);
-        page->setStyleSheet(QString("background-color: %1;color:black;").arg(pageColors[i].name()));
-        m_capsuleTabWidget->addTab(page, pageNames[i]);
-    }
-
-    capsuleLayout->addWidget(m_capsuleTabWidget, 1);
-    mainLayout->addWidget(capsuleWidget, 1);
-}
-
-void MainWindow::setupNavigationTabs(QVBoxLayout *mainLayout)
-{
-    QWidget *navigationWidget = createTabWidgetContainer();
-    QVBoxLayout *navigationLayout = static_cast<QVBoxLayout *>(navigationWidget->layout());
-
-    QLabel *navigationLabel = new QLabel("Navigation TabBar");
-    navigationLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    QLabel *navigationDescLabel = new QLabel("特点：适合用于侧边栏的导航菜单，选项卡垂直排列，选中时指示器有个变长效果");
-    navigationDescLabel->setStyleSheet("color: gray; font-size: 12px;");
-    navigationLayout->addWidget(navigationLabel);
-    navigationLayout->addWidget(navigationDescLabel);
-
-    QHBoxLayout *bodyLayout = new QHBoxLayout();
-    bodyLayout->setContentsMargins(0, 0, 0, 0);
-    bodyLayout->setSpacing(2);
-
-    m_navigationTabWidget = new ExTabWidget();
-    m_navigationTabWidget->setTabPosition(QTabWidget::West);
-    m_navigationTabWidget->setVerticalMode(true);
-    m_navigationTabWidget->setSpeed(220);
-    m_navigationTabWidget->setAnimation(QEasingCurve::OutCubic);
-    m_navigationTabWidget->setMinimumHeight(300);
-
-    QTabBar *navTabBar = m_navigationTabWidget->tabBar();
-    navTabBar->setAttribute(Qt::WA_StyledBackground, true);
-    navTabBar->setShape(QTabBar::RoundedWest);
-    navTabBar->setDrawBase(false);
-    m_navigationTabWidget->setMovable(false);
-    navTabBar->setExpanding(false);
-    navTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
-    navTabBar->setProperty(TabBarStyleProperty, Navigation);
-
-    const QStringList navFullNames = {"Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page"};
-    const QStringList navNames = {"Overview", "Files", "History", "Insights", "Settings"};
-    const QList<QColor> navPageColors = {
-        QColor(244, 248, 255), QColor(240, 251, 246), QColor(255, 248, 238), QColor(248, 243, 255), QColor(245, 245, 245)};
-
-    for (int i = 0; i < navFullNames.size(); ++i)
-    {
-        QLabel *page = new QLabel(navFullNames[i]);
-        page->setAlignment(Qt::AlignCenter);
-        page->setMinimumHeight(220);
-        page->setStyleSheet(QString("background-color:%1;color:black;").arg(navPageColors[i].name()));
-        m_navigationTabWidget->addTab(page, navNames[i]);
-    }
-
-    bodyLayout->addWidget(m_navigationTabWidget, 1);
-    navigationLayout->addLayout(bodyLayout);
-    mainLayout->addWidget(navigationWidget, 1);
-}
-
-QWidget *MainWindow::createTabWidgetContainer()
-{
-    QWidget *widget = new QWidget();
-    widget->setProperty("isCard", true);
-    widget->setAttribute(Qt::WA_StyledBackground);
-
-    QVBoxLayout *layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(10, 10, 10, 10);
-    layout->setSpacing(10);
-
-    return widget;
-}
-
-void MainWindow::addTabBarSection(QVBoxLayout *layout,
-                                  const QString &title,
-                                  const QString &description,
-                                  int tabStyle,
-                                  QTabBar **outTabBar)
-{
-    QLabel *titleLabel = new QLabel(title);
-    titleLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
-    layout->addWidget(titleLabel);
-
-    if (!description.isEmpty())
-    {
-        QLabel *descLabel = new QLabel(description);
-        descLabel->setStyleSheet("color: gray; font-size: 12px;");
-        layout->addWidget(descLabel);
-    }
-
-    QTabBar *tabBar = new QTabBar();
-    tabBar->setExpanding(false);
-    tabBar->setProperty(TabBarStyleProperty, tabStyle);
-    tabBar->addTab("Home");
-    tabBar->addTab("Search");
-    tabBar->addTab("Settings");
-    tabBar->addTab("Help");
-    tabBar->addTab("About");
-    layout->addWidget(tabBar);
-
-    if (outTabBar)
-    {
-        *outTabBar = tabBar;
-    }
 }
 
 //=============================================================================
@@ -1528,14 +1308,10 @@ void MainWindow::updateActionIcons()
     ui->lineEditSerach->removeAction(m_searchAction);
     m_searchAction = ui->lineEditSerach->addAction(createFluentIcon("\ue721"), QLineEdit::TrailingPosition);
 
-    // Update capsule tab icons
-    updateCapsuleTabIcons();
-
-    // Update segmented bar icons
-    updateSegmentedBarIcons();
-
-    // Update navigation tab icons
-    updateNavigationTabIcons();
+    if (m_tabShowcaseWidget)
+    {
+        m_tabShowcaseWidget->updateTabIcons();
+    }
 
     // Update button icons
     updateButtonIcons();
@@ -1548,63 +1324,6 @@ void MainWindow::updateActionIcons()
 
     // Update navigation item icons
     updateNavigationItemIcons();
-}
-
-void MainWindow::updateCapsuleTabIcons()
-{
-    if (!m_capsuleTabWidget)
-    {
-        return;
-    }
-
-    const QStringList iconCodes = {"\uEA86", "\uE7F3", "\ue8c3", "\uE836", "\uE9F5"};
-    for (int i = 0; i < iconCodes.size() && i < m_capsuleTabWidget->count(); ++i)
-    {
-        m_capsuleTabWidget->setTabIcon(i, createFluentIcon(iconCodes[i]));
-    }
-}
-
-void MainWindow::updateSegmentedBarIcons()
-{
-    const QStringList iconCodes = {"\uEC64", "\uEF58", "\uE99A", "\uE7ED", "\uF163"};
-
-    if (m_segmentedBar)
-    {
-        for (int i = 0; i < iconCodes.size() && i < m_segmentedBar->count(); ++i)
-        {
-            m_segmentedBar->setTabIcon(i, createFluentIcon(iconCodes[i]));
-        }
-    }
-
-    if (m_segmentedFadeBar)
-    {
-        for (int i = 0; i < iconCodes.size() && i < m_segmentedFadeBar->count(); ++i)
-        {
-            m_segmentedFadeBar->setTabIcon(i, createFluentIcon(iconCodes[i]));
-        }
-    }
-
-    if (m_winui3Bar)
-    {
-        for (int i = 0; i < iconCodes.size() && i < m_winui3Bar->count(); ++i)
-        {
-            m_winui3Bar->setTabIcon(i, createFluentIcon(iconCodes[i]));
-        }
-    }
-}
-
-void MainWindow::updateNavigationTabIcons()
-{
-    if (!m_navigationTabWidget)
-    {
-        return;
-    }
-
-    const QStringList iconCodes = {"\uEC64", "\uE8B7", "\uE81C", "\uE9CE", "\uE713"};
-    for (int i = 0; i < iconCodes.size() && i < m_navigationTabWidget->count(); ++i)
-    {
-        m_navigationTabWidget->setTabIcon(i, createFluentIcon(iconCodes[i]));
-    }
 }
 
 void MainWindow::updateButtonIcons()

@@ -3,6 +3,8 @@ set(EXAMPLE_SOURCES
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    tabshowcasewidget.cpp
+    tabshowcasewidget.h
     aboutprojectwidget.cpp
     aboutprojectwidget.h
     segoeicongallerywidget.cpp
