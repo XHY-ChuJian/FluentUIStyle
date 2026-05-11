@@ -38,6 +38,7 @@
 #include <QtGlobal>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QVariant>
 
 #include <array>
 
@@ -1302,38 +1303,25 @@ inline bool isWin11()
 
 inline int getColorSchemeIndex() // 0 = Light, 1 = Dark
 {
-#ifdef FLUENT_USE_QT_STYLE
-    QVariant colorScheme = qApp->property("_q_colorscheme");
-    if (colorScheme.isValid())
-    {
-        qDebug()<< "[FluentUI3Style] Get _q_colorscheme:" << colorScheme.toInt();
-        return colorScheme.toInt();
-    }
-    //如果没有设置，则根据系统主题色返回
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-    qDebug()<< "[FluentUI3Style] No set _q_colorscheme, use system theme color" << qApp->styleHints()->colorScheme();
-    return qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0;
-    #else
-    return 0;
-    #endif
+#if !defined(FLUENT_USE_QT_STYLE)
+    return static_cast<int>(fluentUIAppearance.theme());
 #else
-    return (int)fluentUIAppearance.theme();
-#endif
-    // #ifdef Q_OS_WIN
-    //     if (!isWin11())
-    //     {
-    //         return 0; // 默认 Light
-    //     }
+    const QVariant pColorScheme = qApp->property("_q_colorscheme");
+    if (pColorScheme.isValid())
+    {
+        qDebug() << "[FluentUI3Style] Get _q_colorscheme:" << pColorScheme.toInt();
+        return pColorScheme.toInt();
+    }
 
-    //     QSettings settings("HKEY_CURRENT_"
-    //                        "USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Th"
-    //                        "emes\\Personalize",
-    //                        QSettings::NativeFormat);
-    //     int value = settings.value("AppsUseLightTheme", 1).toInt();
-    //     return value == 1 ? 0 : 1; // 0=Light,1=Dark
-    // #else
-    //     return 0; // 其他系统默认 Light
-    // #endif
+    // 如果没有设置，则根据系统主题色返回（QStyleHints::colorScheme / Qt::ColorScheme 仅 Qt 6.5+）
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    qDebug() << "[FluentUI3Style] No set _q_colorscheme, use system theme color" << qApp->styleHints()->colorScheme();
+    return qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0;
+#else
+    return 0;
+#endif
+
+#endif
 }
 
 inline bool isHighContrastTheme()

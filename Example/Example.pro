@@ -29,9 +29,5 @@ RESOURCES += resources.qrc \
              font-icon/resource.qrc
 RC_ICONS = appicon.ico
 
-win32-msvc {
-    QMAKE_CXXFLAGS += /utf-8
-}
-
 DESTDIR = $$DESTDIR_BIN
 

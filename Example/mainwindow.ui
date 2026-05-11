@@ -90,9 +90,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-225</y>
-             <width>1166</width>
-             <height>975</height>
+             <y>0</y>
+             <width>1163</width>
+             <height>1045</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -385,43 +385,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
                         <width>60</width>
                         <height>60</height>
                        </size>
-                      </property>
-                      <property name="palette">
-                       <palette>
-                        <active>
-                         <colorrole role="Accent">
-                          <brush brushstyle="SolidPattern">
-                           <color alpha="255">
-                            <red>255</red>
-                            <green>85</green>
-                            <blue>0</blue>
-                           </color>
-                          </brush>
-                         </colorrole>
-                        </active>
-                        <inactive>
-                         <colorrole role="Accent">
-                          <brush brushstyle="SolidPattern">
-                           <color alpha="255">
-                            <red>255</red>
-                            <green>85</green>
-                            <blue>0</blue>
-                           </color>
-                          </brush>
-                         </colorrole>
-                        </inactive>
-                        <disabled>
-                         <colorrole role="Accent">
-                          <brush brushstyle="SolidPattern">
-                           <color alpha="255">
-                            <red>255</red>
-                            <green>85</green>
-                            <blue>0</blue>
-                           </color>
-                          </brush>
-                         </colorrole>
-                        </disabled>
-                       </palette>
                       </property>
                       <property name="maximum">
                        <number>0</number>
@@ -1732,8 +1695,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>148</width>
-             <height>387</height>
+             <width>173</width>
+             <height>431</height>
             </rect>
            </property>
            <property name="autoFillBackground">

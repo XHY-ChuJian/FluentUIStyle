@@ -16,7 +16,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(MSVC)
-    add_compile_options(/wd4273)
+    # /utf-8: avoid C4819 when sources contain UTF-8 (e.g. Chinese comments) under CP936
+    add_compile_options(/wd4273 /utf-8)
 endif()
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
