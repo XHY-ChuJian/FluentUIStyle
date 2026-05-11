@@ -21,7 +21,12 @@ private:
     void setupCapsuleTabs(QVBoxLayout *mainLayout);
     void setupNavigationTabs(QVBoxLayout *mainLayout);
     QWidget *createTabWidgetContainer();
-    void addTabBarSection(QVBoxLayout *layout, const QString &title, const QString &description, int tabStyle, QTabBar **outTabBar = nullptr);
+    void addTabBarSection(QVBoxLayout *layout,
+                          const char *sectionId,
+                          const QString &title,
+                          const QString &description,
+                          int tabStyle,
+                          QTabBar **outTabBar = nullptr);
 
 private:
     ExTabWidget *m_capsuleTabWidget{nullptr};

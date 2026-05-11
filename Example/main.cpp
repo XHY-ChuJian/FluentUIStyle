@@ -25,6 +25,7 @@
 #include <QPropertyAnimation>
 
 #include "mainwindow.h"
+#include "applanguage.h"
 #include "qstylefactory.h"
 
 int main(int argc, char *argv[])
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
 #else
     fluentUIAppearance.initialize();
 #endif
+
+    AppLanguage::applyTranslator(AppLanguage::effectiveUiLanguage());
 
     MainWindow w;
     w.show();

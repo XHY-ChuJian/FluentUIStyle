@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 
+#include "applanguage.h"
 #include "ui_mainwindow.h"
 
 #include <algorithm>
@@ -20,6 +21,7 @@
 #include <QFile>
 #include <QDate>
 #include <QKeySequence>
+#include <QPointer>
 #include <QPainter>
 #include <QSettings>
 #include <QScreen>
@@ -43,6 +45,7 @@
 #include <QStringList>
 
 // Qt Widgets Headers
+#include <QAbstractButton>
 #include <QAbstractItemView>
 #include <QAbstractSpinBox>
 #include <QCheckBox>
@@ -116,6 +119,7 @@ static inline void emulateLeaveEvent(QWidget *widget);
 // Icon maps for menu and action icons
 static QMap<QAction *, QString> g_actionIconMap;
 static QMap<QMenu *, QString> g_menuIconMap;
+
 
 struct InstalledSoftwareInfo
 {
@@ -501,7 +505,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_menuBar = new QMenuBar();
     setMenuBar(m_menuBar);
 
-    setWindowTitle(QString("FluentUI Demo - QStyle [Qt-Version %1]").arg(QT_VERSION_STR));
+    setWindowTitle(tr("FluentUI Demo - QStyle [Qt-Version %1]").arg(QT_VERSION_STR));
 
     // Install menu offset filter
     qApp->installEventFilter(new MenuOffsetFilter(qApp));
@@ -520,6 +524,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Update icons
     updateActionIcons();
+
+    syncLanguageRadios();
 
 #ifdef __MINGW32__
     // Hook context menus for MinGW
@@ -572,7 +578,8 @@ void MainWindow::initializeFluentBorderWidgets()
     QList<QWidget *> fluentWidgets;
     fluentWidgets << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7
                   << ui->widget_8 << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_14
-                  << ui->widgetWidgetMode << ui->widgetNavMode << ui->widgetColorSheme << ui->widgetAccentColor;
+                  << ui->widgetWidgetMode << ui->widgetNavMode << ui->widgetColorSheme << ui->widgetAccentColor
+                  << ui->widgetUiLanguage;
 
     for (QWidget *widget : std::as_const(fluentWidgets))
     {
@@ -593,7 +600,7 @@ void MainWindow::initializeComponents()
     ui->scrollAreaWidgetContents_4->setAutoFillBackground(false);
 
     // Configure search line edit
-    ui->lineEditSerach->setPlaceholderText("搜索...");
+    ui->lineEditSerach->setPlaceholderText(tr("搜索..."));
     ui->lineEditSerach->setClearButtonEnabled(true);
     m_searchAction = ui->lineEditSerach->addAction(createFluentIcon("\ue721"), QLineEdit::TrailingPosition);
 
@@ -606,7 +613,7 @@ void MainWindow::initializeComponents()
     ui->stackedWidget->setSpeed(300);
 
     // Initialize sub-components
-    initializeMenuAndToolBar();
+    rebuildMenuAndToolBar();
     initializeNavigationView();
     initializeTableView();
 
@@ -625,7 +632,7 @@ void MainWindow::initializeComponents()
     // Configure control properties
     ui->progressBar->setProperty(ProgressBarStyleProperty, ProgressBarThick);
     ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsHorizontalRight);
-    ui->checkBox_5->setText("Off");
+    ui->checkBox_5->setText(tr("Off"));
     ui->treeWidget->setProperty("ItemHeight", 32);
     ui->treeWidget->setIndentation(20);
 
@@ -666,235 +673,282 @@ void MainWindow::setupComboBox()
 // Menu & Toolbar Functions
 //=============================================================================
 
-static void initializeMenu(QMenuBar *menuBar)
+void MainWindow::buildMainMenus()
 {
+    QMenuBar *menuBar = m_menuBar;
     // File Menu
-    QMenu *fileMenu = menuBar->addMenu("文件");
-    QAction *newFileAction = fileMenu->addAction(createFluentIcon("\ue8a5"), "新建文件");
+    QMenu *fileMenu = menuBar->addMenu(tr("文件"));
+    QAction *newFileAction = fileMenu->addAction(createFluentIcon("\ue8a5"), tr("新建文件"));
     newFileAction->setShortcut(QKeySequence("Ctrl+N"));
     g_actionIconMap[newFileAction] = "\ue8a5";
 
-    QAction *newProjectAction = fileMenu->addAction(createFluentIcon("\ue8b5"), "新建项目");
+    QAction *newProjectAction = fileMenu->addAction(createFluentIcon("\ue8b5"), tr("新建项目"));
     g_actionIconMap[newProjectAction] = "\ue8b5";
 
-    QMenu *recentMenu = fileMenu->addMenu(createFluentIcon("\ue8c3"), "最近打开");
+    QMenu *recentMenu = fileMenu->addMenu(createFluentIcon("\ue8c3"), tr("最近打开"));
     g_menuIconMap[recentMenu] = "\ue8c3";
     recentMenu->addAction("project1");
     recentMenu->addAction("project2");
     recentMenu->addAction("example.cpp");
 
-    QAction *openFileAction = fileMenu->addAction(createFluentIcon("\ue8a5"), "打开文件");
+    QAction *openFileAction = fileMenu->addAction(createFluentIcon("\ue8a5"), tr("打开文件"));
     openFileAction->setShortcut(QKeySequence("Ctrl+O"));
     g_actionIconMap[openFileAction] = "\ue8a5";
 
-    QAction *openProjectAction = fileMenu->addAction(createFluentIcon("\ue8b5"), "打开项目");
+    QAction *openProjectAction = fileMenu->addAction(createFluentIcon("\ue8b5"), tr("打开项目"));
     g_actionIconMap[openProjectAction] = "\ue8b5";
 
     fileMenu->addSeparator();
 
-    QAction *saveAction = fileMenu->addAction(createFluentIcon("\ue74e"), "保存");
+    QAction *saveAction = fileMenu->addAction(createFluentIcon("\ue74e"), tr("保存"));
     saveAction->setShortcut(QKeySequence("Ctrl+S"));
     g_actionIconMap[saveAction] = "\ue74e";
 
-    QAction *saveAsAction = fileMenu->addAction(createFluentIcon("\ue74e"), "另存为");
+    QAction *saveAsAction = fileMenu->addAction(createFluentIcon("\ue74e"), tr("另存为"));
     saveAsAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
     g_actionIconMap[saveAsAction] = "\ue74e";
 
     fileMenu->addSeparator();
 
-    QAction *closeFileAction = fileMenu->addAction(createFluentIcon("\ue8bb"), "关闭文件");
+    QAction *closeFileAction = fileMenu->addAction(createFluentIcon("\ue8bb"), tr("关闭文件"));
     g_actionIconMap[closeFileAction] = "\ue8bb";
 
-    QAction *exitAction = fileMenu->addAction(createFluentIcon("\ue8bb"), "退出");
+    QAction *exitAction = fileMenu->addAction(createFluentIcon("\ue8bb"), tr("退出"));
     exitAction->setShortcut(QKeySequence("Ctrl+Q"));
     g_actionIconMap[exitAction] = "\ue8bb";
 
     // Edit Menu
-    QMenu *editMenu = menuBar->addMenu("编辑");
-    QAction *undoAction = editMenu->addAction(createFluentIcon("\ue7a7"), "撤销");
+    QMenu *editMenu = menuBar->addMenu(tr("编辑"));
+    QAction *undoAction = editMenu->addAction(createFluentIcon("\ue7a7"), tr("撤销"));
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
     g_actionIconMap[undoAction] = "\ue7a7";
 
-    QAction *redoAction = editMenu->addAction(createFluentIcon("\ue7a6"), "重做");
+    QAction *redoAction = editMenu->addAction(createFluentIcon("\ue7a6"), tr("重做"));
     redoAction->setShortcut(QKeySequence("Ctrl+Y"));
     g_actionIconMap[redoAction] = "\ue7a6";
 
     editMenu->addSeparator();
 
-    QAction *cutAction = editMenu->addAction(createFluentIcon("\ue8c6"), "剪切");
+    QAction *cutAction = editMenu->addAction(createFluentIcon("\ue8c6"), tr("剪切"));
     cutAction->setShortcut(QKeySequence("Ctrl+X"));
     g_actionIconMap[cutAction] = "\ue8c6";
 
-    QAction *copyAction = editMenu->addAction(createFluentIcon("\ue8c8"), "复制");
+    QAction *copyAction = editMenu->addAction(createFluentIcon("\ue8c8"), tr("复制"));
     copyAction->setShortcut(QKeySequence("Ctrl+C"));
     g_actionIconMap[copyAction] = "\ue8c8";
 
-    QAction *pasteAction = editMenu->addAction(createFluentIcon("\ue8c7"), "粘贴");
+    QAction *pasteAction = editMenu->addAction(createFluentIcon("\ue8c7"), tr("粘贴"));
     pasteAction->setShortcut(QKeySequence("Ctrl+V"));
     g_actionIconMap[pasteAction] = "\ue8c7";
 
     editMenu->addSeparator();
 
-    QAction *findAction = editMenu->addAction(createFluentIcon("\ue721"), "查找");
+    QAction *findAction = editMenu->addAction(createFluentIcon("\ue721"), tr("查找"));
     findAction->setShortcut(QKeySequence("Ctrl+F"));
     g_actionIconMap[findAction] = "\ue721";
 
-    QAction *replaceAction = editMenu->addAction(createFluentIcon("\ue8ac"), "替换");
+    QAction *replaceAction = editMenu->addAction(createFluentIcon("\ue8ac"), tr("替换"));
     replaceAction->setShortcut(QKeySequence("Ctrl+H"));
     g_actionIconMap[replaceAction] = "\ue8ac";
 
-    QMenu *advancedMenu = editMenu->addMenu(createFluentIcon("\ue713"), "高级");
+    QMenu *advancedMenu = editMenu->addMenu(createFluentIcon("\ue713"), tr("高级"));
     g_menuIconMap[advancedMenu] = "\ue713";
-    QAction *autoFormatAction = advancedMenu->addAction(createFluentIcon("\ue930"), "自动格式化");
+    QAction *autoFormatAction = advancedMenu->addAction(createFluentIcon("\ue930"), tr("自动格式化"));
     autoFormatAction->setCheckable(true);
     g_actionIconMap[autoFormatAction] = "\ue930";
 
-    QAction *sortLinesAction = advancedMenu->addAction(createFluentIcon("\ue930"), "排序行");
+    QAction *sortLinesAction = advancedMenu->addAction(createFluentIcon("\ue930"), tr("排序行"));
     g_actionIconMap[sortLinesAction] = "\ue930";
 
-    QAction *deleteEmptyLinesAction = advancedMenu->addAction(createFluentIcon("\ue8bb"), "删除空行");
+    QAction *deleteEmptyLinesAction = advancedMenu->addAction(createFluentIcon("\ue8bb"), tr("删除空行"));
     g_actionIconMap[deleteEmptyLinesAction] = "\ue8bb";
 
     // View Menu
-    QMenu *viewMenu = menuBar->addMenu("视图");
-    QAction *showToolbarAction = viewMenu->addAction(createFluentIcon("\ue728"), "显示工具栏");
+    QMenu *viewMenu = menuBar->addMenu(tr("视图"));
+    QAction *showToolbarAction = viewMenu->addAction(createFluentIcon("\ue728"), tr("显示工具栏"));
     showToolbarAction->setCheckable(true);
     showToolbarAction->setChecked(true);
     g_actionIconMap[showToolbarAction] = "\ue728";
 
-    QAction *showStatusBarAction = viewMenu->addAction(createFluentIcon("\ue9d9"), "显示状态栏");
+    QAction *showStatusBarAction = viewMenu->addAction(createFluentIcon("\ue9d9"), tr("显示状态栏"));
     showStatusBarAction->setCheckable(true);
     showStatusBarAction->setChecked(true);
     g_actionIconMap[showStatusBarAction] = "\ue9d9";
 
     viewMenu->addSeparator();
 
-    QAction *showSidebarAction = viewMenu->addAction(createFluentIcon("\ue728"), "显示侧边栏");
+    QAction *showSidebarAction = viewMenu->addAction(createFluentIcon("\ue728"), tr("显示侧边栏"));
     showSidebarAction->setCheckable(true);
     showSidebarAction->setChecked(true);
     g_actionIconMap[showSidebarAction] = "\ue728";
 
-    QAction *showOutputAction = viewMenu->addAction(createFluentIcon("\ue7e8"), "显示输出窗口");
+    QAction *showOutputAction = viewMenu->addAction(createFluentIcon("\ue7e8"), tr("显示输出窗口"));
     showOutputAction->setCheckable(true);
     g_actionIconMap[showOutputAction] = "\ue7e8";
 
-    QMenu *zoomMenu = viewMenu->addMenu(createFluentIcon("\ue71e"), "缩放");
+    QMenu *zoomMenu = viewMenu->addMenu(createFluentIcon("\ue71e"), tr("缩放"));
     g_menuIconMap[zoomMenu] = "\ue71e";
-    zoomMenu->addAction("放大");
-    zoomMenu->addAction("缩小");
-    zoomMenu->addAction("恢复默认");
+    QAction *zoomInAction = zoomMenu->addAction(tr("放大"));
+    QAction *zoomOutAction = zoomMenu->addAction(tr("缩小"));
+    QAction *zoomResetAction = zoomMenu->addAction(tr("恢复默认"));
 
     // Build Menu
-    QMenu *buildMenu = menuBar->addMenu("构建");
-    QAction *buildProjectAction = buildMenu->addAction(createFluentIcon("\ue7b8"), "构建项目");
+    QMenu *buildMenu = menuBar->addMenu(tr("构建"));
+    QAction *buildProjectAction = buildMenu->addAction(createFluentIcon("\ue7b8"), tr("构建项目"));
     buildProjectAction->setShortcut(QKeySequence("Ctrl+B"));
     g_actionIconMap[buildProjectAction] = "\ue7b8";
 
-    QAction *rebuildAction = buildMenu->addAction(createFluentIcon("\ue7b8"), "重新构建");
+    QAction *rebuildAction = buildMenu->addAction(createFluentIcon("\ue7b8"), tr("重新构建"));
     g_actionIconMap[rebuildAction] = "\ue7b8";
 
     buildMenu->addSeparator();
 
-    QAction *runAction = buildMenu->addAction(createFluentIcon("\ue768"), "运行");
+    QAction *runAction = buildMenu->addAction(createFluentIcon("\ue768"), tr("运行"));
     g_actionIconMap[runAction] = "\ue768";
 
-    QAction *debugAction = buildMenu->addAction(createFluentIcon("\ue7a6"), "调试");
+    QAction *debugAction = buildMenu->addAction(createFluentIcon("\ue7a6"), tr("调试"));
     g_actionIconMap[debugAction] = "\ue7a6";
 
-    QMenu *buildTargetMenu = buildMenu->addMenu(createFluentIcon("\ue8b5"), "构建目标");
+    QMenu *buildTargetMenu = buildMenu->addMenu(createFluentIcon("\ue8b5"), tr("构建目标"));
     g_menuIconMap[buildTargetMenu] = "\ue8b5";
     buildTargetMenu->addAction("Debug");
     buildTargetMenu->addAction("Release");
 
     // Help Menu
-    QMenu *helpMenu = menuBar->addMenu("帮助");
-    QAction *docsAction = helpMenu->addAction(createFluentIcon("\ue8a5"), "文档");
+    QMenu *helpMenu = menuBar->addMenu(tr("帮助"));
+    QAction *docsAction = helpMenu->addAction(createFluentIcon("\ue8a5"), tr("文档"));
     g_actionIconMap[docsAction] = "\ue8a5";
 
-    QAction *apiAction = helpMenu->addAction(createFluentIcon("\ue8a5"), "API参考");
+    QAction *apiAction = helpMenu->addAction(createFluentIcon("\ue8a5"), tr("API参考"));
     g_actionIconMap[apiAction] = "\ue8a5";
 
     helpMenu->addSeparator();
 
-    QAction *updateAction = helpMenu->addAction(createFluentIcon("\ue7b8"), "检查更新");
+    QAction *updateAction = helpMenu->addAction(createFluentIcon("\ue7b8"), tr("检查更新"));
     g_actionIconMap[updateAction] = "\ue7b8";
 
     helpMenu->addSeparator();
 
-    QAction *aboutAction = helpMenu->addAction(createFluentIcon("\ue946"), "关于");
+    QAction *aboutAction = helpMenu->addAction(createFluentIcon("\ue946"), tr("关于"));
     g_actionIconMap[aboutAction] = "\ue946";
 }
 
-void MainWindow::initializeMenuAndToolBar()
+
+void MainWindow::rebuildMenuAndToolBar()
 {
     // Clear icon maps
     g_actionIconMap.clear();
     g_menuIconMap.clear();
+    m_menuBar->clear();
+    if (m_toolBar)
+    {
+        // Toolbar controls may be reparented to the main window; disconnect before teardown so
+        // destructors cannot emit signals that run lambdas using member pointers we are about to clear.
+        if (themeComboBox)
+        {
+            QObject::disconnect(themeComboBox, nullptr, this, nullptr);
+        }
+        if (m_colorSchemeCombo)
+        {
+            QObject::disconnect(m_colorSchemeCombo, nullptr, this, nullptr);
+        }
+        if (m_styleComboBox)
+        {
+            QObject::disconnect(m_styleComboBox, nullptr, this, nullptr);
+        }
+        if (m_tabBarWidgetBg)
+        {
+            QObject::disconnect(m_tabBarWidgetBg, nullptr, this, nullptr);
+        }
+
+        m_navigationToggleAction = nullptr;
+        themeComboBox = nullptr;
+        m_colorSchemeCombo = nullptr;
+        m_styleComboBox = nullptr;
+        m_tabBarWidgetBg = nullptr;
+
+        removeToolBar(m_toolBar);
+        delete m_toolBar;
+        m_toolBar = nullptr;
+    }
 
     // Initialize menu
-    initializeMenu(m_menuBar);
+    buildMainMenus();
 
     // Initialize toolbar
-    m_toolBar = addToolBar("工具栏");
+    m_toolBar = addToolBar(tr("工具栏"));
 
-    addToolBarAction(m_toolBar, "\uE700", "", QKeySequence(""));
-    connect(g_actionIconMap.key("\uE700"),
-            &QAction::triggered,
-            [=](bool checked)
-            {
-                if (!m_winUINavigationView)
-                    return;
-                const bool expand = m_winUINavigationView->navigationExpanded();
-                m_winUINavigationView->setNavigationExpanded(!expand);
-                ui->rBOnlyIcon->setChecked(expand);
-                ui->rBIconAndText->setChecked(!expand);
-            });
+    m_navigationToggleAction = addToolBarAction(m_toolBar, QStringLiteral("\uE700"), QString(), QKeySequence());
+    if (m_navigationToggleAction)
+    {
+        connect(m_navigationToggleAction,
+                &QAction::triggered,
+                this,
+                [this](bool checked)
+                {
+                    Q_UNUSED(checked);
+                    if (!m_winUINavigationView)
+                    {
+                        return;
+                    }
+                    const bool expand = m_winUINavigationView->navigationExpanded();
+                    m_winUINavigationView->setNavigationExpanded(!expand);
+                    ui->rBOnlyIcon->setChecked(expand);
+                    ui->rBIconAndText->setChecked(!expand);
+                });
+    }
     m_toolBar->addSeparator();
 
     // Add file actions
-    addToolBarAction(m_toolBar, "\ue8a5", "新建", QKeySequence("Ctrl+N"));
-    addToolBarAction(m_toolBar, "\ue8a5", "打开", QKeySequence("Ctrl+O"));
-    addToolBarAction(m_toolBar, "\ue74e", "保存", QKeySequence("Ctrl+S"));
+    addToolBarAction(m_toolBar, "\ue8a5", tr("新建"), QKeySequence("Ctrl+N"));
+    addToolBarAction(m_toolBar, "\ue8a5", tr("打开"), QKeySequence("Ctrl+O"));
+    addToolBarAction(m_toolBar, "\ue74e", tr("保存"), QKeySequence("Ctrl+S"));
 
     m_toolBar->addSeparator();
 
     // Add edit actions
-    addToolBarAction(m_toolBar, "\ue7a7", "撤销", QKeySequence("Ctrl+Z"));
-    addToolBarAction(m_toolBar, "\ue7a6", "重做", QKeySequence("Ctrl+Y"));
+    addToolBarAction(m_toolBar, "\ue7a7", tr("撤销"), QKeySequence("Ctrl+Z"));
+    addToolBarAction(m_toolBar, "\ue7a6", tr("重做"), QKeySequence("Ctrl+Y"));
 
     m_toolBar->addSeparator();
 
-    addToolBarAction(m_toolBar, "\ue8c6", "剪切", QKeySequence("Ctrl+X"));
-    addToolBarAction(m_toolBar, "\ue8c8", "复制", QKeySequence("Ctrl+C"));
-    addToolBarAction(m_toolBar, "\ue8c7", "粘贴", QKeySequence("Ctrl+V"));
+    addToolBarAction(m_toolBar, "\ue8c6", tr("剪切"), QKeySequence("Ctrl+X"));
+    addToolBarAction(m_toolBar, "\ue8c8", tr("复制"), QKeySequence("Ctrl+C"));
+    addToolBarAction(m_toolBar, "\ue8c7", tr("粘贴"), QKeySequence("Ctrl+V"));
 
     m_toolBar->addSeparator();
 
     // Add build actions
-    addToolBarAction(m_toolBar, "\ue7b8", "构建", QKeySequence("Ctrl+B"));
-    addToolBarAction(m_toolBar, "\ue7b8", "重新构建");
-    addToolBarAction(m_toolBar, "\ue768", "运行");
+    addToolBarAction(m_toolBar, "\ue7b8", tr("构建"), QKeySequence("Ctrl+B"));
+    addToolBarAction(m_toolBar, "\ue7b8", tr("重新构建"), QKeySequence());
+    addToolBarAction(m_toolBar, "\ue768", tr("运行"), QKeySequence());
 
     m_toolBar->addSeparator();
 
     // Add toolbar controls
     setupToolBarControls(m_toolBar);
+
+    m_toolBar->setAttribute(Qt::WA_TranslucentBackground, true);
+    m_toolBar->setAttribute(Qt::WA_StyledBackground, false);
+    m_toolBar->setAutoFillBackground(false);
 }
 
-void MainWindow::addToolBarAction(QToolBar *toolBar, const QString &iconCode, const QString &text, const QKeySequence &shortcut)
+QAction *MainWindow::addToolBarAction(QToolBar *toolBar, const QString &iconCode, const QString &text, const QKeySequence &shortcut)
 {
-    QAction *action = toolBar->addAction(createFluentIcon(iconCode), text);
+    const QString label = text.isEmpty() ? QString() : tr(text.toUtf8().constData());
+    QAction *action = toolBar->addAction(createFluentIcon(iconCode), label);
     if (!shortcut.isEmpty())
     {
         action->setShortcut(shortcut);
     }
     g_actionIconMap[action] = iconCode;
+    return action;
 }
 
 void MainWindow::setupToolBarControls(QToolBar *toolBar)
 {
     // Disable widget checkbox
-    QCheckBox *disableCheckBox = new QCheckBox("禁用", this);
+    QCheckBox *disableCheckBox = new QCheckBox(tr("禁用"), toolBar);
     disableCheckBox->setProperty("isSwitchButton", true);
     connect(disableCheckBox, &QCheckBox::clicked, this, [this](bool checked)
             { centralWidget()->setEnabled(!checked); });
@@ -919,13 +973,13 @@ void MainWindow::setupToolBarControls(QToolBar *toolBar)
 
 void MainWindow::setupThemeSelector(QToolBar *toolBar)
 {
-    QLabel *themeLabel = new QLabel("主题：", this);
+    QLabel *themeLabel = new QLabel(tr("主题："), toolBar);
     toolBar->addWidget(themeLabel);
 
-    themeComboBox = new QComboBox(this);
+    themeComboBox = new QComboBox(toolBar);
     themeComboBox->blockSignals(true);
-    themeComboBox->addItem("浅色");
-    themeComboBox->addItem("暗色");
+    themeComboBox->addItem(tr("浅色"));
+    themeComboBox->addItem(tr("暗色"));
     themeComboBox->blockSignals(false);
     themeComboBox->setView(new QListView());
 
@@ -963,17 +1017,17 @@ void MainWindow::setupThemeSelector(QToolBar *toolBar)
 
 void MainWindow::setupColorSchemeSelector(QToolBar *toolBar)
 {
-    QLabel *colorSchemeLabel = new QLabel("配色：", this);
+    QLabel *colorSchemeLabel = new QLabel(tr("配色："), toolBar);
     toolBar->addWidget(colorSchemeLabel);
 
-    QComboBox *colorSchemeComboBox = new QComboBox(this);
-    colorSchemeComboBox->blockSignals(true);
-    colorSchemeComboBox->addItem("Fluent");
-    colorSchemeComboBox->addItem("Teams");
-    colorSchemeComboBox->blockSignals(false);
-    colorSchemeComboBox->setView(new QListView());
+    m_colorSchemeCombo = new QComboBox(toolBar);
+    m_colorSchemeCombo->blockSignals(true);
+    m_colorSchemeCombo->addItem(QStringLiteral("Fluent"));
+    m_colorSchemeCombo->addItem(QStringLiteral("Teams"));
+    m_colorSchemeCombo->blockSignals(false);
+    m_colorSchemeCombo->setView(new QListView());
 
-    connect(colorSchemeComboBox,
+    connect(m_colorSchemeCombo,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             [this](int index)
@@ -988,41 +1042,47 @@ void MainWindow::setupColorSchemeSelector(QToolBar *toolBar)
                 updateActionIcons();
             });
 
-    toolBar->addWidget(colorSchemeComboBox);
+    toolBar->addWidget(m_colorSchemeCombo);
 }
 
 void MainWindow::setupStyleSelector(QToolBar *toolBar)
 {
-    QLabel *styleLabel = new QLabel("样式：", this);
+    QLabel *styleLabel = new QLabel(tr("样式："), toolBar);
     toolBar->addWidget(styleLabel);
 
-    QComboBox *styleComboBox = new QComboBox(this);
-    styleComboBox->addItems(QStyleFactory::keys());
-    styleComboBox->setView(new QListView());
+    m_styleComboBox = new QComboBox(toolBar);
+    m_styleComboBox->addItems(QStyleFactory::keys());
+    m_styleComboBox->setView(new QListView());
 
-    connect(styleComboBox,
-            QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this,
-            [styleComboBox, this](int index)
-            {
-                Q_UNUSED(index);
-                const QString styleName = styleComboBox->currentText();
-                qApp->setStyle(styleName);
-                updateActionIcons();
-            });
+    {
+        const QPointer<QComboBox> comboGuard(m_styleComboBox);
+        connect(m_styleComboBox,
+                QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this,
+                [this, comboGuard](int index)
+                {
+                    Q_UNUSED(index);
+                    if (!comboGuard)
+                    {
+                        return;
+                    }
+                    qApp->setStyle(comboGuard->currentText());
+                    updateActionIcons();
+                });
+    }
 
-    toolBar->addWidget(styleComboBox);
+    toolBar->addWidget(m_styleComboBox);
 }
 
 void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
 {
-    QLabel *widgetBgLabel = new QLabel("窗口背景：", this);
+    QLabel *widgetBgLabel = new QLabel(tr("窗口背景："), toolBar);
     toolBar->addWidget(widgetBgLabel);
 
-    m_tabBarWidgetBg = new QTabBar();
+    m_tabBarWidgetBg = new QTabBar(toolBar);
     m_tabBarWidgetBg->setProperty(TabBarStyleProperty, Segmented_WinUI3);
-    m_tabBarWidgetBg->addTab("None");
-    m_tabBarWidgetBg->addTab("图片");
+    m_tabBarWidgetBg->addTab(tr("无"));
+    m_tabBarWidgetBg->addTab(tr("图片"));
 
     toolBar->addWidget(m_tabBarWidgetBg);
 
@@ -1062,18 +1122,20 @@ void MainWindow::initializeNavigationView()
 
     m_navView = m_winUINavigationView->mainNavView();
 
-    m_winUINavigationView->addNavigationItem("基础控件", 0, "\uE80F");
-    m_winUINavigationView->addNavigationItem("表格控件", 1, "\uE99A");
-    m_winUINavigationView->addNavigationItem("列表控件", 2, "\uE71D");
-    m_winUINavigationView->addNavigationItem("树形控件", 3, "\uED28");
-    m_winUINavigationView->addNavigationItem("导航控件", 4, "\uE8B0");
-    m_winUINavigationView->addNavigationItem("Mdi", 5, "\uE9D9");
-    m_winUINavigationView->addNavigationItem("图标库", 7, "\uE8FD");
+    m_mainNavItems.clear();
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("基础控件"), 0, QStringLiteral("\uE80F")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("表格控件"), 1, QStringLiteral("\uE99A")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("列表控件"), 2, QStringLiteral("\uE71D")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("树形控件"), 3, QStringLiteral("\uED28")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("导航控件"), 4, QStringLiteral("\uE8B0")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(QStringLiteral("Mdi"), 5, QStringLiteral("\uE9D9")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("图标库"), 7, QStringLiteral("\uE8FD")));
     addTestNavigationTree();
 
-    m_winUINavigationView->addFooterNavigationItem("关于", 8, "\uE77B");
-    if (QTreeWidgetItem *settingsItem = m_winUINavigationView->addFooterNavigationItem("设置", 6, "\uE713"))
+    m_navAboutItem = m_winUINavigationView->addFooterNavigationItem(tr("关于"), 8, QStringLiteral("\uE77B"));
+    if (QTreeWidgetItem *settingsItem = m_winUINavigationView->addFooterNavigationItem(tr("设置"), 6, QStringLiteral("\uE713")))
     {
+        m_navSettingsItem = settingsItem;
         settingsItem->setData(0, Qt::UserRole + 1001, true);
     }
 
@@ -1086,18 +1148,18 @@ void MainWindow::initializeNavigationView()
 
 void MainWindow::addTestNavigationTree()
 {
-    QTreeWidgetItem *testItem = new QTreeWidgetItem(m_navView);
-    m_navView->configureNavigationItem(testItem, "测试节点", 6, "\uE9F5");
+    m_navTestRoot = new QTreeWidgetItem(m_navView);
+    m_navView->configureNavigationItem(m_navTestRoot, tr("测试节点"), 6, QStringLiteral("\uE9F5"));
 
     for (int i = 0; i < 5; ++i)
     {
-        QTreeWidgetItem *childItem = new QTreeWidgetItem(testItem);
-        m_navView->configureNavigationItem(childItem, QString("子节点%1").arg(i + 1), 6);
+        QTreeWidgetItem *childItem = new QTreeWidgetItem(m_navTestRoot);
+        m_navView->configureNavigationItem(childItem, tr("子节点%1").arg(i + 1), 6);
 
         for (int j = 0; j < 3; ++j)
         {
             QTreeWidgetItem *subChildItem = new QTreeWidgetItem(childItem);
-            m_navView->configureNavigationItem(subChildItem, QString("子节点%1-%2").arg(i + 1).arg(j + 1), 6);
+            m_navView->configureNavigationItem(subChildItem, tr("子节点%1-%2").arg(i + 1).arg(j + 1), 6);
         }
     }
 }
@@ -1110,14 +1172,11 @@ void MainWindow::initializeTableView()
 {
     QTableWidget *table = ui->tableWidget;
     table->clear();
-    table->setColumnCount(5);
+    constexpr int kTableColumnCount = 5;
+    table->setColumnCount(kTableColumnCount);
 
     QStringList headers;
-    headers << "软件名称"
-            << "版本"
-            << "发布商"
-            << "安装日期"
-            << "来源";
+    headers << tr("软件名称") << tr("版本") << tr("发布商") << tr("安装日期") << tr("来源");
     table->setHorizontalHeaderLabels(headers);
 
 
@@ -1167,7 +1226,7 @@ void MainWindow::initializeTableView()
     else
     {
         table->setRowCount(1);
-        table->setItem(0, 0, new QTableWidgetItem(QStringLiteral("未读取到安装软件信息")));
+        table->setItem(0, 0, new QTableWidgetItem(tr("未读取到安装软件信息")));
         for (int col = 1; col < table->columnCount(); ++col)
         {
             table->setItem(0, col, new QTableWidgetItem(QStringLiteral("-")));
@@ -1206,7 +1265,7 @@ void MainWindow::setupButtonsAndIcons()
 {
     // Setup tool button
     ui->toolButton->setIcon(createFluentIcon("\ue8c3"));
-    ui->pushButton_10->setText("工具按钮");
+    ui->pushButton_10->setText(tr("工具按钮"));
     ui->pushButton_10->setIcon(createFluentIcon("\ue713"));
 
     // Setup tool button 3 with menu
@@ -1214,7 +1273,7 @@ void MainWindow::setupButtonsAndIcons()
 
     // Setup tool button 4 with icon and text
     ui->toolButton_4->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ui->toolButton_4->setText("上下按钮");
+    ui->toolButton_4->setText(tr("上下按钮"));
     ui->toolButton_4->setIcon(createFluentIcon("\uE804"));
 
     // Setup auto-raise button
@@ -1226,13 +1285,26 @@ void MainWindow::setupToolButtonWithMenu()
     ui->toolButton_3->setAutoRaise(false);
     ui->toolButton_3->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     ui->toolButton_3->setPopupMode(QToolButton::InstantPopup);
-    ui->toolButton_3->setText("菜单按钮");
+    ui->toolButton_3->setText(tr("菜单按钮"));
+
+    if (ui->toolButton_3->menu())
+    {
+        return;
+    }
 
     QMenu *menu = new QMenu(ui->toolButton_3);
-    g_actionIconMap[menu->addAction(createFluentIcon("\ue8a5"), "新建文件")] = "\ue8a5";
-    g_actionIconMap[menu->addAction(createFluentIcon("\ue8b5"), "新建项目")] = "\ue8b5";
-    g_actionIconMap[menu->addAction(createFluentIcon("\ue8c3"), "最近打开")] = "\ue8c3";
-    g_actionIconMap[menu->addAction(createFluentIcon("\ue8a5"), "打开文件")] = "\ue8a5";
+    QAction *aNewFile = menu->addAction(createFluentIcon("\ue8a5"), tr("新建文件"));
+    g_actionIconMap[aNewFile] = "\ue8a5";
+
+    QAction *aNewProj = menu->addAction(createFluentIcon("\ue8b5"), tr("新建项目"));
+    g_actionIconMap[aNewProj] = "\ue8b5";
+
+    QAction *aRecent = menu->addAction(createFluentIcon("\ue8c3"), tr("最近打开"));
+    g_actionIconMap[aRecent] = "\ue8c3";
+
+    QAction *aOpenFile = menu->addAction(createFluentIcon("\ue8a5"), tr("打开文件"));
+    g_actionIconMap[aOpenFile] = "\ue8a5";
+
     ui->toolButton_3->setMenu(menu);
     ui->toolButton_4->setMenu(menu);
 }
@@ -1254,13 +1326,13 @@ void MainWindow::setupMdiArea()
         QMdiSubWindow *subWindow = new QMdiSubWindow();
         subWindow->setWidget(new QTextEdit());
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        subWindow->setWindowTitle(QString("子窗口 %1").arg(i + 1));
+        subWindow->setWindowTitle(tr("子窗口 %1").arg(i + 1));
         mdiArea->addSubWindow(subWindow);
         subWindow->show();
     }
 
     // Add view mode switch button
-    QPushButton *switchViewBtn = new QPushButton("切换视图模式", ui->page_5);
+    QPushButton *switchViewBtn = new QPushButton(tr("切换视图模式"), ui->page_5);
     switchViewBtn->move(10, 10);
     switchViewBtn->raise();
     connect(switchViewBtn,
@@ -1305,7 +1377,10 @@ void MainWindow::setupAboutPage()
 void MainWindow::updateActionIcons()
 {
     // Update search icon
-    ui->lineEditSerach->removeAction(m_searchAction);
+    if (m_searchAction)
+    {
+        ui->lineEditSerach->removeAction(m_searchAction);
+    }
     m_searchAction = ui->lineEditSerach->addAction(createFluentIcon("\ue721"), QLineEdit::TrailingPosition);
 
     if (m_tabShowcaseWidget)
@@ -1362,6 +1437,11 @@ void MainWindow::updateMenuIcons()
 
 void MainWindow::updateNavigationItemIcons()
 {
+    if (!m_navView)
+    {
+        return;
+    }
+
     std::function<void(QTreeWidgetItem *)> updateItemIcon = [&](QTreeWidgetItem *item)
     {
         if (!item)
@@ -1387,6 +1467,7 @@ void MainWindow::updateNavigationItemIcons()
 
 void MainWindow::loadChangelog()
 {
+    ui->log->clear();
     QFile file(":/changelog.txt");
     if (file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -1404,7 +1485,7 @@ void MainWindow::loadChangelog()
     }
     else
     {
-        ui->log->append("无法打开changelog.txt, " + file.errorString());
+        ui->log->append(tr("无法打开changelog.txt, %1").arg(file.errorString()));
     }
 
     ui->log->verticalScrollBar()->setValue(0);
@@ -1422,7 +1503,7 @@ void MainWindow::on_checkBox_4_clicked(bool checked)
 
 void MainWindow::on_checkBox_5_stateChanged(int state)
 {
-    ui->checkBox_5->setText(state == Qt::Checked ? "On" : "Off");
+    ui->checkBox_5->setText(state == Qt::Checked ? tr("On") : tr("Off"));
 }
 
 void MainWindow::on_radioButton_7_clicked()
@@ -1672,34 +1753,116 @@ static inline void emulateLeaveEvent(QWidget *widget)
 
 void MainWindow::on_rBLightTheme_clicked(bool checked)
 {
-    themeComboBox->setCurrentIndex(0);
+    Q_UNUSED(checked)
+    if (themeComboBox)
+    {
+        themeComboBox->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::on_rBDarkTheme_clicked(bool checked)
 {
-    themeComboBox->setCurrentIndex(1);
+    Q_UNUSED(checked)
+    if (themeComboBox)
+    {
+        themeComboBox->setCurrentIndex(1);
+    }
 }
 
 void MainWindow::on_rBWidgtModeNormal_clicked(bool checked)
 {
+    Q_UNUSED(checked)
     m_tabBarWidgetBg->setCurrentIndex(0);
 }
 
 void MainWindow::on_rBWidgetModePixmap_clicked(bool checked)
 {
+    Q_UNUSED(checked)
     m_tabBarWidgetBg->setCurrentIndex(1);
 }
 
 void MainWindow::on_rBOnlyIcon_clicked(bool checked)
 {
+    Q_UNUSED(checked)
     if (m_winUINavigationView)
         m_winUINavigationView->setNavigationExpanded(false);
 }
 
 void MainWindow::on_rBIconAndText_clicked(bool checked)
 {
+    Q_UNUSED(checked)
     if (m_winUINavigationView)
         m_winUINavigationView->setNavigationExpanded(true);
+}
+
+void MainWindow::on_rBLangZh_CN_clicked(bool checked)
+{
+    if (!checked)
+    {
+        return;
+    }
+    AppLanguage::saveUiLanguage(AppUiLanguage::Zh_CN);
+    syncLanguageRadios();
+    promptRestartAfterLanguageChange();
+}
+
+void MainWindow::on_rBLangEn_US_clicked(bool checked)
+{
+    if (!checked)
+    {
+        return;
+    }
+    AppLanguage::saveUiLanguage(AppUiLanguage::En_US);
+    syncLanguageRadios();
+    promptRestartAfterLanguageChange();
+}
+
+void MainWindow::on_rBLangSystem_clicked(bool checked)
+{
+    if (!checked)
+    {
+        return;
+    }
+    AppLanguage::saveUiLanguage(AppUiLanguage::FollowSystem);
+    syncLanguageRadios();
+    promptRestartAfterLanguageChange();
+}
+
+void MainWindow::promptRestartAfterLanguageChange()
+{
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Information);
+    box.setWindowTitle(tr("界面语言"));
+    box.setText(tr("语言已保存。是否立即重启应用程序？"));
+    QAbstractButton *restartBtn = box.addButton(tr("立即重启"), QMessageBox::AcceptRole);
+    box.addButton(tr("稍后"), QMessageBox::RejectRole);
+    box.setDefaultButton(qobject_cast<QPushButton *>(restartBtn));
+    box.exec();
+    if (box.clickedButton() == restartBtn)
+    {
+        if (!AppLanguage::restartApplication())
+        {
+            QMessageBox::warning(this, tr("界面语言"), tr("无法重新启动应用程序，请手动关闭后再次打开。"));
+        }
+    }
+}
+
+void MainWindow::syncLanguageRadios()
+{
+    if (!ui->rBLangZh_CN || !ui->rBLangEn_US || !ui->rBLangSystem)
+    {
+        return;
+    }
+    const AppUiLanguage pref = AppLanguage::savedUiLanguage();
+    ui->rBLangZh_CN->blockSignals(true);
+    ui->rBLangEn_US->blockSignals(true);
+    ui->rBLangSystem->blockSignals(true);
+    ui->rBLangZh_CN->setChecked(pref == AppUiLanguage::Zh_CN);
+    ui->rBLangEn_US->setChecked(pref == AppUiLanguage::En_US);
+    ui->rBLangSystem->setChecked(pref == AppUiLanguage::FollowSystem);
+    ui->rBLangZh_CN->blockSignals(false);
+    ui->rBLangEn_US->blockSignals(false);
+    ui->rBLangSystem->blockSignals(false);
 }
 
 void MainWindow::setupAccentColorWidget()
@@ -1758,7 +1921,7 @@ void MainWindow::setupAccentColorWidget()
 
         if (!color.isValid())
         {
-            btn->setToolTip("恢复默认");
+            btn->setToolTip(tr("恢复默认"));
         }
         else
         {

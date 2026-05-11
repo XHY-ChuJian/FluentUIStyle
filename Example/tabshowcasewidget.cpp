@@ -47,7 +47,8 @@ TabShowcaseWidget::TabShowcaseWidget(QWidget *parent)
     mainLayout->setContentsMargins(11, 11, 11, 11);
     mainLayout->setSpacing(15);
 
-    QLabel *lab = new QLabel("TabBar多种样式示例");
+    QLabel *lab = new QLabel(tr("TabBar多种样式示例"));
+    lab->setObjectName(QStringLiteral("tsw_main_title"));
     {
         QFont f = lab->font();
         f.setBold(true);
@@ -69,9 +70,9 @@ void TabShowcaseWidget::setupPivotTabs(QVBoxLayout *mainLayout)
     QWidget *pivotWidget = createTabWidgetContainer();
     QVBoxLayout *pivotLayout = static_cast<QVBoxLayout *>(pivotWidget->layout());
 
-    addTabBarSection(pivotLayout, "Pivot Grow TabBar", "特点：选中时会有一个生长动画效果。", Pivot_Grow);
-    addTabBarSection(pivotLayout, "Pivot Slide TabBar", "特点：选中时会有一个滑动动画效果。", Pivot_Slide);
-    addTabBarSection(pivotLayout, "Pivot Stretch TabBar", "特点：选中时会有一个拉伸动画效果。", Pivot_Stretch);
+    addTabBarSection(pivotLayout, "pivot_grow", tr("Pivot Grow TabBar"), tr("特点：选中时会有一个生长动画效果。"), Pivot_Grow);
+    addTabBarSection(pivotLayout, "pivot_slide", tr("Pivot Slide TabBar"), tr("特点：选中时会有一个滑动动画效果。"), Pivot_Slide);
+    addTabBarSection(pivotLayout, "pivot_stretch", tr("Pivot Stretch TabBar"), tr("特点：选中时会有一个拉伸动画效果。"), Pivot_Stretch);
 
     pivotLayout->addStretch();
     mainLayout->addWidget(pivotWidget, 1);
@@ -82,11 +83,22 @@ void TabShowcaseWidget::setupSegmentedTabs(QVBoxLayout *mainLayout)
     QWidget *segmentedWidget = createTabWidgetContainer();
     QVBoxLayout *segmentedLayout = static_cast<QVBoxLayout *>(segmentedWidget->layout());
 
-    addTabBarSection(segmentedLayout, "Segmented Slide TabBar", "特点：Segmented风格，选中时会有一个滑动动画效果。", Segmented_Slide, &m_segmentedBar);
-    addTabBarSection(segmentedLayout, "Segmented Fade TabBar", "特点：选中时会有一个淡入淡出动画效果。", Segmented_Fade, &m_segmentedFadeBar);
     addTabBarSection(segmentedLayout,
-                     "Segmented WinUI3 TabBar",
-                     "特点：Segmented风格，WinUI3 的选中指示器效果。",
+                     "seg_slide",
+                     tr("Segmented Slide TabBar"),
+                     tr("特点：Segmented风格，选中时会有一个滑动动画效果。"),
+                     Segmented_Slide,
+                     &m_segmentedBar);
+    addTabBarSection(segmentedLayout,
+                     "seg_fade",
+                     tr("Segmented Fade TabBar"),
+                     tr("特点：选中时会有一个淡入淡出动画效果。"),
+                     Segmented_Fade,
+                     &m_segmentedFadeBar);
+    addTabBarSection(segmentedLayout,
+                     "seg_winui3",
+                     tr("Segmented WinUI3 TabBar"),
+                     tr("特点：Segmented风格，WinUI3 的选中指示器效果。"),
                      Segmented_WinUI3,
                      &m_winui3Bar);
 
@@ -100,13 +112,16 @@ void TabShowcaseWidget::setupSegmentedTabs(QVBoxLayout *mainLayout)
         winUi3IconOnlyBar->addTab(QString());
     }
     winUi3IconOnlyBar->setCurrentIndex(0);
+    winUi3IconOnlyBar->setObjectName(QStringLiteral("tsw_seg_winui3_icon_bar"));
     m_winui3IconOnlyBar = winUi3IconOnlyBar;
     segmentedLayout->addWidget(winUi3IconOnlyBar);
 
-    QLabel *customLabel = new QLabel("Segmented Gallery Style");
+    QLabel *customLabel = new QLabel(tr("Segmented Gallery Style"));
+    customLabel->setObjectName(QStringLiteral("tsw_seg_gallery_title"));
     applySectionHeadingFont(customLabel, 14);
     segmentedLayout->addWidget(customLabel);
-    QLabel *customDesc = new QLabel("特点：半圆胶囊 + 自定义背景/选中/悬停/按下色");
+    QLabel *customDesc = new QLabel(tr("特点：半圆胶囊 + 自定义背景/选中/悬停/按下色"));
+    customDesc->setObjectName(QStringLiteral("tsw_seg_gallery_desc"));
     applySectionDescriptionStyle(customDesc);
     segmentedLayout->addWidget(customDesc);
 
@@ -123,9 +138,10 @@ void TabShowcaseWidget::setupSegmentedTabs(QVBoxLayout *mainLayout)
     defaultGalleryBar->setProperty(SegmentedHoverColorDarkProperty, QColor("#4A4A52"));
     defaultGalleryBar->setProperty(SegmentedPressedColorProperty, QColor("#D0D0D4"));
     defaultGalleryBar->setProperty(SegmentedPressedColorDarkProperty, QColor("#55555D"));
-    defaultGalleryBar->addTab("Weekly");
-    defaultGalleryBar->addTab("Daily");
-    defaultGalleryBar->addTab("Monthly");
+    defaultGalleryBar->setObjectName(QStringLiteral("tsw_seg_demo_gallery_bar"));
+    defaultGalleryBar->addTab(tr("Weekly"));
+    defaultGalleryBar->addTab(tr("Daily"));
+    defaultGalleryBar->addTab(tr("Monthly"));
     defaultGalleryBar->setCurrentIndex(1);
     segmentedLayout->addWidget(defaultGalleryBar);
     
@@ -147,10 +163,11 @@ void TabShowcaseWidget::setupSegmentedTabs(QVBoxLayout *mainLayout)
     purpleGalleryBar->setProperty(SegmentedHoverColorDarkProperty, QColor("#4A4A52"));
     purpleGalleryBar->setProperty(SegmentedPressedColorProperty, QColor("#D0D0D4"));
     purpleGalleryBar->setProperty(SegmentedPressedColorDarkProperty, QColor("#55555D"));
-    purpleGalleryBar->addTab("Overview");
-    purpleGalleryBar->addTab("Stats");
-    purpleGalleryBar->addTab("Goals");
-    purpleGalleryBar->addTab("History");
+    purpleGalleryBar->setObjectName(QStringLiteral("tsw_seg_purple_gallery_bar"));
+    purpleGalleryBar->addTab(tr("Overview"));
+    purpleGalleryBar->addTab(tr("Stats"));
+    purpleGalleryBar->addTab(tr("Goals"));
+    purpleGalleryBar->addTab(tr("History"));
     purpleGalleryBar->setCurrentIndex(0);
     segmentedLayout->addWidget(purpleGalleryBar);
 
@@ -177,6 +194,7 @@ void TabShowcaseWidget::setupSegmentedTabs(QVBoxLayout *mainLayout)
     iconOnlyGalleryBar->setCurrentIndex(1);
     iconOnlyGalleryBar->setExpanding(false);
     iconOnlyGalleryBar->setMaximumWidth(56 * iconOnlyGalleryBar->count());
+    iconOnlyGalleryBar->setObjectName(QStringLiteral("tsw_seg_icononly_bar"));
     m_segmentedIconOnlyBar = iconOnlyGalleryBar;
     segmentedLayout->addWidget(iconOnlyGalleryBar);
 
@@ -189,7 +207,8 @@ void TabShowcaseWidget::setupPillTabs(QVBoxLayout *mainLayout)
     QWidget *pillWidget = createTabWidgetContainer();
     QVBoxLayout *pillLayout = static_cast<QVBoxLayout *>(pillWidget->layout());
 
-    QLabel *pillLabel = new QLabel("Pill TabBar");
+    QLabel *pillLabel = new QLabel(tr("Pill TabBar"));
+    pillLabel->setObjectName(QStringLiteral("tsw_pill_title"));
     applySectionHeadingFont(pillLabel, 14);
     pillLayout->addWidget(pillLabel);
 
@@ -197,11 +216,12 @@ void TabShowcaseWidget::setupPillTabs(QVBoxLayout *mainLayout)
     pillBar->setTabsClosable(true);
     pillBar->setExpanding(false);
     pillBar->setProperty(TabBarStyleProperty, PillTabs);
-    pillBar->addTab("Home");
-    pillBar->addTab("Search");
-    pillBar->addTab("Settings");
-    pillBar->addTab("Help");
-    pillBar->addTab("About");
+    pillBar->setObjectName(QStringLiteral("tsw_pill_bar"));
+    pillBar->addTab(tr("Home"));
+    pillBar->addTab(tr("Search"));
+    pillBar->addTab(tr("Settings"));
+    pillBar->addTab(tr("Help"));
+    pillBar->addTab(tr("About"));
     pillLayout->addWidget(pillBar);
 
     pillLayout->addStretch();
@@ -213,9 +233,11 @@ void TabShowcaseWidget::setupCapsuleTabs(QVBoxLayout *mainLayout)
     QWidget *capsuleWidget = createTabWidgetContainer();
     QVBoxLayout *capsuleLayout = static_cast<QVBoxLayout *>(capsuleWidget->layout());
 
-    QLabel *capsuleLabel = new QLabel("Capsule TabBar");
+    QLabel *capsuleLabel = new QLabel(tr("Capsule TabBar"));
+    capsuleLabel->setObjectName(QStringLiteral("tsw_cap_title"));
     applySectionHeadingFont(capsuleLabel, 14);
-    QLabel *capsuleDescLabel = new QLabel("特点：浏览器标签样式。");
+    QLabel *capsuleDescLabel = new QLabel(tr("特点：浏览器标签样式。"));
+    capsuleDescLabel->setObjectName(QStringLiteral("tsw_cap_desc"));
     applySectionDescriptionStyle(capsuleDescLabel);
     capsuleLayout->addWidget(capsuleLabel);
     capsuleLayout->addWidget(capsuleDescLabel);
@@ -232,17 +254,18 @@ void TabShowcaseWidget::setupCapsuleTabs(QVBoxLayout *mainLayout)
     capTabBar->setProperty(TabBarStyleProperty, Capsule);
     capTabBar->setDrawBase(false);
 
-    const QStringList pageNames = {"Home", "Search", "Settings", "Help", "About"};
-    const QStringList fullNames = {"Home Page", "Search Page", "Settings Page", "Help Page", "About Page"};
+    const QStringList pageNames = {tr("Home"), tr("Search"), tr("Settings"), tr("Help"), tr("About")};
+    const QStringList fullNames = {tr("Home Page"), tr("Search Page"), tr("Settings Page"), tr("Help Page"), tr("About Page")};
     const QList<QColor> pageColors = {
         QColor(255, 228, 225), QColor(224, 255, 255), QColor(240, 255, 240), QColor(255, 250, 205), QColor(230, 230, 250)};
 
     for (int i = 0; i < pageNames.size(); ++i)
     {
-        QLabel *page = new QLabel(fullNames[i]);
+        QLabel *page = new QLabel(fullNames.at(i));
+        page->setObjectName(QStringLiteral("tsw_cap_body_%1").arg(i));
         page->setAlignment(Qt::AlignCenter);
         styleTabPageLabel(page, pageColors[i]);
-        m_capsuleTabWidget->addTab(page, pageNames[i]);
+        m_capsuleTabWidget->addTab(page, pageNames.at(i));
     }
 
     capsuleLayout->addWidget(m_capsuleTabWidget, 1);
@@ -254,9 +277,11 @@ void TabShowcaseWidget::setupNavigationTabs(QVBoxLayout *mainLayout)
     QWidget *navigationWidget = createTabWidgetContainer();
     QVBoxLayout *navigationLayout = static_cast<QVBoxLayout *>(navigationWidget->layout());
 
-    QLabel *navigationLabel = new QLabel("Navigation TabBar");
+    QLabel *navigationLabel = new QLabel(tr("Navigation TabBar"));
+    navigationLabel->setObjectName(QStringLiteral("tsw_nav_title"));
     applySectionHeadingFont(navigationLabel, 14);
-    QLabel *navigationDescLabel = new QLabel("特点：适合用于侧边栏的导航菜单，选项卡垂直排列，选中时指示器有个变长效果");
+    QLabel *navigationDescLabel = new QLabel(tr("特点：适合用于侧边栏的导航菜单，选项卡垂直排列，选中时指示器有个变长效果"));
+    navigationDescLabel->setObjectName(QStringLiteral("tsw_nav_desc"));
     applySectionDescriptionStyle(navigationDescLabel);
     navigationLayout->addWidget(navigationLabel);
     navigationLayout->addWidget(navigationDescLabel);
@@ -280,18 +305,23 @@ void TabShowcaseWidget::setupNavigationTabs(QVBoxLayout *mainLayout)
     navTabBar->setProperty("TextAlign", static_cast<int>(Qt::AlignVCenter | Qt::AlignLeft));
     navTabBar->setProperty(TabBarStyleProperty, Navigation);
 
-    const QStringList navFullNames = {"Overview Page", "Files Page", "History Page", "Insights Page", "Settings Page"};
-    const QStringList navNames = {"Overview", "Files", "History", "Insights", "Settings"};
+    const QStringList navFullNames = {tr("Overview Page"),
+                                      tr("Files Page"),
+                                      tr("History Page"),
+                                      tr("Insights Page"),
+                                      tr("Settings Page")};
+    const QStringList navNames = {tr("Overview"), tr("Files"), tr("History"), tr("Insights"), tr("Settings")};
     const QList<QColor> navPageColors = {
         QColor(244, 248, 255), QColor(240, 251, 246), QColor(255, 248, 238), QColor(248, 243, 255), QColor(245, 245, 245)};
 
     for (int i = 0; i < navFullNames.size(); ++i)
     {
-        QLabel *page = new QLabel(navFullNames[i]);
+        QLabel *page = new QLabel(navFullNames.at(i));
+        page->setObjectName(QStringLiteral("tsw_nav_body_%1").arg(i));
         page->setAlignment(Qt::AlignCenter);
         page->setMinimumHeight(220);
         styleTabPageLabel(page, navPageColors[i]);
-        m_navigationTabWidget->addTab(page, navNames[i]);
+        m_navigationTabWidget->addTab(page, navNames.at(i));
     }
 
     bodyLayout->addWidget(m_navigationTabWidget, 1);
@@ -313,23 +343,29 @@ QWidget *TabShowcaseWidget::createTabWidgetContainer()
 }
 
 void TabShowcaseWidget::addTabBarSection(QVBoxLayout *layout,
+                                         const char *sectionId,
                                          const QString &title,
                                          const QString &description,
                                          int tabStyle,
                                          QTabBar **outTabBar)
 {
+    const QString sid = QString::fromLatin1(sectionId);
+
     QLabel *titleLabel = new QLabel(title);
+    titleLabel->setObjectName(QStringLiteral("tsw_%1_title").arg(sid));
     applySectionHeadingFont(titleLabel, 14);
     layout->addWidget(titleLabel);
 
     if (!description.isEmpty())
     {
         QLabel *descLabel = new QLabel(description);
+        descLabel->setObjectName(QStringLiteral("tsw_%1_desc").arg(sid));
         applySectionDescriptionStyle(descLabel);
         layout->addWidget(descLabel);
     }
 
     QTabBar *tabBar = new QTabBar();
+    tabBar->setObjectName(QStringLiteral("tsw_%1_bar").arg(sid));
     tabBar->setExpanding(false);
     tabBar->setProperty(TabBarStyleProperty, tabStyle);
     // Match style pivotIndicatorPreferredWidth (32) + horizontal margins (Stretch uses 20 each side)
@@ -344,11 +380,11 @@ void TabShowcaseWidget::addTabBarSection(QVBoxLayout *layout,
     {
         tabBar->setAttribute(Qt::WA_StyledBackground, true);
     }
-    tabBar->addTab("Home");
-    tabBar->addTab("Search");
-    tabBar->addTab("Settings");
-    tabBar->addTab("Help");
-    tabBar->addTab("About");
+    tabBar->addTab(tr("Home"));
+    tabBar->addTab(tr("Search"));
+    tabBar->addTab(tr("Settings"));
+    tabBar->addTab(tr("Help"));
+    tabBar->addTab(tr("About"));
     layout->addWidget(tabBar);
 
     if (outTabBar)

@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QTabBar>
+#include <QVector>
 
 #include <Windows.h>
 
@@ -14,6 +15,7 @@ class ExNavTreeWidget;
 class ExWinUINavigationView;
 class ExStackedWidget;
 class QComboBox;
+class QTreeWidgetItem;
 class TabShowcaseWidget;
 
 QT_BEGIN_NAMESPACE
@@ -62,13 +64,18 @@ private slots:
     void on_rBOnlyIcon_clicked(bool checked);
     void on_rBIconAndText_clicked(bool checked);
 
+    void on_rBLangZh_CN_clicked(bool checked);
+    void on_rBLangEn_US_clicked(bool checked);
+    void on_rBLangSystem_clicked(bool checked);
+
 private:
     void initializeFluentBorderWidgets();
     void initializeComponents();
     void setupComboBox();
     void initializeTableView();
     void initializeNavigationView();
-    void initializeMenuAndToolBar();
+    void rebuildMenuAndToolBar();
+    void buildMainMenus();
     void setupTabs();
     void setupButtonsAndIcons();
     void setupAccentColorWidget();
@@ -80,7 +87,10 @@ private:
     void loadChangelog();
 
     // Menu and Toolbar helpers
-    void addToolBarAction(QToolBar *toolBar, const QString &iconCode, const QString &text, const QKeySequence &shortcut = QKeySequence());
+    QAction *addToolBarAction(QToolBar *toolBar,
+                              const QString &iconCode,
+                              const QString &text,
+                              const QKeySequence &shortcut = QKeySequence());
     void setupToolBarControls(QToolBar *toolBar);
     void setupThemeSelector(QToolBar *toolBar);
     void setupColorSchemeSelector(QToolBar *toolBar);
@@ -99,6 +109,9 @@ private:
     void updateMenuIcons();
     void updateNavigationItemIcons();
 
+    void syncLanguageRadios();
+    void promptRestartAfterLanguageChange();
+
 private:
     Ui::MainWindow *ui;
 
@@ -114,7 +127,14 @@ private:
     WidgetBgMode m_widgetBgMode{WidgetBgMode::None};
     QAction *m_navigationToggleAction{nullptr};
 
-    QComboBox *themeComboBox;
+    QComboBox *themeComboBox{nullptr};
+    QComboBox *m_colorSchemeCombo{nullptr};
+    QComboBox *m_styleComboBox{nullptr};
+
+    QVector<QTreeWidgetItem *> m_mainNavItems;
+    QTreeWidgetItem *m_navTestRoot{nullptr};
+    QTreeWidgetItem *m_navAboutItem{nullptr};
+    QTreeWidgetItem *m_navSettingsItem{nullptr};
 
 private:
     QPixmap m_bgLight;

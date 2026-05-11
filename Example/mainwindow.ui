@@ -56,7 +56,7 @@
        <enum>QFrame::Shadow::Sunken</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page">
        <property name="autoFillBackground">
@@ -1272,6 +1272,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
            </item>
            <item row="1" column="0">
             <widget class="QTableWidget" name="tableWidget">
+             <property name="columnCount">
+              <number>5</number>
+             </property>
+             <property name="rowCount">
+              <number>0</number>
+             </property>
              <property name="font">
               <font>
                <family>微软雅黑</family>
@@ -1280,116 +1286,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
              </property>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>新建行</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>新建列</string>
-              </property>
-             </column>
-             <item row="0" column="0">
-              <property name="text">
-               <string>1</string>
-              </property>
-             </item>
-             <item row="0" column="1">
-              <property name="text">
-               <string>dddd</string>
-              </property>
-             </item>
-             <item row="1" column="0">
-              <property name="text">
-               <string>2</string>
-              </property>
-             </item>
-             <item row="1" column="1">
-              <property name="text">
-               <string>ddd</string>
-              </property>
-             </item>
-             <item row="2" column="0">
-              <property name="text">
-               <string>3</string>
-              </property>
-             </item>
-             <item row="2" column="1">
-              <property name="text">
-               <string>d</string>
-              </property>
-             </item>
-             <item row="3" column="0">
-              <property name="text">
-               <string>4</string>
-              </property>
-             </item>
-             <item row="3" column="1">
-              <property name="text">
-               <string>ddddd</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>
@@ -1696,7 +1592,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <x>0</x>
              <y>0</y>
              <width>173</width>
-             <height>431</height>
+             <height>546</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -1724,7 +1620,58 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </property>
              </widget>
             </item>
-            <item row="2" column="0" colspan="2">
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelUiLanguage">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <family>微软雅黑</family>
+                <pointsize>10</pointsize>
+                <bold>false</bold>
+                <stylestrategy>PreferAntialias</stylestrategy>
+               </font>
+              </property>
+              <property name="text">
+               <string>界面语言</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QWidget" name="widgetUiLanguage" native="true">
+              <layout class="QGridLayout" name="gridLayoutUiLanguage">
+               <item row="0" column="0">
+                <widget class="QRadioButton" name="rBLangZh_CN">
+                 <property name="text">
+                  <string>简体中文</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QRadioButton" name="rBLangEn_US">
+                 <property name="text">
+                  <string>English</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QRadioButton" name="rBLangSystem">
+                 <property name="text">
+                  <string>跟随系统语言</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
                <widget class="QLabel" name="label_21">
@@ -1772,7 +1719,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </item>
              </layout>
             </item>
-            <item row="3" column="0" colspan="2">
+            <item row="5" column="0" colspan="2">
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
                <widget class="QLabel" name="label_22">
@@ -1820,7 +1767,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </item>
              </layout>
             </item>
-            <item row="4" column="0" colspan="2">
+            <item row="6" column="0" colspan="2">
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
                <widget class="QLabel" name="label_19">
@@ -1850,7 +1797,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </item>
              </layout>
             </item>
-            <item row="5" column="1">
+            <item row="7" column="1">
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Orientation::Vertical</enum>

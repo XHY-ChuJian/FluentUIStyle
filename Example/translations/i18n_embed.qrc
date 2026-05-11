@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="translations/Example_en_US.qm">Example_en_US.qm</file>
+    </qresource>
+</RCC>
