@@ -672,4 +672,179 @@ li.checked::marker { content: "\2612"; }
         <translation>Step &amp;down</translation>
     </message>
 </context>
+<context>
+    <name>TabShowcaseWidget</name>
+    <message>
+        <source>TabBar多种样式示例</source>
+        <translation>Tab bar style samples</translation>
+    </message>
+    <message>
+        <source>Pivot Grow TabBar</source>
+        <translation>Pivot Grow TabBar</translation>
+    </message>
+    <message>
+        <source>特点：选中时会有一个生长动画效果。</source>
+        <translation>Selected tab grows with an animation.</translation>
+    </message>
+    <message>
+        <source>Pivot Slide TabBar</source>
+        <translation>Pivot Slide TabBar</translation>
+    </message>
+    <message>
+        <source>特点：选中时会有一个滑动动画效果。</source>
+        <translation>Selected tab slides with an animation.</translation>
+    </message>
+    <message>
+        <source>Pivot Stretch TabBar</source>
+        <translation>Pivot Stretch TabBar</translation>
+    </message>
+    <message>
+        <source>特点：选中时会有一个拉伸动画效果。</source>
+        <translation>Selected tab stretches with an animation.</translation>
+    </message>
+    <message>
+        <source>Segmented Slide TabBar</source>
+        <translation>Segmented Slide TabBar</translation>
+    </message>
+    <message>
+        <source>特点：Segmented风格，选中时会有一个滑动动画效果。</source>
+        <translation>Segmented style; selected tab slides with an animation.</translation>
+    </message>
+    <message>
+        <source>Segmented Fade TabBar</source>
+        <translation>Segmented Fade TabBar</translation>
+    </message>
+    <message>
+        <source>特点：选中时会有一个淡入淡出动画效果。</source>
+        <translation>Fade in/out animation on selection.</translation>
+    </message>
+    <message>
+        <source>Segmented WinUI3 TabBar</source>
+        <translation>Segmented WinUI3 TabBar</translation>
+    </message>
+    <message>
+        <source>特点：Segmented风格，WinUI3 的选中指示器效果。</source>
+        <translation>Segmented style with WinUI3 selection indicator.</translation>
+    </message>
+    <message>
+        <source>Segmented Gallery Style</source>
+        <translation>Segmented gallery style</translation>
+    </message>
+    <message>
+        <source>特点：半圆胶囊 + 自定义背景/选中/悬停/按下色</source>
+        <translation>Semi-round pills with custom background/selected/hover/pressed colors.</translation>
+    </message>
+    <message>
+        <source>Weekly</source>
+        <translation>Weekly</translation>
+    </message>
+    <message>
+        <source>Daily</source>
+        <translation>Daily</translation>
+    </message>
+    <message>
+        <source>Monthly</source>
+        <translation>Monthly</translation>
+    </message>
+    <message>
+        <source>Overview</source>
+        <translation>Overview</translation>
+    </message>
+    <message>
+        <source>Stats</source>
+        <translation>Stats</translation>
+    </message>
+    <message>
+        <source>Goals</source>
+        <translation>Goals</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>History</translation>
+    </message>
+    <message>
+        <source>Pill TabBar</source>
+        <translation>Pill TabBar</translation>
+    </message>
+    <message>
+        <source>Home</source>
+        <translation>Home</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Search</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>Help</translation>
+    </message>
+    <message>
+        <source>About</source>
+        <translation>About</translation>
+    </message>
+    <message>
+        <source>Capsule TabBar</source>
+        <translation>Capsule TabBar</translation>
+    </message>
+    <message>
+        <source>特点：浏览器标签样式。</source>
+        <translation>Browser-style tabs.</translation>
+    </message>
+    <message>
+        <source>Home Page</source>
+        <translation>Home Page</translation>
+    </message>
+    <message>
+        <source>Search Page</source>
+        <translation>Search Page</translation>
+    </message>
+    <message>
+        <source>Settings Page</source>
+        <translation>Settings Page</translation>
+    </message>
+    <message>
+        <source>Help Page</source>
+        <translation>Help Page</translation>
+    </message>
+    <message>
+        <source>About Page</source>
+        <translation>About Page</translation>
+    </message>
+    <message>
+        <source>Navigation TabBar</source>
+        <translation>Navigation TabBar</translation>
+    </message>
+    <message>
+        <source>特点：适合用于侧边栏的导航菜单，选项卡垂直排列，选中时指示器有个变长效果</source>
+        <translation>For side navigation: vertical tabs with a variable-length selection indicator.</translation>
+    </message>
+    <message>
+        <source>Overview Page</source>
+        <translation>Overview Page</translation>
+    </message>
+    <message>
+        <source>Files Page</source>
+        <translation>Files Page</translation>
+    </message>
+    <message>
+        <source>History Page</source>
+        <translation>History Page</translation>
+    </message>
+    <message>
+        <source>Insights Page</source>
+        <translation>Insights Page</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation>Files</translation>
+    </message>
+    <message>
+        <source>Insights</source>
+        <translation>Insights</translation>
+    </message>
+</context>
 </TS>
