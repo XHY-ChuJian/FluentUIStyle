@@ -186,7 +186,7 @@ void FluentColorScheme::applyDark(QPalette &p) const
 
     //测试
     p.setColor(QPalette::Active, QPalette::Base, QColor(46, 46, 46, 255));
-    p.setColor(QPalette::Active, QPalette::Window, QColor(39, 39, 39, 255));
+    p.setColor(QPalette::Active, QPalette::Window, QColor(32, 32, 32, 255));
 
     p.setColor(QPalette::Active, QPalette::Shadow, QColor(0, 0, 0, 255));
     p.setColor(QPalette::Active, QPalette::Highlight, QColor(54, 166, 255, 255));

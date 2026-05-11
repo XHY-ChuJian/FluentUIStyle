@@ -5634,17 +5634,11 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             const qreal progressBarHalfThickness = progressBarThickness / 2.0;
             rect.setHeight(progressBarThickness);
             rect.moveTop(center.y() - progressBarHalfThickness - offset);
-            if (progressBarThickness > 1.0)
+            if (progressBarThickness > 1.0 && rect.width() > 1.0)
             {
-                // Keep rounded caps inside clip bounds to avoid left-edge clipping.
-                if (orientation == Qt::Horizontal && rect.width() > 1.0)
-                {
-                    rect.adjust(0.5, 0.0, -0.5, 0.0);
-                }
-                else if (orientation == Qt::Vertical && rect.height() > 1.0)
-                {
-                    rect.adjust(0.0, 0.5, 0.0, -0.5);
-                }
+                // After the vertical-path transform, width is still along progress and height is thickness.
+                // Cap insets belong on the progress axis only; do not shrink thickness for vertical bars.
+                rect.adjust(0.5, 0.0, -0.5, 0.0);
             }
 
             painter->setPen(Qt::NoPen);
