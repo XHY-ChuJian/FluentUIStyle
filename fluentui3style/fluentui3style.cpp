@@ -485,13 +485,17 @@ static qreal radioButtonInnerRadius(int state, const QStyleOption *option, const
 
 static qreal sliderInnerRadius(QStyle::State state, bool insideHandle)
 {
-    if (state & QStyle::State_Sunken)
+    const bool isEnabled = state & QStyle::State_Enabled;
+    if (isEnabled)
     {
-        return 0.40;
-    }
-    else if (insideHandle)
-    {
-        return 0.65;
+        if (state & QStyle::State_Sunken)
+        {
+            return 0.40;
+        }
+        else if (insideHandle)
+        {
+            return 0.65;
+        }
     }
     return 0.55;
 }
@@ -1450,7 +1454,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
 
                 QRectF thumbRect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
                 const qreal outerRadius =
-                    qMin(8.0, (slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0) - 1);
+                    qMin(10.0, (slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0) - 1);
                 bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
 
                 bool oldIsInsideHandle = styleObject->property("_q_insidehandle").toBool();
@@ -1464,16 +1468,18 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                 styleObject->setProperty("_q_stylerect", option->rect);
                 if (option->styleObject->property("_q_end_radius").isNull())
                 {
-                    option->styleObject->setProperty("_q_end_radius", outerRadius * 0.43);
+                    option->styleObject->setProperty("_q_end_radius", outerRadius * 0.55);
                 }
 
-                bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken) || (oldIsInsideHandle != isInsideHandle) || (oldActiveControls != option->activeSubControls)) && state & State_Enabled);
-
+                bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
+                                     || (oldIsInsideHandle != isInsideHandle)
+                                     || (oldActiveControls != option->activeSubControls)) 
+                                    && state & State_Enabled);
                 if (oldRect != option->rect)
                 {
                     doTransition = false;
                     stopAnimation(styleObject);
-                    styleObject->setProperty("_q_inner_radius", outerRadius * 0.43);
+                    styleObject->setProperty("_q_inner_radius", outerRadius * 0.55);
                 }
 
                 if (doTransition)
@@ -1482,7 +1488,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                     t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
                     t->setEndValue(outerRadius * sliderInnerRadius(state, isInsideHandle));
                     styleObject->setProperty("_q_end_radius", t->endValue());
-                    t->setDuration(150);
+                    t->setDuration(300);
                     startAnimation(t);
                 }
             }
@@ -1668,7 +1674,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(calculateAccentColor(option));
                 painter->drawRoundedRect(leftRect, 2, 2);
-                painter->setBrush(WINUI3Colors[colorSchemeIndex][controlStrongFill]);
+                painter->setBrush(winUI3Color(controlStrongFill));
                 painter->drawRoundedRect(rightRect, 2, 2);
             }
             if (sub & SC_SliderTickmarks)
@@ -1747,8 +1753,8 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
             }
             if (sub & SC_SliderHandle)
             {
-                const qreal outerRadius = qMin(10.0, (isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0) - 1);
-                float innerRadius = outerRadius * 0.43;
+                const qreal outerRadius = qMin(10.0, (isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0) - 1);;
+                float innerRadius = outerRadius * sliderInnerRadius(state, false);
 
                 if (option->styleObject)
                 {
@@ -1765,7 +1771,6 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                         innerRadius = outerRadius * sliderInnerRadius(state, isInsideHandle);
                     }
                 }
-
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(winUI3Color(controlFillSolid));
                 painter->drawEllipse(handleCenter, outerRadius, outerRadius);
@@ -1908,7 +1913,6 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                     t->setStartValue((state & State_MouseOver) ? 0.0 : 1.0);
                     t->setEndValue((state & State_MouseOver) ? 1.0 : 0.0);
                     t->setDuration(167);
-                    t->setEasingCurve(QEasingCurve::OutCubic);
                     startAnimation(t);
                 }
 
@@ -2305,12 +2309,12 @@ void FluentUI3Style::drawSpecialButton(QPainter *painter, const QStyleOption *op
     else if (objectName == "ScrollLeftButton" || objectName == "ScrollRightButton")
     {
         isReturn = true;
-        return; // 无绘制
+        return;
     }
     else
     {
         isReturn = false;
-        return; // 不处理其他按钮
+        return;
     }
 
     painter->setRenderHint(QPainter::Antialiasing);
@@ -3543,6 +3547,9 @@ QRect FluentUI3Style::subControlRect(ComplexControl control,
         }
         break;
 #endif // QT_CONFIG(toolbutton)
+    case CC_Slider:
+        ret = QProxyStyle::subControlRect(control, option, subControl, widget);
+        break;
     default:
         ret = QProxyStyle::subControlRect(control, option, subControl, widget);
     }

@@ -2,8 +2,6 @@ set(PLUGIN_SOURCES
     ../fluentui3style.cpp
     ../fluentui3style.h
     ../fluentui3styleproperties.h
-    ../fluentui3colors.cpp
-    ../fluentui3colors.h
     ../fluentuiappearance.cpp
     ../fluentuiappearance.h
     ../palettemanager.cpp
@@ -35,6 +33,7 @@ target_compile_definitions(FluentUI3StylePlugin PRIVATE FLUENT_USE_QT_STYLE FLUE
 
 target_include_directories(FluentUI3StylePlugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../FluentUI3Colors
 )
 
 target_link_libraries(FluentUI3StylePlugin PRIVATE

@@ -1,4 +1,6 @@
 set(EXWIDGETS_SOURCES
+    exrangeslider.cpp
+    exrangeslider.h
     exmessagebox.cpp
     exmessagebox.h
     excontentdialog.cpp
@@ -21,7 +23,9 @@ target_compile_definitions(ExWidgets PRIVATE EXWIDGETS_LIBRARY)
 
 target_include_directories(ExWidgets PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../FluentUI3Colors>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ExWidgets>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Colors>
 )
 
 target_link_libraries(ExWidgets PUBLIC

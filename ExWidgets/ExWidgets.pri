@@ -1,4 +1,5 @@
 SOURCES += \
+    $$PWD/exrangeslider.cpp \
     $$PWD/exmessagebox.cpp \
     $$PWD/exnavtreewidget.cpp \
     $$PWD/exwinuinavigationview.cpp \
@@ -7,7 +8,7 @@ SOURCES += \
     $$PWD/excontentdialog.cpp
 
 HEADERS += \
-    $$PWD/exmessagebox.h \
+    $$PWD/exrangeslider.h \
     $$PWD/exmessagebox.h \
     $$PWD/exnavtreewidget.h \
     $$PWD/exwinuinavigationview.h \
@@ -17,3 +18,4 @@ HEADERS += \
     $$PWD/excontentdialog.h
 
 INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD/../FluentUI3Colors

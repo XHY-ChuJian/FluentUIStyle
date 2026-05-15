@@ -85,6 +85,7 @@
 #include <QButtonGroup>
 
 // Project Headers
+#include <exrangeslider.h>
 #include <exstackedwidget.h>
 #include <exnavtreewidget.h>
 #include <exmessagebox.h>
@@ -628,6 +629,14 @@ void MainWindow::initializeComponents()
 
     // Configure control properties
     ui->progressBar->setProperty(ProgressBarStyleProperty, ProgressBarThick);
+    ui->rangeSelector->setRange(0, 100);
+    ui->rangeSelector->setValues(20, 80);
+    ui->rangeSelector->setSingleStep(1);
+    ui->rangeSelector->setPageStep(10);
+    connect(ui->rangeSelector, &ExRangeSlider::valuesChanged, this, [this](int lower, int upper) {
+        qDebug() << "Range slider values changed: " << lower << " " << upper;
+    });
+
     ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsHorizontalRight);
     ui->checkBox_5->setText(tr("Off"));
     ui->treeWidget->setProperty("ItemHeight", 32);
@@ -785,9 +794,9 @@ void MainWindow::buildMainMenus()
 
     QMenu *zoomMenu = viewMenu->addMenu(createFluentIcon("\ue71e"), tr("缩放"));
     g_menuIconMap[zoomMenu] = "\ue71e";
-    QAction *zoomInAction = zoomMenu->addAction(tr("放大"));
-    QAction *zoomOutAction = zoomMenu->addAction(tr("缩小"));
-    QAction *zoomResetAction = zoomMenu->addAction(tr("恢复默认"));
+    zoomMenu->addAction(tr("放大"));
+    zoomMenu->addAction(tr("缩小"));
+    zoomMenu->addAction(tr("恢复默认"));
 
     // Build Menu
     QMenu *buildMenu = menuBar->addMenu(tr("构建"));

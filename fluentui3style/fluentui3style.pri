@@ -10,7 +10,6 @@ HEADERS += \
     $$PWD/qhexstring_p.h \
     $$PWD/qstyleanimation_p.h \
     $$PWD/qstylehelper_p.h \
-    $$PWD/fluentui3colors.h \
     $$PWD/fluentui3style_global.h
 
 SOURCES += \
@@ -18,8 +17,9 @@ SOURCES += \
     $$PWD/fluentuiappearance.cpp \
     $$PWD/palettemanager.cpp \
     $$PWD/qstyleanimation.cpp \
-    $$PWD/qstylehelper.cpp \
-    $$PWD/fluentui3colors.cpp
+    $$PWD/qstylehelper.cpp
 
 RESOURCES += \
     $$PWD/resource.qrc
+
+INCLUDEPATH += $$PWD/../FluentUI3Colors

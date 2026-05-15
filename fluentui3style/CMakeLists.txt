@@ -3,8 +3,6 @@ set(LIBRARY_SOURCES
     fluentui3styleproperties.h
     fluentui3style.cpp
     fluentui3style.h
-    fluentui3colors.cpp
-    fluentui3colors.h
     fluentuiappearance.cpp
     fluentuiappearance.h
     palettemanager.cpp
@@ -25,7 +23,9 @@ target_compile_definitions(FluentUI3Style PRIVATE FLUENTUI3STYLE_LIBRARY)
 
 target_include_directories(FluentUI3Style PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../FluentUI3Colors>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Style>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Colors>
 )
 
 target_link_libraries(FluentUI3Style PUBLIC

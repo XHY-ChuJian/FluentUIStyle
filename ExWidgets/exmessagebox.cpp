@@ -13,41 +13,47 @@
 
 namespace
 {
-    // ---- WinUI 3 ContentDialog 设计常量 ----
-    // 参考: https://learn.microsoft.com/en-us/windows/apps/design/controls/dialogs-and-flyouts/dialogs
-    constexpr int kCornerRadius = 8;
-    constexpr int kPadding = 16;
-    constexpr int kTitleContentGap = 12;
-    constexpr int kContentButtonGap = 16;
-    constexpr int kButtonSpacing = 8;
-    constexpr int kButtonHeight = 32;
-    constexpr int kButtonMinWidth = 120;
-    constexpr int kTitleFontPx = 20;
-    constexpr int kBodyFontPx = 14;
-    constexpr int kInformativeFontPx = 13;
-    constexpr int kShadowMargin = 8;
+// ---- WinUI 3 ContentDialog 设计常量 ----
+// 参考: https://learn.microsoft.com/en-us/windows/apps/design/controls/dialogs-and-flyouts/dialogs
+constexpr int kCornerRadius = 8;
+constexpr int kPadding = 16;
+constexpr int kTitleContentGap = 12;
+constexpr int kContentButtonGap = 16;
+constexpr int kButtonSpacing = 8;
+constexpr int kButtonHeight = 32;
+constexpr int kButtonMinWidth = 120;
+constexpr int kTitleFontPx = 20;
+constexpr int kBodyFontPx = 14;
+constexpr int kInformativeFontPx = 13;
+constexpr int kShadowMargin = 8;
 
-    constexpr int kDialogMinWidth = 320;
-    constexpr int kDialogPreferWidth = 480;
-    constexpr int kDialogMaxWidth = 548;
+constexpr int kDialogMinWidth = 320;
+constexpr int kDialogPreferWidth = 480;
+constexpr int kDialogMaxWidth = 548;
 
-    bool isDarkMode()
-    {
-        return QApplication::palette().window().color().lightness() < 128;
-    }
+bool isDarkMode()
+{
+    return QApplication::palette().window().color().lightness() < 128;
+}
 
-    QColor dialogBorderColor(bool dark)
-    {
-        return dark ? QColor(255, 255, 255, 20) : QColor(0, 0, 0, 15);
-    }
+QColor dialogBorderColor(bool dark)
+{
+    return dark ? QColor(255, 255, 255, 20) : QColor(0, 0, 0, 15);
+}
 } // namespace
 
-static void setFontPerferNoHinting(QWidget *widget)
+static void setFontPerferNoHinting(QWidget *widget, bool fontSizeIncrease = false)
 {
     if (!widget)
         return;
     QFont f = widget->font();
     f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+
+    if (fontSizeIncrease)
+    {
+        auto size = f.pointSize();
+        f.setPointSize(size + 1);
+    }
     widget->setFont(f);
 }
 
@@ -154,7 +160,6 @@ void ExMessageBoxPrivate::resetLayout()
         f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
         f.setPixelSize(kInformativeFontPx);
         infoLabel->setFont(f);
-        infoLabel->setWordWrap(true);
         infoLabel->setContentsMargins(0, 7, 0, 0);
         innerLayout->addWidget(infoLabel);
     }
@@ -191,7 +196,7 @@ void ExMessageBoxPrivate::resetLayout()
     {
         if (auto *pb = qobject_cast<QPushButton *>(ab))
         {
-            setFontPerferNoHinting(pb);
+            setFontPerferNoHinting(pb, true);
             pb->setDefault(false);
             pb->setMinimumWidth(kButtonMinWidth);
         }
@@ -290,7 +295,7 @@ void ExMessageBox::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QRectF cardRect = this->rect();
+    QRect cardRect = this->rect();
     cardRect.adjust(kShadowMargin, kShadowMargin, -kShadowMargin, -kShadowMargin);
 
     const bool dark = isDarkMode();
@@ -315,18 +320,19 @@ void ExMessageBox::paintEvent(QPaintEvent *event)
     QPoint mappedTopLeft = d->m_cardWidget->mapTo(this, d->m_buttonArea->geometry().topLeft());
     const int splitY = mappedTopLeft.y();
 
-    QRectF topArea = cardRect;
+    QRect topArea = cardRect;
     topArea.setBottom(splitY);
     painter.fillRect(topArea, dark ? palette().base() : Qt::white);
 
-    QRectF bottomArea = cardRect;
+    QRect bottomArea = cardRect;
     bottomArea.setTop(splitY);
     painter.fillRect(bottomArea, palette().window());
 
     painter.setClipping(false);
     painter.setPen(QPen(dialogBorderColor(dark), 1.0));
     painter.setBrush(Qt::NoBrush);
-    painter.drawRoundedRect(cardRect.adjusted(0.5, 0.5, -0.5, -0.5),
+    const auto cardRectF = QRectF(cardRect);
+    painter.drawRoundedRect(cardRectF.adjusted(0.5, 0.5, -0.5, -0.5),
                             kCornerRadius, kCornerRadius);
 }
 

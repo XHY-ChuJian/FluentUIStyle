@@ -90,9 +90,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>1163</width>
-             <height>1045</height>
+             <y>-214</y>
+             <width>1160</width>
+             <height>965</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -592,17 +592,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <item row="10" column="0" colspan="3">
                 <widget class="QWidget" name="widget_6" native="true">
                  <layout class="QGridLayout" name="gridLayout_9">
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_6">
-                    <property name="font">
-                     <font>
-                      <family>微软雅黑</family>
-                      <pointsize>10</pointsize>
-                      <bold>false</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Slider &amp; Progress &amp; ScrollBar</string>
+                  <item row="5" column="0">
+                   <widget class="ExRangeSlider" name="rangeSelector" native="true">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>32</height>
+                     </size>
                     </property>
                    </widget>
                   </item>
@@ -616,13 +612,42 @@ li.checked::marker { content: &quot;\2612&quot;; }
                     </property>
                    </widget>
                   </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_6">
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>10</pointsize>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Slider &amp; Progress &amp; ScrollBar &amp; RangeSelector</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="2" column="0">
                    <widget class="QSlider" name="horizontalSlider">
                     <property name="value">
                      <number>24</number>
                     </property>
+                    <property name="tracking">
+                     <bool>true</bool>
+                    </property>
                     <property name="orientation">
                      <enum>Qt::Orientation::Horizontal</enum>
+                    </property>
+                    <property name="invertedAppearance">
+                     <bool>false</bool>
+                    </property>
+                    <property name="invertedControls">
+                     <bool>false</bool>
+                    </property>
+                    <property name="tickPosition">
+                     <enum>QSlider::TickPosition::TicksBothSides</enum>
+                    </property>
+                    <property name="tickInterval">
+                     <number>10</number>
                     </property>
                    </widget>
                   </item>
@@ -1596,8 +1621,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>173</width>
-             <height>578</height>
+             <width>140</width>
+             <height>474</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -1947,6 +1972,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <extends>QStackedWidget</extends>
    <header location="global">exstackedwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ExRangeSlider</class>
+   <extends>QWidget</extends>
+   <header location="global">exrangeslider.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

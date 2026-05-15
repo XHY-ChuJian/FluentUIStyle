@@ -57,10 +57,6 @@ else()
     )
 endif()
 
-# target_include_directories(Example PRIVATE
-#     ${CMAKE_CURRENT_SOURCE_DIR}/../fluentui3style
-# )
-
 target_compile_definitions(Example PRIVATE FLUENT_USE_QT_STYLE)
 
 # Translations workflow:
