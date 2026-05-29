@@ -55,6 +55,19 @@ int clampInt(int value, int lo, int hi)
 {
     return qBound(qMin(lo, hi), value, qMax(lo, hi));
 }
+
+void drawSliderHandleShadow(QPainter *painter, const QPointF &center, qreal outerRadius, const QPalette &palette)
+{
+    painter->setPen(Qt::NoPen);
+    const qreal shadowStrength = isDarkPalette(palette) ? 1.0 : 0.7;
+    for (int i = 5; i >= 1; --i)
+    {
+        const int alpha = qRound((40.0 / i) * shadowStrength);
+        painter->setBrush(QColor(0, 0, 0, alpha));
+        const qreal offset = i * 0.8;
+        painter->drawEllipse(center, outerRadius + offset, outerRadius + offset);
+    }
+}
 } // namespace
 
 // =============================================================================
@@ -522,6 +535,8 @@ void ExRangeSliderPrivate::paintHandle(QPainter *painter,
         else if (node->isHovered())
             inner_color.setAlphaF(0.9020);
     }
+
+    drawSliderHandleShadow(painter, center, kSliderHandlePaintRadius, pal);
 
     painter->setPen(Qt::NoPen);
     painter->setBrush(outerFill);

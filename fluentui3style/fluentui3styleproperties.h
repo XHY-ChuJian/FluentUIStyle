@@ -32,6 +32,15 @@ enum ProgressBarStyle
     ProgressBarRing = 2
 };
 
+[[maybe_unused]] constexpr const char *DialStyleProperty = "dialStyle";
+[[maybe_unused]] constexpr const char *DialDrawValueProperty = "dialDrawValue";
+enum DialStyle
+{
+    DialDots = 1,
+    DialRing = 2,
+    DialThumb = 3
+};
+
 [[maybe_unused]] constexpr const char *ButtonAccentStyleProperty = "accent";
 [[maybe_unused]] constexpr const char *SwitchStyleProperty = "isSwitchButton";
 [[maybe_unused]] constexpr const char *NavigationViewStyleProperty = "navigationViewIndicator";

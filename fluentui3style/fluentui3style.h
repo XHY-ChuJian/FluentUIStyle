@@ -94,6 +94,8 @@ private:
                           const QWidget *widget,
                           bool drawTrack) const;
 
+    void drawFluentDial(const QStyleOptionSlider *dial, QPainter *painter, const QWidget *widget, int style) const;
+
     void drawListViewIndicator(const QStyleOptionViewItem *option, QPainter *painter, const QWidget *widget) const;
     void drawNavigationViewIndicator(const QStyleOptionViewItem *option, QPainter *painter, const QWidget *widget) const;
     void drawTreeViewIndicator(const QStyleOptionViewItem *option, QPainter *painter, const QWidget *widget) const;
@@ -102,6 +104,7 @@ private:
 
     void drawFluentShadow(QPainter *painter, QRect rect, int shadowWidth, int radius) const;
     void drawEffectShadow(QPainter *painter, QRect widgetRect, int shadowBorderWidth, int borderRadius) const;
+    void drawSliderHandleShadow(QPainter *painter, const QPointF &center, qreal outerRadius) const;
 
     QPen borderPenControlAlt(const QStyleOption *option) const;
     QColor calculateAccentColor(const QStyleOption *option) const;

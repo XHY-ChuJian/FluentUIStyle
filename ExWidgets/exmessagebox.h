@@ -50,6 +50,8 @@ public:
 
     void setVisible(bool visible) override;
 
+    void setDetailedText(const QString &text);
+
     void setContentWidget(QWidget *widget);
     void setCenterButtons(bool center);
     bool centerButtons() const;

@@ -51,8 +51,8 @@ static void setFontPerferNoHinting(QWidget *widget, bool fontSizeIncrease = fals
 
     if (fontSizeIncrease)
     {
-        auto size = f.pointSize();
-        f.setPointSize(size + 1);
+        auto size = f.pixelSize();
+        f.setPixelSize(size + 1);
     }
     widget->setFont(f);
 }
@@ -103,6 +103,9 @@ void ExMessageBoxPrivate::resetLayout()
     m_cardWidget->setObjectName(QStringLiteral("FluentMessageBoxCard"));
     outerLayout->addWidget(m_cardWidget);
 
+    if (m_cardWidget->layout())
+        delete m_cardWidget->layout();
+
     auto *innerLayout = new QVBoxLayout(m_cardWidget);
     innerLayout->setObjectName("CardInnerLayout");
     innerLayout->setContentsMargins(kPadding, kPadding, kPadding, 0);
@@ -151,7 +154,8 @@ void ExMessageBoxPrivate::resetLayout()
         if (iconLabel)
             iconLabel->hide();
     }
-    iconLabel->setParent(m_cardWidget);
+    if (iconLabel)
+        iconLabel->setParent(m_cardWidget);
     textLabel->setParent(m_cardWidget);
 
     if (infoLabel)
@@ -172,6 +176,15 @@ void ExMessageBoxPrivate::resetLayout()
         innerLayout->addWidget(checkBox);
     }
 
+    auto widgetList = q->findChildren<QWidget*>();
+    for(const auto& w : widgetList)
+    {
+        if (w->inherits("QMessageBoxDetailsText"))
+        {
+            innerLayout->addWidget(w);
+        }
+    }
+
     if (m_customContentWidget)
     {
         m_customContentWidget->setParent(m_cardWidget);
@@ -180,7 +193,7 @@ void ExMessageBoxPrivate::resetLayout()
 
     innerLayout->addSpacing(kContentButtonGap);
 
-    auto *buttonArea = new QHBoxLayout(m_cardWidget);
+    auto *buttonArea = new QHBoxLayout();
     buttonArea->setObjectName("ButtonAreaLayout");
     int btnMarginV = 12;
 
@@ -284,6 +297,28 @@ void ExMessageBox::setVisible(bool visible)
         d->resetLayout();
     }
     QMessageBox::setVisible(visible);
+}
+
+void ExMessageBox::setDetailedText(const QString &text)
+{
+    QMessageBox::setDetailedText(text);
+
+    auto btns = findChildren<QPushButton *>();
+    QPushButton* detailsButton = nullptr;
+    for(const auto& btn : btns)
+    {
+        if (btn->inherits("DetailButton"))
+        {
+            detailsButton = btn;
+        }
+    }
+    if (detailsButton)
+    {
+        connect(detailsButton, &QPushButton::clicked, this, [this, detailsButton]()
+        {
+            adjustSize();
+        });
+    }
 }
 
 void ExMessageBox::paintEvent(QPaintEvent *event)

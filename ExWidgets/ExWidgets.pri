@@ -1,5 +1,8 @@
 SOURCES += \
+    $$PWD/colorgradientslider.cpp \
     $$PWD/exrangeslider.cpp \
+    $$PWD/excolorpicker.cpp \
+    $$PWD/excolorpickerbutton.cpp \
     $$PWD/exmessagebox.cpp \
     $$PWD/exnavtreewidget.cpp \
     $$PWD/exwinuinavigationview.cpp \
@@ -8,7 +11,10 @@ SOURCES += \
     $$PWD/excontentdialog.cpp
 
 HEADERS += \
+    $$PWD/colorgradientslider.h \
     $$PWD/exrangeslider.h \
+    $$PWD/excolorpicker.h \
+    $$PWD/excolorpickerbutton.h \
     $$PWD/exmessagebox.h \
     $$PWD/exnavtreewidget.h \
     $$PWD/exwinuinavigationview.h \
@@ -19,3 +25,4 @@ HEADERS += \
 
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../FluentUI3Colors
+INCLUDEPATH += $$PWD/../fluentui3style

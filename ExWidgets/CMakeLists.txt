@@ -1,6 +1,12 @@
 set(EXWIDGETS_SOURCES
+    colorgradientslider.cpp
+    colorgradientslider.h
     exrangeslider.cpp
     exrangeslider.h
+    excolorpicker.cpp
+    excolorpicker.h
+    excolorpickerbutton.cpp
+    excolorpickerbutton.h
     exmessagebox.cpp
     exmessagebox.h
     excontentdialog.cpp
@@ -24,6 +30,7 @@ target_compile_definitions(ExWidgets PRIVATE EXWIDGETS_LIBRARY)
 target_include_directories(ExWidgets PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../FluentUI3Colors>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../fluentui3style>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ExWidgets>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Colors>
 )

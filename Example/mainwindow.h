@@ -83,6 +83,7 @@ private:
     void setupSegoeIconGalleryPage();
     void setupAboutPage();
     void setupDialogsPage();
+    void setupColorPickerPage();
 
     void updateActionIcons();
     void loadChangelog();

@@ -40,6 +40,7 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QVariant>
+#include <QDial>
 
 #include <array>
 
@@ -1321,6 +1322,9 @@ inline int getColorSchemeIndex() // 0 = Light, 1 = Dark
     // 如果没有设置，则根据系统主题色返回（QStyleHints::colorScheme / Qt::ColorScheme 仅 Qt 6.5+）
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     qDebug() << "[FluentUI3Style] No set _q_colorscheme, use system theme color" << qApp->styleHints()->colorScheme();
+
+    qApp->setProperty("_q_colorscheme", qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0);
+
     return qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0;
 #else
     return 0;
@@ -1471,10 +1475,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                     option->styleObject->setProperty("_q_end_radius", outerRadius * 0.55);
                 }
 
-                bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
-                                     || (oldIsInsideHandle != isInsideHandle)
-                                     || (oldActiveControls != option->activeSubControls)) 
-                                    && state & State_Enabled);
+                bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken) || (oldIsInsideHandle != isInsideHandle) || (oldActiveControls != option->activeSubControls)) && state & State_Enabled);
                 if (oldRect != option->rect)
                 {
                     doTransition = false;
@@ -1753,7 +1754,8 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
             }
             if (sub & SC_SliderHandle)
             {
-                const qreal outerRadius = qMin(10.0, (isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0) - 1);;
+                const qreal outerRadius = qMin(10.0, (isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0) - 1);
+                ;
                 float innerRadius = outerRadius * sliderInnerRadius(state, false);
 
                 if (option->styleObject)
@@ -1771,6 +1773,8 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                         innerRadius = outerRadius * sliderInnerRadius(state, isInsideHandle);
                     }
                 }
+                // drawSliderHandleShadow(painter, handleCenter, outerRadius);
+
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(winUI3Color(controlFillSolid));
                 painter->drawEllipse(handleCenter, outerRadius, outerRadius);
@@ -1801,7 +1805,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
             QStyleOption opt(*option);
             opt.state.setFlag(QStyle::State_On, false);
 
-            auto _drawRoundedRect = [](QPainter *p, QRectF rect, QPen pen, QBrush brush)
+            auto drawRoundedRect = [](QPainter *p, QRectF rect, QPen pen, QBrush brush)
             {
                 p->setPen(pen);
                 p->setBrush(brush);
@@ -1814,7 +1818,11 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                                          ? option->palette.base().color()
                                          : option->palette.button().color();
             const QColor opaqueBg = resolveOpaque(rawBrush.color(), blendBase);
-            _drawRoundedRect(painter, frameRect, Qt::NoPen, opaqueBg);
+
+            if (combobox->frame)
+            {
+                drawRoundedRect(painter, frameRect, Qt::NoPen, opaqueBg);
+            }
 
             if (combobox->frame)
             {
@@ -2255,6 +2263,21 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
         }
         break;
 #endif // QT_CONFIG(toolbutton)
+    case CC_Dial:
+    {
+        int dialStyle = widget ? widget->property(DialStyleProperty).toInt() : 0;
+        if (dialStyle == DialDots || dialStyle == DialRing || dialStyle == DialThumb)
+        {
+            const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option);
+            if (dial)
+            {
+                drawFluentDial(dial, painter, widget, dialStyle);
+            }
+            return;
+        }
+        QProxyStyle::drawComplexControl(control, option, painter, widget);
+        break;
+    }
     default:
         QProxyStyle::drawComplexControl(control, option, painter, widget);
         break;
@@ -5721,6 +5744,11 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
                     vIconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget),
                                         proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
                 }
+
+                bool onlyIcon = btn->text.isEmpty();
+                if (onlyIcon)
+                    vIconRect.moveCenter(btn->rect.center());
+
                 btn->icon.paint(painter, vIconRect, Qt::AlignCenter, mode, state);
             }
 
@@ -5736,7 +5764,11 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
 
             if (accent || (checkable && checked))
             {
-                painter->setPen(winUI3Color(textOnAccentPrimary));
+                QStyleOption opt = *option;
+                opt.state |= QStyle::State_On;
+                QColor penCol = option->state.testFlag(QStyle::State_Enabled) ? winUI3Color(textOnAccentPrimary) : winUI3Color(textOnAccentDisabled);
+                // penCol.setAlphaF(colorSchemeIndex == 1 ? 0.7 : 1);
+                painter->setPen(/*controlTextColor(&opt, QPalette::Window)*/ penCol);
             }
             else
             {
@@ -6018,11 +6050,14 @@ void FluentUI3Style::drawControl(ControlElement element, const QStyleOption *opt
             {
                 // 实际绘制时，右边界会有1px，调整后可以覆盖掉这个
                 QRectF r = QRectF(rect).adjusted(0, 0, 1, 0);
-                drawRoundedRect(painter,
-                                r,
-                                Qt::NoPen,
-                                highContrastTheme ? menuitem->palette.brush(QPalette::Highlight)
-                                                  : QBrush(winUI3Color(subtleHighlightColor)));
+
+                QBrush selectColor = highContrastTheme ? menuitem->palette.brush(QPalette::Highlight) : QBrush(winUI3Color(subtleHighlightColor));
+                QString selectedMenuItemBackground = qApp ? qApp->property("selectedMenuItemBackground").toString() : QString();
+                if (qApp && !selectedMenuItemBackground.isEmpty())
+                {
+                    selectColor = QColor(selectedMenuItemBackground);
+                }
+                drawRoundedRect(painter, r, Qt::NoPen, selectColor);
             }
 
             if (menuitem->menuItemType == QStyleOptionMenuItem::Separator)
@@ -6909,7 +6944,7 @@ QSize FluentUI3Style::sizeFromContents(ContentsType type, const QStyleOption *op
 
         // FluentUI 3 列表项标准常量
         const int FLUENT_H_MARGIN = 12;    // 水平边距（左右各12px）
-        const int FLUENT_ITEM_HEIGHT = 38; // 常规列表项总高度
+        const int FLUENT_ITEM_HEIGHT = 32; // 常规列表项总高度
         if (const auto *viewItemOpt = qstyleoption_cast<const QStyleOptionViewItem *>(option))
         {
             if (const QListView *lv = qobject_cast<const QListView *>(widget); lv && lv->viewMode() != QListView::IconMode)
@@ -7242,6 +7277,12 @@ void FluentUI3Style::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_TranslucentBackground);
         widget->setWindowFlag(Qt::FramelessWindowHint);
         widget->setAttribute(Qt::WA_NoSystemBackground, false);
+    }
+
+    if (qobject_cast<QDial *>(widget))
+    {
+        widget->setAttribute(Qt::WA_Hover);
+        widget->installEventFilter(this);
     }
 
     ///没有动态更新主题的需求，可屏蔽
@@ -8040,9 +8081,68 @@ void FluentUI3Style::drawEffectShadow(QPainter *painter, QRect widgetRect, int s
     painter->restore();
 }
 
+void FluentUI3Style::drawSliderHandleShadow(QPainter *painter, const QPointF &center, qreal outerRadius) const
+{
+    painter->setPen(Qt::NoPen);
+    const qreal shadowStrength = (colorSchemeIndex == 0) ? 0.7 : 1.0;
+    for (int i = 5; i >= 1; --i)
+    {
+        const int alpha = qRound((40.0 / i) * shadowStrength);
+        painter->setBrush(QColor(0, 0, 0, alpha));
+        const qreal offset = i * 0.8;
+        painter->drawEllipse(center, outerRadius + offset, outerRadius + offset);
+    }
+}
+
 bool FluentUI3Style::eventFilter(QObject *watched, QEvent *event)
 {
-    if (auto tabBar = qobject_cast<QTabBar *>(watched))
+    if (auto dial = qobject_cast<QDial *>(watched))
+    {
+        if (event->type() == QEvent::HoverMove || event->type() == QEvent::MouseMove ||
+            event->type() == QEvent::HoverEnter || event->type() == QEvent::HoverLeave ||
+            event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease)
+        {
+            if (event->type() == QEvent::MouseButtonPress)
+            {
+                dial->setProperty("_q_dial_pressed", true);
+                dial->update();
+            }
+            else if (event->type() == QEvent::MouseButtonRelease)
+            {
+                dial->setProperty("_q_dial_pressed", false);
+                dial->update();
+            }
+
+            QRectF thumbRect = dial->property("_q_dial_thumb_rect").toRectF();
+            if (thumbRect.isValid())
+            {
+                QPoint pos;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                if (auto *me = dynamic_cast<QMouseEvent *>(event))
+                    pos = me->position().toPoint();
+                else if (auto *he = dynamic_cast<QHoverEvent *>(event))
+                    pos = he->position().toPoint();
+#else
+                if (auto *me = dynamic_cast<QMouseEvent *>(event))
+                    pos = me->pos();
+                else if (auto *he = dynamic_cast<QHoverEvent *>(event))
+                    pos = he->pos();
+#endif
+                bool isInsideThumb = thumbRect.contains(pos);
+                if (event->type() == QEvent::HoverLeave)
+                {
+                    isInsideThumb = false;
+                }
+                bool oldInside = dial->property("_q_dial_thumb_hovered").toBool();
+                if (isInsideThumb != oldInside)
+                {
+                    dial->setProperty("_q_dial_thumb_hovered", isInsideThumb);
+                    dial->update();
+                }
+            }
+        }
+    }
+    else if (auto tabBar = qobject_cast<QTabBar *>(watched))
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
@@ -8142,4 +8242,243 @@ bool FluentUI3Style::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return QProxyStyle::eventFilter(watched, event);
+}
+
+void FluentUI3Style::drawFluentDial(const QStyleOptionSlider *dial, QPainter *painter, const QWidget *widget, int style) const
+{
+    PainterStateGuard psg(painter);
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    int width = dial->rect.width();
+    int height = dial->rect.height();
+    qreal r = qMin(width, height) / 2.0;
+    qreal knobRadius = r * 0.6;
+
+    QPointF center = dial->rect.center();
+
+    if (style != DialThumb)
+    {
+        QBrush knobBrush = controlFillBrush(dial, ControlType::ControlAlt);
+        QPen knobPen(borderPenControlAlt(dial));
+        painter->setBrush(knobBrush);
+        painter->setPen(knobPen);
+        painter->drawEllipse(center, knobRadius, knobRadius);
+    }
+
+    const int currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
+    qreal currentAngle = 0;
+
+    qreal startAngle = 240.0;
+    qreal spanAngle = -300.0;
+
+    if (dial->dialWrapping)
+    {
+        startAngle = 270.0;
+        spanAngle = -360.0;
+    }
+
+    if (dial->maximum > dial->minimum)
+    {
+        currentAngle = startAngle + spanAngle * (currentSliderPosition - dial->minimum) / (dial->maximum - dial->minimum);
+    }
+    else
+    {
+        currentAngle = startAngle;
+    }
+
+    QColor indicatorColor = controlTextColor(dial);
+
+    // Check if we should draw the value text (default is true)
+    bool drawValue = true;
+    if (widget && widget->property(DialDrawValueProperty).isValid())
+    {
+        drawValue = widget->property(DialDrawValueProperty).toBool();
+    }
+
+    if (drawValue)
+    {
+        // Draw value text in the center
+        painter->setPen(indicatorColor);
+        QString valueText = QString::number(dial->sliderPosition);
+        painter->drawText(QRectF(center.x() - knobRadius, center.y() - knobRadius, knobRadius * 2, knobRadius * 2), Qt::AlignCenter, valueText);
+    }
+
+    if (style != DialThumb)
+    {
+        // Draw a small indicator line near the edge
+        painter->setPen(QPen(indicatorColor, 2.0, Qt::SolidLine, Qt::RoundCap));
+        qreal indicatorLen = knobRadius * 0.2;
+        qreal indicatorStart = knobRadius * 0.7;
+        qreal radAngle = currentAngle * M_PI / 180.0;
+        QPointF p1(center.x() + indicatorStart * qCos(radAngle), center.y() - indicatorStart * qSin(radAngle));
+        QPointF p2(center.x() + (indicatorStart + indicatorLen) * qCos(radAngle), center.y() - (indicatorStart + indicatorLen) * qSin(radAngle));
+        painter->drawLine(p1, p2);
+    }
+
+    qreal trackRadius = r * 0.85;
+
+    QColor activeColor = accentColor(dial);
+    if (!(dial->state & State_Enabled))
+    {
+        activeColor = winUI3Color(fillAccentDisabled);
+    }
+
+    QColor inactiveColor = borderPenControlAlt(dial).color();
+    inactiveColor.setAlpha(60);
+
+    if (style == DialDots)
+    {
+        int notches = 10;
+        qreal dotRadius = 3.0;
+        for (int i = 0; i <= notches; ++i)
+        {
+            qreal angle = startAngle + spanAngle * i / notches;
+
+            bool isActive = false;
+            if (dial->upsideDown)
+            {
+                isActive = spanAngle < 0 ? (angle >= currentAngle) : (angle <= currentAngle);
+            }
+            else
+            {
+                isActive = spanAngle < 0 ? (angle <= currentAngle) : (angle >= currentAngle);
+            }
+
+            qreal dotRadAngle = angle * M_PI / 180.0;
+            QPointF dotCenter(center.x() + trackRadius * qCos(dotRadAngle), center.y() - trackRadius * qSin(dotRadAngle));
+
+            if (isActive)
+            {
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(activeColor);
+                painter->drawEllipse(dotCenter, dotRadius + 0.5, dotRadius + 0.5);
+            }
+            else
+            {
+                painter->setPen(QPen(inactiveColor, 1.5, Qt::SolidLine, Qt::RoundCap));
+                painter->setBrush(Qt::NoBrush);
+                painter->drawEllipse(dotCenter, dotRadius, dotRadius);
+            }
+        }
+    }
+    else if (style == DialRing)
+    {
+        QPen inactivePen(inactiveColor, 4.0, Qt::SolidLine, Qt::RoundCap);
+        painter->setPen(inactivePen);
+        painter->setBrush(Qt::NoBrush);
+        QRectF trackRect(center.x() - trackRadius, center.y() - trackRadius, trackRadius * 2, trackRadius * 2);
+        painter->drawArc(trackRect, startAngle * 16, spanAngle * 16);
+
+        qreal baseStartAngle = dial->upsideDown ? startAngle : (startAngle + spanAngle);
+        qreal activeSpan = currentAngle - baseStartAngle;
+
+        QColor glowColor = activeColor;
+        glowColor.setAlpha(60);
+        QPen glowPen(glowColor, 8.0, Qt::SolidLine, Qt::RoundCap);
+        painter->setPen(glowPen);
+        painter->drawArc(trackRect, baseStartAngle * 16, activeSpan * 16);
+
+        QPen activePen(activeColor, 4.0, Qt::SolidLine, Qt::RoundCap);
+        painter->setPen(activePen);
+        painter->drawArc(trackRect, baseStartAngle * 16, activeSpan * 16);
+    }
+    else if (style == DialThumb)
+    {
+        // Draw the full track ring
+        QPen trackPen(activeColor, 3.0, Qt::SolidLine, Qt::RoundCap);
+        painter->setPen(trackPen);
+        painter->setBrush(Qt::NoBrush);
+        QRectF trackRect(center.x() - trackRadius, center.y() - trackRadius, trackRadius * 2, trackRadius * 2);
+        painter->drawArc(trackRect, startAngle * 16, spanAngle * 16);
+
+        // Draw the thumb inside the track ring - same style + animation as QSlider handle
+        qreal thumbTrackRadius = trackRadius * 0.62;
+        qreal radAngle = currentAngle * M_PI / 180.0;
+        QPointF thumbCenter(center.x() + thumbTrackRadius * qCos(radAngle), center.y() - thumbTrackRadius * qSin(radAngle));
+
+        const qreal outerRadius = qMax(10.0, r * 0.16);
+
+        if (widget)
+        {
+            const_cast<QWidget *>(widget)->setProperty("_q_dial_thumb_rect", QRectF(thumbCenter.x() - outerRadius, thumbCenter.y() - outerRadius, outerRadius * 2, outerRadius * 2));
+        }
+
+        bool isThumbHovered = widget ? widget->property("_q_dial_thumb_hovered").toBool() : false;
+        bool isThumbPressed = widget ? widget->property("_q_dial_pressed").toBool() : false;
+
+        isThumbHovered = dial->state & QStyle::State_MouseOver;
+
+        if (isThumbPressed)
+        {
+            isThumbHovered = true; // Lock hover state while dragging
+        }
+
+        State simulatedState = dial->state;
+        if (isThumbPressed)
+            simulatedState |= State_Sunken;
+        else
+            simulatedState &= ~State_Sunken;
+
+        // Animation: replicate QSlider handle inner-radius animation
+        float innerRadius = outerRadius * sliderInnerRadius(simulatedState, isThumbHovered);
+        if (transitionsEnabled() && dial->styleObject)
+        {
+            QObject *styleObject = dial->styleObject;
+            State oldState = State(styleObject->property("_q_stylestate").toInt());
+            QRectF oldRect = styleObject->property("_q_stylerect").toRect();
+            bool oldThumbHovered = styleObject->property("_q_thumb_hovered").toBool();
+
+            styleObject->setProperty("_q_stylestate", int(simulatedState));
+            styleObject->setProperty("_q_stylerect", dial->rect);
+            styleObject->setProperty("_q_thumb_hovered", isThumbHovered);
+
+            bool doTransition = (((simulatedState & State_Sunken) != (oldState & State_Sunken)) ||
+                                 (isThumbHovered != oldThumbHovered)) &&
+                                (simulatedState & State_Enabled);
+            if (oldRect != dial->rect)
+            {
+                doTransition = false;
+                stopAnimation(styleObject);
+                styleObject->setProperty("_q_inner_radius", outerRadius * 0.55);
+            }
+
+            if (doTransition)
+            {
+                QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
+                t->setStartValue(styleObject->property("_q_inner_radius").toFloat());
+                t->setEndValue(outerRadius * sliderInnerRadius(simulatedState, isThumbHovered));
+                styleObject->setProperty("_q_end_radius", t->endValue());
+                t->setDuration(180);
+                startAnimation(t);
+            }
+
+            const QNumberStyleAnimation *animation =
+                qobject_cast<QNumberStyleAnimation *>(getAnimation(styleObject));
+            if (animation)
+            {
+                innerRadius = animation->currentValue();
+                styleObject->setProperty("_q_inner_radius", innerRadius);
+            }
+            else
+            {
+                innerRadius = outerRadius * sliderInnerRadius(simulatedState, isThumbHovered);
+                styleObject->setProperty("_q_inner_radius", innerRadius);
+            }
+        }
+
+        drawSliderHandleShadow(painter, thumbCenter, outerRadius);
+
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(winUI3Color(controlFillSolid));
+        painter->drawEllipse(thumbCenter, outerRadius, outerRadius);
+
+        painter->setBrush(calculateAccentColor(dial));
+        painter->drawEllipse(thumbCenter, innerRadius, innerRadius);
+
+        painter->setPen(winUI3Color(controlStrokeSecondary));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawEllipse(thumbCenter, outerRadius + 0.5, outerRadius + 0.5);
+    }
+
+    painter->restore();
 }

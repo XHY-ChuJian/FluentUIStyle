@@ -95,6 +95,7 @@
 #include "aboutprojectwidget.h"
 #include "tabshowcasewidget.h"
 #include "dialogshowcasewidget.h"
+#include "colorshowcasewidget.h"
 #include "../FluentUI3Style/fluentui3styleproperties.h"
 
 #ifndef FLUENT_USE_QT_STYLE
@@ -591,6 +592,8 @@ void MainWindow::initializeComponents()
     m_bgLight = QPixmap(":/images/bg3.png");
     m_bgDark = QPixmap(":/images/bg2.png");
 
+    ui->dial_3->setProperty("dialDrawValue", false);
+
     // Configure scroll areas
     ui->scrollArea_2->viewport()->setAutoFillBackground(false);
     ui->scrollAreaWidgetContents->setAutoFillBackground(false);
@@ -604,6 +607,7 @@ void MainWindow::initializeComponents()
     setupSegoeIconGalleryPage();
     setupAboutPage();
     setupDialogsPage();
+    setupColorPickerPage();
 
     // Configure stacked widget
     ui->stackedWidget->setVerticalMode(true);
@@ -1136,6 +1140,7 @@ void MainWindow::initializeNavigationView()
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(QStringLiteral("Mdi"), 5, QStringLiteral("\uE9D9")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("图标库"), 7, QStringLiteral("\uE8FD")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("对话框"), 9, QStringLiteral("\uE8F2")));
+    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("颜色选择器"), 10, QStringLiteral("\uE790")));
     addTestNavigationTree();
 
     m_navAboutItem = m_winUINavigationView->addFooterNavigationItem(tr("关于"), 8, QStringLiteral("\uE77B"));
@@ -1378,6 +1383,17 @@ void MainWindow::setupDialogsPage()
     }
     auto *page = new DialogShowcaseWidget(ui->stackedWidget);
     page->setObjectName(QStringLiteral("pageDialogs"));
+    ui->stackedWidget->addWidget(page);
+}
+
+void MainWindow::setupColorPickerPage()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+    auto *page = new ColorShowcaseWidget(ui->stackedWidget);
+    page->setObjectName(QStringLiteral("pageColorPicker"));
     ui->stackedWidget->addWidget(page);
 }
 
