@@ -1,7 +1,7 @@
 #include "tabshowcasewidget.h"
 
 #include "font-icon/fonticon.h"
-#include "../FluentUI3Style/fluentui3styleproperties.h"
+#include "fluentui3styleproperties.h"
 
 #include <extabwidget.h>
 

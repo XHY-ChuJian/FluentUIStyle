@@ -5,12 +5,16 @@
 #include "palettemanager.h"
 #include "qdebug.h"
 #include "qsettings.h"
-#include <dwmapi.h>
 
 #include <QStyleHints>
 #include <QPalette>
 
+#ifdef Q_OS_WIN
+#include <dwmapi.h>
+#ifdef _MSC_VER
 #pragma comment(lib, "dwmapi.lib")
+#endif
+#endif
 
 class FluentUIAppearancePrivate
 {
@@ -78,16 +82,12 @@ void FluentUIAppearancePrivate::applyTheme()
 void FluentUIAppearancePrivate::updateTitleBar()
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
-#ifdef _MSC_VER
+#ifdef Q_OS_WIN
     if (mainWindow == nullptr)
         return;
 
     HWND hwnd = reinterpret_cast<HWND>(mainWindow->winId());
-    BOOL darkMode = FALSE;
-    if (theme == Theme::Dark)
-    {
-        darkMode = TRUE;
-    }
+    BOOL darkMode = theme == Theme::Dark;
     DwmSetWindowAttribute(hwnd, 20, &darkMode, sizeof(darkMode));
 #endif
 #endif
@@ -95,7 +95,7 @@ void FluentUIAppearancePrivate::updateTitleBar()
 
 bool FluentUIAppearancePrivate::isSystemDark()
 {
-#ifdef Q_OS_WINDOWS
+#ifdef Q_OS_WIN
     QSettings settings(
         "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
         QSettings::NativeFormat);

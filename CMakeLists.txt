@@ -24,8 +24,12 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Svg)
 
 option(BUILD_LIBRARY "Build as library" ON)
-option(BUILD_PLUGIN "Build as plugin" ON)
+option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLE "Build example application" ON)
+
+if(NOT WIN32)
+    set(BUILD_PLUGIN OFF)
+endif()
 
 # Local runs: keep all configs in the same output dir (Windows/MSVC convenience).
 # Note: Debug/Release will overwrite each other if built to the same tree.
@@ -45,11 +49,11 @@ endforeach()
 add_subdirectory(ExWidgets)
 
 if(BUILD_LIBRARY)
-    add_subdirectory(FluentUI3Style)
+    add_subdirectory(fluentui3style)
 endif()
 
 if(BUILD_PLUGIN)
-    add_subdirectory(FluentUI3Style/plugin)
+    add_subdirectory(fluentui3style/plugin)
 endif()
 
 if(BUILD_EXAMPLE)
@@ -94,7 +98,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FluentUI3Colors/"
 )
 
 if(BUILD_LIBRARY)
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/FluentUI3Style/"
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fluentui3style/"
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Style
         FILES_MATCHING PATTERN "*.h"
     )

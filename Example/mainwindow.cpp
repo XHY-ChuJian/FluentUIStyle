@@ -5,7 +5,9 @@
 
 #include "mainwindow.h"
 
+#ifdef EXAMPLE_ENABLE_I18N
 #include "applanguage.h"
+#endif
 #include "ui_mainwindow.h"
 
 #include <algorithm>
@@ -96,7 +98,7 @@
 #include "tabshowcasewidget.h"
 #include "dialogshowcasewidget.h"
 #include "colorshowcasewidget.h"
-#include "../FluentUI3Style/fluentui3styleproperties.h"
+#include "fluentui3styleproperties.h"
 
 #ifndef FLUENT_USE_QT_STYLE
 #include <fluentui3style.h>
@@ -115,6 +117,15 @@
 
 void applyStandardMenuIcons(QMenu *menu, QWidget *widget);
 static inline void emulateLeaveEvent(QWidget *widget);
+
+static void refreshFluentStyle()
+{
+#ifdef FLUENT_USE_QT_STYLE
+    qApp->setStyle(QStringLiteral("FluentUI3"));
+#else
+    fluentUIAppearance.setTheme(fluentUIAppearance.theme());
+#endif
+}
 
 //=============================================================================
 // Global Variables
@@ -523,7 +534,12 @@ MainWindow::MainWindow(QWidget *parent)
     // Update icons
     updateActionIcons();
 
+#ifdef EXAMPLE_ENABLE_I18N
     syncLanguageRadios();
+#else
+    ui->labelUiLanguage->hide();
+    ui->widgetUiLanguage->hide();
+#endif
 
 #ifdef __MINGW32__
     // Hook context menus for MinGW
@@ -1102,7 +1118,7 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
             {
                 m_widgetBgMode = static_cast<WidgetBgMode>(index);
                 qApp->setProperty("_q_widget_mode", index);
-                qApp->setStyle("FluentUI3");
+                refreshFluentStyle();
 
                 if (index == 0)
                 {
@@ -1822,6 +1838,7 @@ void MainWindow::on_rBIconAndText_clicked(bool checked)
         m_winUINavigationView->setNavigationExpanded(true);
 }
 
+#ifdef EXAMPLE_ENABLE_I18N
 void MainWindow::on_rBLangZh_CN_clicked(bool checked)
 {
     if (!checked)
@@ -1892,6 +1909,33 @@ void MainWindow::syncLanguageRadios()
     ui->rBLangEn_US->blockSignals(false);
     ui->rBLangSystem->blockSignals(false);
 }
+
+#else
+
+void MainWindow::on_rBLangZh_CN_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+}
+
+void MainWindow::on_rBLangEn_US_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+}
+
+void MainWindow::on_rBLangSystem_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+}
+
+void MainWindow::promptRestartAfterLanguageChange()
+{
+}
+
+void MainWindow::syncLanguageRadios()
+{
+}
+
+#endif
 
 void MainWindow::setupAccentColorWidget()
 {
@@ -1981,7 +2025,7 @@ void MainWindow::setupAccentColorWidget()
                 {
                     qApp->setProperty("_q_accent_color", QVariant());
                 }
-                qApp->setStyle("FluentUI3"); // Trigger repaint
+                refreshFluentStyle();
             });
 
     QAbstractButton *defaultBtn = btnGroup->button(0);

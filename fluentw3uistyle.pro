@@ -8,16 +8,21 @@ CONFIG += build_example
 SUBDIRS += ExWidgets
 
 build_library {
-    SUBDIRS += FluentUI3Style
+    fluentui3style.subdir = fluentui3style
+    fluentui3style.file = FluentUI3Style.pro
+    SUBDIRS += fluentui3style
 }
 
 build_plugin {
-    SUBDIRS += FluentUI3StylePlugin
-    FluentUI3StylePlugin.subdir = FluentUI3Style/plugin
-    FluentUI3StylePlugin.depends = FluentUI3Style
+    win32 {
+        fluentui3styleplugin.subdir = fluentui3style/plugin
+        fluentui3styleplugin.file = plugin.pro
+        SUBDIRS += fluentui3styleplugin
+        fluentui3styleplugin.depends = fluentui3style
+    }
 }
 
 build_example {
     SUBDIRS += Example
-    Example.depends = ExWidgets FluentUI3Style
+    Example.depends = ExWidgets fluentui3style
 }

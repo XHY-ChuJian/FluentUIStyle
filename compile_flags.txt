@@ -8,7 +8,7 @@
 -DNOMINMAX
 -ID:/workspace/Code/Github/Window11Style
 -ID:/workspace/Code/Github/Window11Style/ExWidgets
--ID:/workspace/Code/Github/Window11Style/FluentUI3Style
+-ID:/workspace/Code/Github/Window11Style/fluentui3style
 -ID:/workspace/Code/Github/Window11Style/Example
 -ID:/workspace/Code/Github/Window11Style/build/Example/Example_autogen/include
 -ID:/workspace/Code/Github/Window11Style/build/Example

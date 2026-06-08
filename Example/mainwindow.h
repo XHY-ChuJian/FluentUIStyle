@@ -4,8 +4,6 @@
 #include <QTabBar>
 #include <QVector>
 
-#include <Windows.h>
-
 #include "qboxlayout.h"
 #include "qsvgrenderer.h"
 #include "qtreewidget.h"

@@ -7,14 +7,16 @@ TARGET = Example
 INCLUDEPATH += $$PWD/../ExWidgets
 LIBS += -L$$DESTDIR_LIB -lExWidgets
 
-INCLUDEPATH += $$PWD/../FluentUI3Style
-# LIBS += -L$$DESTDIR_LIB -lFluentUI3Style
-# include($$PWD/../FluentUI3Style/FluentUI3Style.pri)
+INCLUDEPATH += $$PWD/../fluentui3style
 
-DEFINES += FLUENT_USE_QT_STYLE
+win32 {
+    DEFINES += FLUENT_USE_QT_STYLE EXAMPLE_ENABLE_I18N
+} else {
+    LIBS += -L$$DESTDIR_LIB -lFluentUI3Style
+    QMAKE_RPATHDIR += \$$ORIGIN/../lib
+}
 
 SOURCES += main.cpp \
-           applanguage.cpp \
            mainwindow.cpp \
            tabshowcasewidget.cpp \
            dialogshowcasewidget.cpp \
@@ -23,7 +25,6 @@ SOURCES += main.cpp \
            segoeicongallerywidget.cpp \
            colorshowcasewidget.cpp
 HEADERS += mainwindow.h \
-           applanguage.h \
            tabshowcasewidget.h \
            dialogshowcasewidget.h \
            font-icon/fonticon.h \
@@ -32,29 +33,28 @@ HEADERS += mainwindow.h \
            colorshowcasewidget.h
 FORMS   += mainwindow.ui
 
-# Translations: edit tools/fill_en_ts.py then:
-#   lupdate Example.pro && python tools/fill_en_ts.py && lrelease translations/Example_en_US.ts -qm translations/Example_en_US.qm
-# Optional targets (Qt Creator / qmake): `example-update-translations` if you add a custom run step, or run lupdate manually.
-TRANSLATIONS += translations/Example_en_US.ts
-
 win32 {
+    SOURCES += applanguage.cpp
+    HEADERS += applanguage.h
+
+    # Translations: edit tools/fill_en_ts.py then:
+    #   lupdate Example.pro && python tools/fill_en_ts.py && lrelease translations/Example_en_US.ts -qm translations/Example_en_US.qm
+    TRANSLATIONS += translations/Example_en_US.ts
+
     LRELEASE = $$clean_path($$[QT_INSTALL_BINS]/lrelease.exe)
-} else {
-    LRELEASE = $$clean_path($$[QT_INSTALL_BINS]/lrelease)
+
+    example_qm.target = $$shell_path($$PWD/translations/Example_en_US.qm)
+    example_qm.commands = $$quote($$LRELEASE) $$quote($$PWD/translations/Example_en_US.ts) -qm $$quote($$PWD/translations/Example_en_US.qm)
+    example_qm.depends = $$PWD/translations/Example_en_US.ts
+    QMAKE_EXTRA_TARGETS += example_qm
+    PRE_TARGETDEPS += $$example_qm.target
 }
 
-# Build .qm before link. PRE_TARGETDEPS must list the *output file* (or a real path), not the extra-target name;
-# otherwise MSVC nmake reports: dependent 'example_qm' does not exist.
-example_qm.target = $$shell_path($$PWD/translations/Example_en_US.qm)
-example_qm.commands = $$quote($$LRELEASE) $$quote($$PWD/translations/Example_en_US.ts) -qm $$quote($$PWD/translations/Example_en_US.qm)
-example_qm.depends = $$PWD/translations/Example_en_US.ts
-QMAKE_EXTRA_TARGETS += example_qm
-PRE_TARGETDEPS += $$example_qm.target
-
 RESOURCES += resources.qrc \
-             font-icon/resource.qrc \
-             translations/i18n_embed.qrc
-RC_ICONS = appicon.ico
+             font-icon/resource.qrc
+win32 {
+    RESOURCES += translations/i18n_embed.qrc
+    RC_ICONS = appicon.ico
+}
 
 DESTDIR = $$DESTDIR_BIN
-

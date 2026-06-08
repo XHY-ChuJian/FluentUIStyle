@@ -11,6 +11,10 @@ use_qt_style {
 
 include(fluentui3style.pri)
 
+win32 {
+    LIBS += -ldwmapi
+}
+
 DESTDIR = $$DESTDIR_LIB
 DLLDESTDIR = $$DESTDIR_BIN
 
