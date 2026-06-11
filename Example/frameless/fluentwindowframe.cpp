@@ -6,6 +6,7 @@
 #include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QLineEdit>
 
 #include <QWKWidgets/widgetwindowagent.h>
 
@@ -115,6 +116,7 @@ void FluentWindowFrame::attachChromeHeader()
 #ifndef Q_OS_MAC
     m_windowAgent->setHitTestVisible( m_titleBar->themeButton(), true );
     m_windowAgent->setHitTestVisible( m_titleBar->pinButton(), true );
+    m_windowAgent->setHitTestVisible( m_titleBar->searchLineEdit(), true );
     m_windowAgent->setSystemButton( QWK::WindowAgentBase::Minimize, m_titleBar->minButton() );
     m_windowAgent->setSystemButton( QWK::WindowAgentBase::Maximize, m_titleBar->maxButton() );
     m_windowAgent->setSystemButton( QWK::WindowAgentBase::Close, m_titleBar->closeButton() );

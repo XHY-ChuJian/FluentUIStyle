@@ -2,6 +2,8 @@
 
 #include <QWidget>
 
+class QAction;
+class QLineEdit;
 class QMainWindow;
 class QLabel;
 class QToolButton;
@@ -18,6 +20,7 @@ public:
     QToolButton *minButton() const;
     QToolButton *maxButton() const;
     QToolButton *closeButton() const;
+    QLineEdit *searchLineEdit() const;
 
     void setThemeDark(bool dark);
     void setPinned(bool pinned);
@@ -42,4 +45,6 @@ private:
     bool m_pinned{false};
     QToolButton *m_maxButton{nullptr};
     QToolButton *m_closeButton{nullptr};
+    QLineEdit *m_searchLineEdit{nullptr};
+    QAction *m_searchAction{nullptr};
 };

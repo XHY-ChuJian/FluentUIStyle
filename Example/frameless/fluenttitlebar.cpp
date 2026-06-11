@@ -1,5 +1,8 @@
 #include "fluenttitlebar.h"
 
+#include "qlineedit.h"
+
+#include <QAction>
 #include <QApplication>
 #include <QEvent>
 #include <QFont>
@@ -7,6 +10,8 @@
 #include <QIcon>
 #include <QLabel>
 #include <QMainWindow>
+#include <QPainter>
+#include <QPixmap>
 #include <QToolButton>
 
 namespace {
@@ -18,6 +23,7 @@ constexpr QChar kChromeClose(0xE8BB);
 constexpr QChar kChromeTheme(0xE706);
 constexpr QChar kChromePin(0xE718);
 constexpr QChar kChromePinned(0xE840);
+constexpr QChar kChromeSearch(0xE721);
 
 QFont captionIconFont(int pixelSize = 11)
 {
@@ -35,8 +41,26 @@ QToolButton *createCaptionButton(QWidget *parent, const QString &objectName, con
     button->setToolButtonStyle(Qt::ToolButtonTextOnly);
     button->setFont(captionIconFont(pixelSize));
     button->setText(QString(glyph));
-    button->setFixedSize(width, 32);
+    button->setFixedSize(width, 40);
     return button;
+}
+
+QIcon searchIcon(bool darkTheme)
+{
+    constexpr int iconSize = 32;
+    QFont iconFont(QStringLiteral("Segoe Fluent Icons"));
+    iconFont.setPixelSize(iconSize);
+
+    QPixmap pixmap(iconSize, iconSize);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+    painter.setFont(iconFont);
+    painter.setPen(darkTheme ? Qt::white : Qt::black);
+    painter.drawText(pixmap.rect(), Qt::AlignCenter, QString(kChromeSearch));
+
+    return QIcon(pixmap);
 }
 
 } // namespace
@@ -46,7 +70,7 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
     , m_window(window)
 {
     setObjectName(QStringLiteral("fluent-title-bar"));
-    setFixedHeight(32);
+    setFixedHeight(40);
     setAttribute(Qt::WA_StyledBackground, true);
 
     m_iconLabel = new QLabel(this);
@@ -65,12 +89,22 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
     m_maxButton->setCheckable(true);
     m_closeButton = createCaptionButton(this, QStringLiteral("win_caption_close"), kChromeClose);
 
+    m_searchLineEdit = new QLineEdit(this);
+    m_searchLineEdit->setMinimumWidth(300);
+    m_searchLineEdit->setPlaceholderText(tr("搜索..."));
+    m_searchLineEdit->setClearButtonEnabled(true);
+    m_searchAction = m_searchLineEdit->addAction(searchIcon(m_themeDark), QLineEdit::TrailingPosition);
+
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(12, 0, 0, 0);
     layout->setSpacing(8);
     layout->addWidget(m_iconLabel);
     layout->addWidget(m_titleLabel);
     layout->addStretch();
+
+    layout->addWidget(m_searchLineEdit, 0, Qt::AlignCenter);
+    layout->addStretch();
+
     layout->addWidget(m_themeButton);
     layout->addWidget(m_pinButton);
     layout->addWidget(m_minButton);
@@ -89,6 +123,9 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
         }
     });
     connect(m_closeButton, &QToolButton::clicked, m_window, &QWidget::close);
+    connect(m_pinButton, &QToolButton::toggled, this, [this]() {
+        updatePinButton();
+    });
 
     updateTitle();
     updateIcon();
@@ -123,6 +160,11 @@ QToolButton *FluentTitleBar::closeButton() const
     return m_closeButton;
 }
 
+QLineEdit *FluentTitleBar::searchLineEdit() const
+{
+    return m_searchLineEdit;
+}
+
 void FluentTitleBar::setThemeDark(bool dark)
 {
     if (m_themeDark == dark)
@@ -132,17 +174,23 @@ void FluentTitleBar::setThemeDark(bool dark)
 
     m_themeDark = dark;
     updateThemeButton();
+    if (m_searchAction)
+    {
+        m_searchAction->setIcon(searchIcon(m_themeDark));
+    }
 }
 
 void FluentTitleBar::setPinned(bool pinned)
 {
-    if (m_pinned == pinned)
-    {
-        return;
-    }
-
     m_pinned = pinned;
-    updatePinButton();
+    if (m_pinButton->isChecked() != pinned)
+    {
+        m_pinButton->setChecked(pinned);
+    }
+    else
+    {
+        updatePinButton();
+    }
 }
 
 bool FluentTitleBar::eventFilter(QObject *watched, QEvent *event)
@@ -210,9 +258,9 @@ void FluentTitleBar::updateThemeButton()
 
 void FluentTitleBar::updatePinButton()
 {
-    m_pinButton->blockSignals(true);
-    m_pinButton->setChecked(m_pinned);
-    m_pinButton->setText(m_pinned ? QString(kChromePinned) : QString(kChromePin));
-    m_pinButton->blockSignals(false);
-    m_pinButton->setToolTip(m_pinned ? QObject::tr("取消置顶") : QObject::tr("置顶窗口"));
+    const bool pinned = m_pinButton->isChecked();
+    m_pinned = pinned;
+    m_pinButton->setText(pinned ? QString(kChromePinned) : QString(kChromePin));
+    m_pinButton->setToolTip(pinned ? QObject::tr("取消置顶") : QObject::tr("置顶窗口"));
+    m_pinButton->update();
 }
