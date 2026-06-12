@@ -117,6 +117,23 @@ static void refreshFluentStyle()
 #endif
 }
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+void setTopMost(QWidget* w, bool topMost)
+{
+#ifdef Q_OS_WIN
+    SetWindowPos(
+        (HWND)w->winId(),
+        topMost ? HWND_TOPMOST : HWND_NOTOPMOST,
+        0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+#else
+    w->setWindowFlag(Qt::WindowStaysOnTopHint, topMost);
+    w->show();
+#endif
+}
+
 namespace {
 
 QString buildConfigurationName()
@@ -812,9 +829,9 @@ void MainWindow::setupTitleBarChrome()
     });
 
     connect(titleBar->pinButton(), &QToolButton::toggled, this, [this, titleBar](bool checked) {
-        setWindowFlag(Qt::WindowStaysOnTopHint, checked);
+        // setWindowFlag(Qt::WindowStaysOnTopHint, checked);
+        setTopMost(this, checked);
         titleBar->setPinned(checked);
-        show();
     });
 }
 

@@ -22,7 +22,7 @@ constexpr QChar kChromeRestore(0xE923);
 constexpr QChar kChromeClose(0xE8BB);
 constexpr QChar kChromeTheme(0xE706);
 constexpr QChar kChromePin(0xE718);
-constexpr QChar kChromePinned(0xE840);
+constexpr QChar kChromePinned(0xE77A);
 constexpr QChar kChromeSearch(0xE721);
 
 QFont captionIconFont(int pixelSize = 11)

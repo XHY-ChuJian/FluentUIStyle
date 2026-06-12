@@ -103,6 +103,7 @@ private:
     void drawLineEditFrame(QPainter *painter, const QRectF &rect, const QStyleOption *option, bool isEditable = true, int roundingRadius = 4) const;
 
     void drawFluentShadow(QPainter *painter, QRect rect, int shadowWidth, int radius) const;
+    void drawToolTipShadow(QPainter *painter, const QRect &panelRect, int radius) const;
     void drawEffectShadow(QPainter *painter, QRect widgetRect, int shadowBorderWidth, int borderRadius) const;
     void drawSliderHandleShadow(QPainter *painter, const QPointF &center, qreal outerRadius) const;
 

@@ -72,6 +72,19 @@ static constexpr int contentHMargin = 2 * 3;            // margin between rounde
                                                         // margin * 3)
 static constexpr int pivotIndicatorPreferredWidth = 24; // Pivot_Grow / Slide / Stretch: fixed bar length, centered
 
+static constexpr int menuItemVMargin = 3; // vertical margin for menu items
+static constexpr int menuItemHMargin = 3; // horizontal margin for menu items
+
+static constexpr int cBShadowBorderWidth = 2;
+static constexpr int cBRoundingRadius = 4;
+
+static constexpr int ProgressBarThickness = 4;
+static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
+static constexpr int NavigationIconRole = Qt::UserRole + 1;
+
+static constexpr int toolTipShadowBorderWidth = 2;
+static constexpr int toolTipContentPadding = 4;
+
 static QColor segmentedColorFromVariant(const QVariant &v, const QColor &fallback)
 {
     if (!v.isValid())
@@ -132,15 +145,6 @@ static QColor opaqueBlendBase(const QPalette &palette, bool darkTheme)
     return base;
 }
 
-static constexpr int menuItemVMargin = 3; // vertical margin for menu items
-static constexpr int menuItemHMargin = 3; // horizontal margin for menu items
-
-static constexpr int cBShadowBorderWidth = 2;
-static constexpr int cBRoundingRadius = 4;
-
-static constexpr int ProgressBarThickness = 4;
-static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
-static constexpr int NavigationIconRole = Qt::UserRole + 1;
 QStyleAnimation *getAnimationEx(QObject *target, const QByteArray &key);
 void startAnimationEx(QStyleAnimation *animation, QObject *target, const QByteArray &key);
 
@@ -2468,12 +2472,23 @@ void FluentUI3Style::drawPrimitive(PrimitiveElement element, const QStyleOption 
     }
     case PE_PanelTipLabel:
     {
-        // QProxyStyle::drawPrimitive( element, option, painter, widget );
-        // return;
-        const auto rect = QRectF(option->rect).marginsRemoved(QMarginsF(0.5, 0.5, 0.5, 0.5));
-        const auto pen = highContrastTheme ? option->palette.buttonText().color() : winUI3Color(frameColorLight);
-        // drawRoundedRect( painter, rect, pen, option->palette.toolTipBase() );
-        painter->drawRect(option->rect);
+        const int shadowReserve = toolTipShadowBorderWidth;
+        QRect panelRect = option->rect;
+        panelRect.adjust(shadowReserve, shadowReserve, -shadowReserve, -shadowReserve);
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        drawFluentShadow(painter, option->rect, toolTipShadowBorderWidth, secondLevelRoundingRadius);
+
+        const QRectF fillRect = panelRect;
+        const QColor fillColor = highContrastTheme ? option->palette.toolTipBase().color()
+                                                   : winUI3Color(menuPanelFill);
+        painter->setPen(highContrastTheme ? QPen(option->palette.windowText().color(), 2) : winUI3Color(frameColorLight));
+        painter->setBrush(fillColor);
+        painter->drawRoundedRect(fillRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+
+        painter->restore();
         break;
     }
     case PE_FrameTabWidget:
@@ -7289,6 +7304,9 @@ int FluentUI3Style::pixelMetric(PixelMetric metric, const QStyleOption *option, 
     case PM_TabBarTabShiftVertical:
         res = 0;
         break;
+    case PM_ToolTipLabelFrameWidth:
+        res = toolTipShadowBorderWidth + toolTipContentPadding;
+        break;
     default:
         res = QProxyStyle::pixelMetric(metric, option, widget);
     }
@@ -7389,21 +7407,33 @@ void FluentUI3Style::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_RightToLeft, layoutDirection);
         widget->setAttribute(Qt::WA_WState_Created, wasCreated);
     }
-    // else if ( isToolTip )
-    // {
-    //     // FluentUI ToolTip styling
-    //     bool wasCreated      = widget->testAttribute( Qt::WA_WState_Created );
-    //     bool layoutDirection = widget->testAttribute( Qt::WA_RightToLeft );
+    else if (widget && widget->windowType() == Qt::ToolTip)
+    {
+        bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
+        bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
 
-    //     widget->setAttribute( Qt::WA_OpaquePaintEvent, false );
-    //     widget->setAttribute( Qt::WA_TranslucentBackground );
-    //     widget->setWindowFlag( Qt::FramelessWindowHint );
-    //     widget->setWindowFlag( Qt::ToolTip );
-    //     widget->setWindowFlag( Qt::NoDropShadowWindowHint );
+        widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
+        widget->setAttribute(Qt::WA_TranslucentBackground);
+        widget->setWindowFlag(Qt::FramelessWindowHint);
+        widget->setWindowFlag(Qt::ToolTip);
+        widget->setWindowFlag(Qt::NoDropShadowWindowHint);
 
-    //     widget->setAttribute( Qt::WA_RightToLeft, layoutDirection );
-    //     widget->setAttribute( Qt::WA_WState_Created, wasCreated );
-    // }
+        colorSchemeIndex = getColorSchemeIndex();
+        QFont toolTipFont = qApp->font();
+        toolTipFont.setHintingPreference(QFont::PreferNoHinting);
+        widget->setFont(toolTipFont);
+
+        if (!highContrastTheme)
+        {
+            QPalette pal = widget->palette();
+            pal.setColor(QPalette::ToolTipBase, winUI3Color(controlFillSolid));
+            pal.setColor(QPalette::ToolTipText, winUI3Color(textPrimary));
+            widget->setPalette(pal);
+        }
+
+        widget->setAttribute(Qt::WA_RightToLeft, layoutDirection);
+        widget->setAttribute(Qt::WA_WState_Created, wasCreated);
+    }
     else if (QComboBox *cb = qobject_cast<QComboBox *>(widget))
     {
         if (cb->isEditable())
@@ -8077,6 +8107,26 @@ QIcon FluentUI3Style::fluentIcon(const QChar &ch, const QColor &color) const
     p.drawText(pix.rect(), Qt::AlignCenter, ch);
 
     return QIcon(pix);
+}
+
+void FluentUI3Style::drawToolTipShadow(QPainter *painter, const QRect &panelRect, int radius) const
+{
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(Qt::NoPen);
+
+    const int shadowWidth = toolTipShadowBorderWidth;
+    const int peakAlpha = colorSchemeIndex == 1 ? 56 : 40;
+    for (int spread = shadowWidth; spread >= 1; --spread)
+    {
+        QRectF shadowRect = QRectF(panelRect).adjusted(-spread, -spread, spread, spread);
+
+        QColor color(0, 0, 0, peakAlpha * spread / shadowWidth);
+        painter->setBrush(color);
+        painter->drawRoundedRect(shadowRect, radius + spread * 0.5, radius + spread * 0.5);
+    }
+
+    painter->restore();
 }
 
 void FluentUI3Style::drawFluentShadow(QPainter *painter, QRect rect, int shadowWidth, int radius) const

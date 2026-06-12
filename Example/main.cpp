@@ -55,14 +55,14 @@ int main(int argc, char *argv[])
     AppLanguage::applyTranslator(AppLanguage::effectiveUiLanguage());
 #endif
 
-    MainWindow w;
-    w.show();
-
     QFont font = a.font();
     font.setPixelSize(13);
     font.setFamily("微软雅黑");
     font.setHintingPreference(QFont::PreferNoHinting);
     a.setFont(font);
+
+    MainWindow w;
+    w.show();
 
 #ifndef FLUENT_USE_QT_STYLE
     fluentUIAppearance.setMainWindow(&w); //动态切换标题栏颜色建议重启软件

@@ -40,4 +40,5 @@ private:
     FluentTitleBar* m_titleBar { nullptr };
     QWidget* m_chromeHeader { nullptr };
     QMenuBar* m_menuBar { nullptr };
+    bool m_backdropEnabled { false };
 };

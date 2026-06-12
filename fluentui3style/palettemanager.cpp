@@ -105,8 +105,8 @@ void FluentColorScheme::applyLight(QPalette &p) const
     p.setColor(QPalette::Active, QPalette::Link, QColor(0, 66, 117, 255));
     p.setColor(QPalette::Active, QPalette::LinkVisited, QColor(0, 38, 66, 255));
     p.setColor(QPalette::Active, QPalette::AlternateBase, QColor(245, 245, 245, 255));
-    p.setColor(QPalette::Active, QPalette::ToolTipBase, QColor(243, 243, 243, 255));
-    p.setColor(QPalette::Active, QPalette::ToolTipText, QColor(0, 0, 0, 255));
+    p.setColor(QPalette::Active, QPalette::ToolTipBase, QColor(255, 255, 255, 255));
+    p.setColor(QPalette::Active, QPalette::ToolTipText, QColor(0, 0, 0, 230));
     p.setColor(QPalette::Active, QPalette::PlaceholderText, QColor(0, 0, 0, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -132,8 +132,8 @@ void FluentColorScheme::applyLight(QPalette &p) const
     p.setColor(QPalette::Disabled, QPalette::Link, QColor(0, 66, 117, 128));
     p.setColor(QPalette::Disabled, QPalette::LinkVisited, QColor(0, 38, 66, 128));
     p.setColor(QPalette::Disabled, QPalette::AlternateBase, QColor(245, 245, 245, 255));
-    p.setColor(QPalette::Disabled, QPalette::ToolTipBase, QColor(243, 243, 243, 255));
-    p.setColor(QPalette::Disabled, QPalette::ToolTipText, QColor(0, 0, 0, 255));
+    p.setColor(QPalette::Disabled, QPalette::ToolTipBase, QColor(255, 255, 255, 255));
+    p.setColor(QPalette::Disabled, QPalette::ToolTipText, QColor(0, 0, 0, 230));
     p.setColor(QPalette::Disabled, QPalette::PlaceholderText, QColor(0, 0, 0, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -158,8 +158,8 @@ void FluentColorScheme::applyLight(QPalette &p) const
     p.setColor(QPalette::Inactive, QPalette::Link, QColor(0, 66, 117, 255));
     p.setColor(QPalette::Inactive, QPalette::LinkVisited, QColor(0, 38, 66, 255));
     p.setColor(QPalette::Inactive, QPalette::AlternateBase, QColor(245, 245, 245, 255));
-    p.setColor(QPalette::Inactive, QPalette::ToolTipBase, QColor(243, 243, 243, 255));
-    p.setColor(QPalette::Inactive, QPalette::ToolTipText, QColor(0, 0, 0, 255));
+    p.setColor(QPalette::Inactive, QPalette::ToolTipBase, QColor(255, 255, 255, 255));
+    p.setColor(QPalette::Inactive, QPalette::ToolTipText, QColor(0, 0, 0, 230));
     p.setColor(QPalette::Inactive, QPalette::PlaceholderText, QColor(0, 0, 0, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -194,8 +194,8 @@ void FluentColorScheme::applyDark(QPalette &p) const
     p.setColor(QPalette::Active, QPalette::Link, QColor(105, 189, 255, 255));
     p.setColor(QPalette::Active, QPalette::LinkVisited, QColor(54, 166, 255, 255));
     p.setColor(QPalette::Active, QPalette::AlternateBase, QColor(255, 255, 255, 15));
-    p.setColor(QPalette::Active, QPalette::ToolTipBase, QColor(50, 50, 50, 255));
-    p.setColor(QPalette::Active, QPalette::ToolTipText, QColor(212, 212, 212, 255));
+    p.setColor(QPalette::Active, QPalette::ToolTipBase, QColor(45, 45, 45, 255));
+    p.setColor(QPalette::Active, QPalette::ToolTipText, QColor(255, 255, 255, 230));
     p.setColor(QPalette::Active, QPalette::PlaceholderText, QColor(255, 255, 255, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -222,8 +222,8 @@ void FluentColorScheme::applyDark(QPalette &p) const
     p.setColor(QPalette::Disabled, QPalette::Link, QColor(105, 189, 255, 128));
     p.setColor(QPalette::Disabled, QPalette::LinkVisited, QColor(54, 166, 255, 128));
     p.setColor(QPalette::Disabled, QPalette::AlternateBase, QColor(52, 52, 52, 255));
-    p.setColor(QPalette::Disabled, QPalette::ToolTipBase, QColor(50, 50, 50, 255));
-    p.setColor(QPalette::Disabled, QPalette::ToolTipText, QColor(157, 157, 157, 255));
+    p.setColor(QPalette::Disabled, QPalette::ToolTipBase, QColor(44, 44, 44, 255));
+    p.setColor(QPalette::Disabled, QPalette::ToolTipText, QColor(255, 255, 255, 128));
     p.setColor(QPalette::Disabled, QPalette::PlaceholderText, QColor(255, 255, 255, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -248,8 +248,8 @@ void FluentColorScheme::applyDark(QPalette &p) const
     p.setColor(QPalette::Inactive, QPalette::Link, QColor(105, 189, 255, 255));
     p.setColor(QPalette::Inactive, QPalette::LinkVisited, QColor(54, 166, 255, 255));
     p.setColor(QPalette::Inactive, QPalette::AlternateBase, QColor(255, 255, 255, 15));
-    p.setColor(QPalette::Inactive, QPalette::ToolTipBase, QColor(50, 50, 50, 255));
-    p.setColor(QPalette::Inactive, QPalette::ToolTipText, QColor(212, 212, 212, 255));
+    p.setColor(QPalette::Inactive, QPalette::ToolTipBase, QColor(44, 44, 44, 255));
+    p.setColor(QPalette::Inactive, QPalette::ToolTipText, QColor(255, 255, 255, 230));
     p.setColor(QPalette::Inactive, QPalette::PlaceholderText, QColor(255, 255, 255, 128));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
