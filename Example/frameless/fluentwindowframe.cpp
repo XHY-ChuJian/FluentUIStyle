@@ -4,31 +4,13 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenuBar>
-#include <QPointer>
 #include <QStyle>
-#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 
 #include <QWKWidgets/widgetwindowagent.h>
 
-#include "dwmbackdrop.h"
 #include "fluenttitlebar.h"
-
-namespace {
-
-void scheduleBackdropReapply(QMainWindow *window)
-{
-    const QPointer<QMainWindow> windowGuard(window);
-    QTimer::singleShot(0, window, [windowGuard]() {
-        if (windowGuard)
-        {
-            DwmBackdrop::enable(windowGuard);
-        }
-    });
-}
-
-} // namespace
 
 FluentWindowFrame::FluentWindowFrame(QMainWindow *window, QObject *parent)
     : QObject(parent)
@@ -50,32 +32,27 @@ FluentTitleBar *FluentWindowFrame::titleBar() const
 
 void FluentWindowFrame::clearWindowBackdrop()
 {
-    m_backdropEnabled = false;
-
-    if (m_windowAgent)
+    if (!m_windowAgent)
     {
-        static const QStringList kBackdropAttributes = {
-            QStringLiteral("dwm-blur"),
-            QStringLiteral("acrylic-material"),
-            QStringLiteral("mica"),
-            QStringLiteral("mica-alt"),
-        };
-
-        for (const QString &attribute : kBackdropAttributes)
-        {
-            m_windowAgent->setWindowAttribute(attribute, false);
-        }
+        return;
     }
 
-    if (m_window)
+    static const QStringList kBackdropAttributes = {
+        QStringLiteral("dwm-blur"),
+        QStringLiteral("acrylic-material"),
+        QStringLiteral("mica"),
+        QStringLiteral("mica-alt"),
+    };
+
+    for (const QString &attribute : kBackdropAttributes)
     {
-        DwmBackdrop::disable(m_window);
+        m_windowAgent->setWindowAttribute(attribute, false);
     }
 }
 
 bool FluentWindowFrame::setWindowBackdrop(const QString &key)
 {
-    if (!m_window)
+    if (!m_windowAgent)
     {
         return false;
     }
@@ -85,17 +62,6 @@ bool FluentWindowFrame::setWindowBackdrop(const QString &key)
     if (key.isEmpty() || key == QStringLiteral("none"))
     {
         return true;
-    }
-
-    if (key == QStringLiteral("dwm-blur"))
-    {
-        m_backdropEnabled = DwmBackdrop::enable(m_window);
-        return m_backdropEnabled;
-    }
-
-    if (!m_windowAgent)
-    {
-        return false;
     }
 
     return m_windowAgent->setWindowAttribute(key, true);
@@ -176,12 +142,7 @@ bool FluentWindowFrame::eventFilter(QObject *watched, QEvent *event)
             }
             break;
         case QEvent::Show:
-        case QEvent::WinIdChange:
             attachChromeHeader();
-            if (m_backdropEnabled)
-            {
-                scheduleBackdropReapply(m_window);
-            }
             break;
         default:
             break;

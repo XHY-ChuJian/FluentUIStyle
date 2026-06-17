@@ -1882,6 +1882,27 @@ li.checked::marker { content: &quot;\2612&quot;; }
                    </property>
                   </widget>
                  </item>
+                 <item row="3" column="0">
+                  <widget class="QRadioButton" name="rBWidgetModeAcrylic">
+                   <property name="text">
+                    <string>acrylic-material</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QRadioButton" name="rBWidgetModeMica">
+                   <property name="text">
+                    <string>mica</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QRadioButton" name="rBWidgetModeMicaAlt">
+                   <property name="text">
+                    <string>mica-alt</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>

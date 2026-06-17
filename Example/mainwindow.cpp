@@ -158,6 +158,37 @@ QString targetArchitectureName()
 #endif
 }
 
+bool widgetBgModeUsesBackdrop(WidgetBgMode mode)
+{
+    switch (mode)
+    {
+    case WidgetBgMode::DwmBlur:
+    case WidgetBgMode::Acrylic:
+    case WidgetBgMode::Mica:
+    case WidgetBgMode::MicaAlt:
+        return true;
+    default:
+        return false;
+    }
+}
+
+QString widgetBgModeBackdropKey(WidgetBgMode mode)
+{
+    switch (mode)
+    {
+    case WidgetBgMode::DwmBlur:
+        return QStringLiteral("dwm-blur");
+    case WidgetBgMode::Acrylic:
+        return QStringLiteral("acrylic-material");
+    case WidgetBgMode::Mica:
+        return QStringLiteral("mica");
+    case WidgetBgMode::MicaAlt:
+        return QStringLiteral("mica-alt");
+    default:
+        return {};
+    }
+}
+
 } // namespace
 
 //=============================================================================
@@ -376,7 +407,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
         return;
     }
 
-    if (m_widgetBgMode == WidgetBgMode::DwmBlur)
+    if (widgetBgModeUsesBackdrop(m_widgetBgMode))
     {
         return;
     }
@@ -958,9 +989,9 @@ void MainWindow::applyWidgetBgMode(WidgetBgMode mode)
     qApp->setProperty("_q_widget_mode", static_cast<int>(mode));
     refreshFluentStyle();
 
-    if (mode == WidgetBgMode::DwmBlur)
+    if (widgetBgModeUsesBackdrop(mode))
     {
-        m_windowFrame->setWindowBackdrop(QStringLiteral("dwm-blur"));
+        m_windowFrame->setWindowBackdrop(widgetBgModeBackdropKey(mode));
     }
     else
     {
@@ -980,6 +1011,9 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
     m_tabBarWidgetBg->addTab(tr("无"));
     m_tabBarWidgetBg->addTab(tr("图片"));
     m_tabBarWidgetBg->addTab(tr("DWM blur"));
+    m_tabBarWidgetBg->addTab(tr("Acrylic"));
+    m_tabBarWidgetBg->addTab(tr("Mica"));
+    m_tabBarWidgetBg->addTab(tr("Mica Alt"));
 
     toolBar->addWidget(m_tabBarWidgetBg);
 
@@ -1001,6 +1035,18 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
                 else if (index == 2)
                 {
                     ui->rBWidgetModeDwmBlur->setChecked(true);
+                }
+                else if (index == 3)
+                {
+                    ui->rBWidgetModeAcrylic->setChecked(true);
+                }
+                else if (index == 4)
+                {
+                    ui->rBWidgetModeMica->setChecked(true);
+                }
+                else if (index == 5)
+                {
+                    ui->rBWidgetModeMicaAlt->setChecked(true);
                 }
             });
 }
@@ -1580,6 +1626,24 @@ void MainWindow::on_rBWidgetModeDwmBlur_clicked(bool checked)
 {
     Q_UNUSED(checked)
     m_tabBarWidgetBg->setCurrentIndex(2);
+}
+
+void MainWindow::on_rBWidgetModeAcrylic_clicked(bool checked)
+{
+    Q_UNUSED(checked)
+    m_tabBarWidgetBg->setCurrentIndex(3);
+}
+
+void MainWindow::on_rBWidgetModeMica_clicked(bool checked)
+{
+    Q_UNUSED(checked)
+    m_tabBarWidgetBg->setCurrentIndex(4);
+}
+
+void MainWindow::on_rBWidgetModeMicaAlt_clicked(bool checked)
+{
+    Q_UNUSED(checked)
+    m_tabBarWidgetBg->setCurrentIndex(5);
 }
 
 void MainWindow::on_rBOnlyIcon_clicked(bool checked)

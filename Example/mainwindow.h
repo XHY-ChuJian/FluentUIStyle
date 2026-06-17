@@ -31,7 +31,10 @@ enum class WidgetBgMode
 {
     None,
     Pixmap,
-    DwmBlur
+    DwmBlur,
+    Acrylic,
+    Mica,
+    MicaAlt
 };
 
 class MainWindow : public QMainWindow
@@ -61,6 +64,9 @@ private slots:
     void on_rBWidgtModeNormal_clicked(bool checked);
     void on_rBWidgetModePixmap_clicked(bool checked);
     void on_rBWidgetModeDwmBlur_clicked(bool checked);
+    void on_rBWidgetModeAcrylic_clicked(bool checked);
+    void on_rBWidgetModeMica_clicked(bool checked);
+    void on_rBWidgetModeMicaAlt_clicked(bool checked);
 
     void on_rBOnlyIcon_clicked(bool checked);
     void on_rBIconAndText_clicked(bool checked);

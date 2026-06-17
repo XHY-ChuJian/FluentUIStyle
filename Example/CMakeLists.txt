@@ -5,8 +5,6 @@ set(EXAMPLE_SOURCES
     mainwindow.ui
     frameless/fluenttitlebar.cpp
     frameless/fluenttitlebar.h
-    frameless/dwmbackdrop.cpp
-    frameless/dwmbackdrop.h
     frameless/fluentwindowframe.cpp
     frameless/fluentwindowframe.h
     installedsoftwaretablewidget.cpp
@@ -86,10 +84,6 @@ endif()
 target_include_directories(Example PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/frameless
 )
-
-if(WIN32)
-    target_link_libraries(Example PRIVATE dwmapi)
-endif()
 
 target_link_libraries(Example PRIVATE
     ExWidgets
