@@ -56,7 +56,7 @@
        <enum>QFrame::Sunken</enum>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page">
        <property name="autoFillBackground">
@@ -90,7 +90,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-250</y>
              <width>1160</width>
              <height>1073</height>
             </rect>
@@ -605,7 +605,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      </font>
                     </property>
                     <property name="text">
-                     <string>Slider &amp; Progress &amp; ScrollBar &amp; RangeSelector &amp; Dial</string>
+                     <string>Slider &amp; Progress &amp; ScrollBar &amp; Dial</string>
                     </property>
                    </widget>
                   </item>
@@ -632,6 +632,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
                     <property name="tickInterval">
                      <number>10</number>
                     </property>
+                    <property name="showValueTip" stdset="0">
+                     <bool>true</bool>
+                    </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
@@ -651,16 +654,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
                     </property>
                     <property name="invertedAppearance">
                      <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="ExRangeSlider" name="rangeSelector" native="true">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>32</height>
-                     </size>
                     </property>
                    </widget>
                   </item>
@@ -818,6 +811,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <widget class="QSlider" name="horizontalSlider_2">
                       <property name="orientation">
                        <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="showValueTip" stdset="0">
+                       <bool>true</bool>
                       </property>
                      </widget>
                     </item>
@@ -1752,8 +1748,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1177</width>
-             <height>751</height>
+             <width>150</width>
+             <height>578</height>
             </rect>
            </property>
            <property name="autoFillBackground">
@@ -1879,27 +1875,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
                   <widget class="QRadioButton" name="rBWidgetModeDwmBlur">
                    <property name="text">
                     <string>dwm-blur</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QRadioButton" name="rBWidgetModeAcrylic">
-                   <property name="text">
-                    <string>acrylic-material</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QRadioButton" name="rBWidgetModeMica">
-                   <property name="text">
-                    <string>mica</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QRadioButton" name="rBWidgetModeMicaAlt">
-                   <property name="text">
-                    <string>mica-alt</string>
                    </property>
                   </widget>
                  </item>
@@ -2131,11 +2106,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <extends>QStackedWidget</extends>
    <header location="global">exstackedwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ExRangeSlider</class>
-   <extends>QWidget</extends>
-   <header location="global">exrangeslider.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

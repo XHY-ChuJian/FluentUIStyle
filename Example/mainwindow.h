@@ -16,6 +16,7 @@ class QComboBox;
 class QTreeWidgetItem;
 class TabShowcaseWidget;
 class InstalledSoftwareTableWidget;
+class ExRangeSlider;
 class FluentWindowFrame;
 
 QT_BEGIN_NAMESPACE
@@ -31,10 +32,7 @@ enum class WidgetBgMode
 {
     None,
     Pixmap,
-    DwmBlur,
-    Acrylic,
-    Mica,
-    MicaAlt
+    DwmBlur
 };
 
 class MainWindow : public QMainWindow
@@ -64,9 +62,6 @@ private slots:
     void on_rBWidgtModeNormal_clicked(bool checked);
     void on_rBWidgetModePixmap_clicked(bool checked);
     void on_rBWidgetModeDwmBlur_clicked(bool checked);
-    void on_rBWidgetModeAcrylic_clicked(bool checked);
-    void on_rBWidgetModeMica_clicked(bool checked);
-    void on_rBWidgetModeMicaAlt_clicked(bool checked);
 
     void on_rBOnlyIcon_clicked(bool checked);
     void on_rBIconAndText_clicked(bool checked);
@@ -90,6 +85,9 @@ private:
     void setupAboutPage();
     void setupDialogsPage();
     void setupColorPickerPage();
+    void setupExWidgetsPages();
+    void setupAudiomaticPlayerPage();
+    void addExWidgetsNavigation();
 
     void updateActionIcons();
     void loadChangelog();
@@ -132,6 +130,9 @@ private:
 
     TabShowcaseWidget *m_tabShowcaseWidget{nullptr};
     InstalledSoftwareTableWidget *m_installedSoftwareTable{nullptr};
+    QFrame *m_exRangeSliderPage{nullptr};
+    QFrame *m_audiomaticPlayerPage{nullptr};
+    ExRangeSlider *m_rangeSelector{nullptr};
     ExNavTreeWidget *m_navView{nullptr};
     ExWinUINavigationView *m_winUINavigationView{nullptr};
     QAction *m_searchAction{nullptr};
@@ -145,6 +146,7 @@ private:
     QComboBox *m_styleComboBox{nullptr};
 
     QVector<QTreeWidgetItem *> m_mainNavItems;
+    QTreeWidgetItem *m_navExWidgetsRoot{nullptr};
     QTreeWidgetItem *m_navTestRoot{nullptr};
     QTreeWidgetItem *m_navAboutItem{nullptr};
     QTreeWidgetItem *m_navSettingsItem{nullptr};

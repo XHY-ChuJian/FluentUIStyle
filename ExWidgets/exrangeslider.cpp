@@ -448,7 +448,7 @@ void ExRangeSliderPrivate::showPressedHandleToolTip(int value)
 {
     Q_Q(ExRangeSlider);
     const QVariant showTip = q->property(SliderValueTipProperty);
-    if (showTip.isValid() && !showTip.toBool())
+    if (!showTip.isValid() || !showTip.toBool())
         return;
     if (m_pressedHandle == ExRangeSlider::NoHandle || !q->isEnabled() || !q->isVisible())
         return;

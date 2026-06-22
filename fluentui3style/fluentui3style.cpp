@@ -147,16 +147,16 @@ static void initSliderStyleOption(const QSlider *slider, QStyleOptionSlider *opt
 
 static SliderValueTipLabel *sliderValueTip(QSlider *slider)
 {
-    QObject *const obj = slider->property("_q_slider_value_tip").value<QObject *>();
+    QObject *const obj = slider->property(SliderValueTipLabelProperty).value<QObject *>();
     return obj ? static_cast<SliderValueTipLabel *>(obj) : nullptr;
 }
 
 static bool sliderValueTipEnabled(const QWidget *widget)
 {
     if (!widget)
-        return true;
+        return false;
     const QVariant v = widget->property(SliderValueTipProperty);
-    return !v.isValid() || v.toBool();
+    return v.isValid() && v.toBool();
 }
 
 static void showSliderValueTip(QSlider *slider, int value)
@@ -168,8 +168,8 @@ static void showSliderValueTip(QSlider *slider, int value)
     if (!tip)
     {
         tip = new SliderValueTipLabel(nullptr);
-        tip->setObjectName(QStringLiteral("_q_slider_value_tip"));
-        slider->setProperty("_q_slider_value_tip", QVariant::fromValue<QObject *>(tip));
+        tip->setObjectName(QStringLiteral("sliderValueTipLabel"));
+        slider->setProperty(SliderValueTipLabelProperty, QVariant::fromValue<QObject *>(tip));
         QObject::connect(slider, &QObject::destroyed, tip, &QObject::deleteLater);
         if (auto *style = qobject_cast<FluentUI3Style *>(QApplication::style()))
             style->polish(tip);
@@ -210,9 +210,11 @@ static void hideSliderValueTip(QSlider *slider)
 
 static void installSliderValueTipHooks(QSlider *slider)
 {
-    if (slider->property("_q_slider_value_tip_hooks").toBool())
+    if (!sliderValueTipEnabled(slider))
         return;
-    slider->setProperty("_q_slider_value_tip_hooks", true);
+    if (slider->property(SliderValueTipHooksProperty).toBool())
+        return;
+    slider->setProperty(SliderValueTipHooksProperty, true);
 
     QObject::connect(slider, &QSlider::sliderPressed, slider,
                      [slider]()
@@ -7690,7 +7692,7 @@ void FluentUI3Style::unpolish(QWidget *widget)
     if (auto *slider = qobject_cast<QSlider *>(widget))
         hideSliderValueTip(slider);
 
-    if (qobject_cast<QTabBar *>(widget) && widget->property("TabBarStyle").toInt() == TabBarStyle::Segmented_WinUI3)
+    if (qobject_cast<QTabBar *>(widget) && widget->property(TabBarStyleProperty).toInt() == TabBarStyle::Segmented_WinUI3)
     {
         widget->removeEventFilter(this);
     }

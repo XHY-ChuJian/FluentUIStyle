@@ -5,6 +5,8 @@
 
 #include "mainwindow.h"
 
+#include "audiomaticplayerwidget.h"
+
 #ifdef EXAMPLE_ENABLE_I18N
 #include "applanguage.h"
 #endif
@@ -163,9 +165,6 @@ bool widgetBgModeUsesBackdrop(WidgetBgMode mode)
     switch (mode)
     {
     case WidgetBgMode::DwmBlur:
-    case WidgetBgMode::Acrylic:
-    case WidgetBgMode::Mica:
-    case WidgetBgMode::MicaAlt:
         return true;
     default:
         return false;
@@ -178,12 +177,6 @@ QString widgetBgModeBackdropKey(WidgetBgMode mode)
     {
     case WidgetBgMode::DwmBlur:
         return QStringLiteral("dwm-blur");
-    case WidgetBgMode::Acrylic:
-        return QStringLiteral("acrylic-material");
-    case WidgetBgMode::Mica:
-        return QStringLiteral("mica");
-    case WidgetBgMode::MicaAlt:
-        return QStringLiteral("mica-alt");
     default:
         return {};
     }
@@ -463,6 +456,8 @@ void MainWindow::initializeComponents()
     setupAboutPage();
     setupDialogsPage();
     setupColorPickerPage();
+    setupExWidgetsPages();
+    setupAudiomaticPlayerPage();
 
     // Configure stacked widget
     ui->stackedWidget->setVerticalMode(true);
@@ -489,14 +484,6 @@ void MainWindow::initializeComponents()
 
     // Configure control properties
     ui->progressBar->setProperty(ProgressBarStyleProperty, ProgressBarThick);
-    ui->rangeSelector->setRange(0, 100);
-    ui->rangeSelector->setValues(20, 80);
-    ui->rangeSelector->setSingleStep(1);
-    ui->rangeSelector->setPageStep(10);
-    connect(ui->rangeSelector, &ExRangeSlider::valuesChanged, this, [this](int lower, int upper) {
-        qDebug() << "Range slider values changed: " << lower << " " << upper;
-    });
-
     ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsHorizontalRight);
     ui->checkBox_5->setText(tr("Off"));
     ui->treeWidget->setProperty("ItemHeight", 32);
@@ -1011,9 +998,6 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
     m_tabBarWidgetBg->addTab(tr("无"));
     m_tabBarWidgetBg->addTab(tr("图片"));
     m_tabBarWidgetBg->addTab(tr("DWM blur"));
-    m_tabBarWidgetBg->addTab(tr("Acrylic"));
-    m_tabBarWidgetBg->addTab(tr("Mica"));
-    m_tabBarWidgetBg->addTab(tr("Mica Alt"));
 
     toolBar->addWidget(m_tabBarWidgetBg);
 
@@ -1035,18 +1019,6 @@ void MainWindow::setupWidgetBackgroundSelector(QToolBar *toolBar)
                 else if (index == 2)
                 {
                     ui->rBWidgetModeDwmBlur->setChecked(true);
-                }
-                else if (index == 3)
-                {
-                    ui->rBWidgetModeAcrylic->setChecked(true);
-                }
-                else if (index == 4)
-                {
-                    ui->rBWidgetModeMica->setChecked(true);
-                }
-                else if (index == 5)
-                {
-                    ui->rBWidgetModeMicaAlt->setChecked(true);
                 }
             });
 }
@@ -1073,10 +1045,10 @@ void MainWindow::initializeNavigationView()
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("列表控件"), 2, QStringLiteral("\uE71D")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("树形控件"), 3, QStringLiteral("\uED28")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("导航控件"), 4, QStringLiteral("\uE8B0")));
+    addExWidgetsNavigation();
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(QStringLiteral("Mdi"), 5, QStringLiteral("\uE9D9")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("图标库"), 7, QStringLiteral("\uE8FD")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("对话框"), 9, QStringLiteral("\uE8F2")));
-    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("颜色选择器"), 10, QStringLiteral("\uE790")));
     addTestNavigationTree();
 
     m_navAboutItem = m_winUINavigationView->addFooterNavigationItem(tr("关于"), 8, QStringLiteral("\uE77B"));
@@ -1262,6 +1234,106 @@ void MainWindow::setupColorPickerPage()
     auto *page = new ColorShowcaseWidget(ui->stackedWidget);
     page->setObjectName(QStringLiteral("pageColorPicker"));
     ui->stackedWidget->addWidget(page);
+}
+
+void MainWindow::setupExWidgetsPages()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+
+    m_exRangeSliderPage = new QFrame(ui->stackedWidget);
+    m_exRangeSliderPage->setFrameShape(QFrame::StyledPanel);
+    m_exRangeSliderPage->setObjectName(QStringLiteral("pageExRangeSlider"));
+
+    auto *layout = new QVBoxLayout(m_exRangeSliderPage);
+    layout->setContentsMargins(24, 24, 24, 24);
+    layout->setSpacing(16);
+
+    auto *title = new QLabel(tr("ExRangeSlider"), m_exRangeSliderPage);
+    QFont titleFont = title->font();
+    titleFont.setPointSize(18);
+    titleFont.setBold(true);
+    title->setFont(titleFont);
+
+    m_rangeSelector = new ExRangeSlider(m_exRangeSliderPage);
+    m_rangeSelector->setObjectName(QStringLiteral("rangeSelector"));
+    m_rangeSelector->setMinimumHeight(32);
+    m_rangeSelector->setProperty(SliderValueTipProperty, true);
+    m_rangeSelector->setRange(0, 100);
+    m_rangeSelector->setValues(20, 80);
+    m_rangeSelector->setSingleStep(1);
+    m_rangeSelector->setPageStep(10);
+    connect(m_rangeSelector, &ExRangeSlider::valuesChanged, this, [](int lower, int upper) {
+        qDebug() << "Range slider values changed:" << lower << upper;
+    });
+
+    layout->addWidget(title);
+    layout->addWidget(m_rangeSelector);
+    layout->addStretch();
+
+    ui->stackedWidget->addWidget(m_exRangeSliderPage);
+}
+
+void MainWindow::setupAudiomaticPlayerPage()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+
+    m_audiomaticPlayerPage = new QFrame(ui->stackedWidget);
+    m_audiomaticPlayerPage->setFrameShape(QFrame::StyledPanel);
+    m_audiomaticPlayerPage->setObjectName(QStringLiteral("pageAudiomaticPlayer"));
+
+    auto *pageLayout = new QHBoxLayout(m_audiomaticPlayerPage);
+    pageLayout->setContentsMargins(24, 24, 24, 24);
+
+    auto *player = new AudiomaticPlayerWidget(m_audiomaticPlayerPage);
+    // player->setMaximumWidth(440);
+    // player->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    // pageLayout->addStretch();
+    pageLayout->addWidget(player);
+    // pageLayout->addStretch();
+
+    ui->stackedWidget->addWidget(m_audiomaticPlayerPage);
+}
+
+void MainWindow::addExWidgetsNavigation()
+{
+    if (!m_navView || !ui->stackedWidget || !m_exRangeSliderPage)
+    {
+        return;
+    }
+
+    const int rangeSliderPageIndex = ui->stackedWidget->indexOf(m_exRangeSliderPage);
+    QWidget *colorPickerPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageColorPicker"));
+    const int colorPickerPageIndex = colorPickerPage ? ui->stackedWidget->indexOf(colorPickerPage) : -1;
+    const int audiomaticPageIndex = m_audiomaticPlayerPage ? ui->stackedWidget->indexOf(m_audiomaticPlayerPage) : -1;
+
+    m_navExWidgetsRoot = new QTreeWidgetItem();
+    m_navView->configureNavigationItem(m_navExWidgetsRoot, tr("ExWidgets"), rangeSliderPageIndex, QStringLiteral("\uE8F1"));
+    m_navView->insertTopLevelItem(5, m_navExWidgetsRoot);
+
+    auto addExWidgetItem = [this](const QString &text, int pageIndex, const QString &iconCode = QString()) {
+        auto *item = new QTreeWidgetItem(m_navExWidgetsRoot);
+        m_navView->configureNavigationItem(item, text, pageIndex, iconCode);
+        return item;
+    };
+
+    addExWidgetItem(QStringLiteral("ExRangeSlider"), rangeSliderPageIndex);
+    if (colorPickerPageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExColorPicker"), colorPickerPageIndex, QStringLiteral("\uE790"));
+    }
+    if (audiomaticPageIndex >= 0)
+    {
+        addExWidgetItem(tr("Audiomatic Mini"), audiomaticPageIndex, QStringLiteral("\uE8D6"));
+    }
+
+    m_navExWidgetsRoot->setExpanded(true);
 }
 
 //=============================================================================
@@ -1626,24 +1698,6 @@ void MainWindow::on_rBWidgetModeDwmBlur_clicked(bool checked)
 {
     Q_UNUSED(checked)
     m_tabBarWidgetBg->setCurrentIndex(2);
-}
-
-void MainWindow::on_rBWidgetModeAcrylic_clicked(bool checked)
-{
-    Q_UNUSED(checked)
-    m_tabBarWidgetBg->setCurrentIndex(3);
-}
-
-void MainWindow::on_rBWidgetModeMica_clicked(bool checked)
-{
-    Q_UNUSED(checked)
-    m_tabBarWidgetBg->setCurrentIndex(4);
-}
-
-void MainWindow::on_rBWidgetModeMicaAlt_clicked(bool checked)
-{
-    Q_UNUSED(checked)
-    m_tabBarWidgetBg->setCurrentIndex(5);
 }
 
 void MainWindow::on_rBOnlyIcon_clicked(bool checked)

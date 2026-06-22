@@ -86,12 +86,14 @@ target_include_directories(Example PRIVATE
 )
 
 target_link_libraries(Example PRIVATE
+    AudiomaticMiniWidgets
     ExWidgets
     QWindowKit::Widgets
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Svg
+    Qt${QT_VERSION_MAJOR}::Multimedia
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 

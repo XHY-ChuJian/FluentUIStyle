@@ -20,6 +20,14 @@ FluentWindowFrame::FluentWindowFrame(QMainWindow *window, QObject *parent)
     m_window->installEventFilter(this);
 }
 
+FluentWindowFrame::~FluentWindowFrame()
+{
+    if (m_window)
+    {
+        m_window->removeEventFilter(this);
+    }
+}
+
 QWK::WidgetWindowAgent *FluentWindowFrame::windowAgent() const
 {
     return m_windowAgent;

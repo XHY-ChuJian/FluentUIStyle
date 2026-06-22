@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(fluentw3uistyle VERSION 0.1 LANGUAGES CXX)
+project(fluentw3uistyle VERSION 0.1 LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
@@ -85,10 +85,13 @@ endforeach()
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLE "Build example application" ON)
+option(BUILD_AUDIOMATIC_MINI "Build Audiomatic mini player" ON)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
 endif()
+
+add_subdirectory(3rd/kissfft)
 
 add_subdirectory(ExWidgets)
 
@@ -98,6 +101,11 @@ endif()
 
 if(BUILD_PLUGIN)
     add_subdirectory(fluentui3style/plugin)
+endif()
+
+if(BUILD_EXAMPLE OR BUILD_AUDIOMATIC_MINI)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia)
+    add_subdirectory(AudiomaticMini)
 endif()
 
 if(BUILD_EXAMPLE)

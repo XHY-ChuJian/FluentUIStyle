@@ -18,7 +18,7 @@ class FluentWindowFrame : public QObject
 
 public:
     explicit FluentWindowFrame( QMainWindow* window, QObject* parent = nullptr );
-    ~FluentWindowFrame() override = default;
+    ~FluentWindowFrame() override;
 
     void installChromeHeader( QMenuBar* menuBar );
 
