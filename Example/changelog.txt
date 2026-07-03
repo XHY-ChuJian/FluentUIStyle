@@ -6,7 +6,7 @@
 5.QSlider 与 ExRangeSlider 拖动时显示数值 tooltip（可经 showValueTip 关闭）
 6.QDial 新增 WinUI3 风格样式：DialDots / DialRing / DialThumb（经 dialStyle 属性切换，可选 dialDrawValue 显示当前值）
 7.新增 ExColorPicker / ExColorPickerButton（WinUI3 CommunityToolkit 风格取色控件）
-8.ExMessageBox(QMessageBox) 新增遮罩层，弹窗显示效果更接近 WinUI3 ContentDialog
+8.新增 ExMessageBox（基于 QMessageBox 的 WinUI3 风格消息弹窗）
 9.Example 集成 Audiomatic Mini Player（本地播放、频谱可视化、Jamendo 在线音乐）
 
 【更新内容2026-5-9】
