@@ -120,10 +120,12 @@ install(TARGETS ExWidgets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-install(FILES $<TARGET_PDB_FILE:ExWidgets>
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-    OPTIONAL
-)
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:ExWidgets>
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OPTIONAL
+    )
+endif()
 
 if(BUILD_LIBRARY)
     install(TARGETS FluentUI3Style
@@ -133,10 +135,12 @@ if(BUILD_LIBRARY)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-    install(FILES $<TARGET_PDB_FILE:FluentUI3Style>
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-        OPTIONAL
-    )
+    if(MSVC)
+        install(FILES $<TARGET_PDB_FILE:FluentUI3Style>
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            OPTIONAL
+        )
+    endif()
 endif()
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ExWidgets/"
