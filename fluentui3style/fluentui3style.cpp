@@ -2147,7 +2147,7 @@ void FluentUI3Style::drawComplexControl(ComplexControl control,
                 {
                     if (progress > 0.0)
                     {
-                        const QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
+                        QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
                         QFont f = QFont(assetFont);
                         f.setPointSize(6);
                         cp->setFont(f);
@@ -3395,8 +3395,13 @@ QRect FluentUI3Style::subElementRect(SubElement element, const QStyleOption *opt
             {
                 optCopy.textAlignment = Qt::AlignRight;
             }
+            else
+            {
+                optCopy.textAlignment = Qt::AlignCenter;
+            }
 
-            return QProxyStyle::subElementRect(element, &optCopy, widget);
+            //Don't use QProxyStyle
+            return QCommonStyle::subElementRect(element, &optCopy, widget);
         }
         break;
 #endif // QT_CONFIG(progressbar)
@@ -3646,7 +3651,7 @@ QRect FluentUI3Style::subControlRect(ComplexControl control,
 #endif // Qt_NO_SPINBOX
     case CC_ScrollBar:
     {
-        ret = QProxyStyle::subControlRect(control, option, subControl, widget);
+        ret = QCommonStyle::subControlRect(control, option, subControl, widget);
 
         if (subControl == SC_ScrollBarAddLine || subControl == SC_ScrollBarSubLine)
         {
@@ -5267,7 +5272,6 @@ void FluentUI3Style::drawProgressRing(const QStyleOptionProgressBar *option,
     //          thickness = t;
     //      }
     //  }
-
     const QRectF rect = option->rect;
     const qreal diameter = qMin(rect.width(), rect.height());
     if (diameter <= 0.0)
