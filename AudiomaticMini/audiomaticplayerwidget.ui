@@ -272,7 +272,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="SpectrumWidget" name="visualizer" native="true">
+        <widget class="ExSpectrumWidget" name="visualizer" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -444,9 +444,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SpectrumWidget</class>
+   <class>ExSpectrumWidget</class>
    <extends>QWidget</extends>
-   <header location="global">spectrumwidget.h</header>
+   <header location="global">exspectrumwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

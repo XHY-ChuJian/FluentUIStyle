@@ -56,6 +56,7 @@ QByteArray SineWaveGenerator::generate(int sampleCount)
 
             if (m_animated)
             {
+                // 各频带独立 LFO，让柱状高度随时间起伏
                 const double modRate = 0.35 + band * 0.19;
                 const double modPhase = band * 1.31;
                 const double lfo = 0.5 + 0.5 * qSin(twoPi * modRate * timeSec + modPhase);
@@ -67,11 +68,13 @@ QByteArray SineWaveGenerator::generate(int sampleCount)
 
         if (m_animated)
         {
+            // 低频节拍脉冲，模拟鼓点
             const double beatPeriod = 0.52;
             const double beatPhase = std::fmod(timeSec, beatPeriod);
             const double kickEnv = beatPhase < 0.07 ? qExp(-beatPhase * 55.0) : 0.0;
             sample += kickEnv * 1.4 * qSin(twoPi * 58.0 * m_phase / double(m_sampleRate));
 
+            // 中高频随机感：缓慢扫频
             const double sweepHz = 900.0 + 2800.0 * (0.5 + 0.5 * qSin(twoPi * 0.11 * timeSec));
             const double sweepAmp = 0.22 * (0.5 + 0.5 * qSin(twoPi * 0.07 * timeSec + 0.8));
             sample += sweepAmp * qSin(twoPi * sweepHz * m_phase / double(m_sampleRate));

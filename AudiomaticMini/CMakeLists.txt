@@ -1,3 +1,8 @@
+if(QT_VERSION_MAJOR LESS 6)
+    message(STATUS "AudiomaticMini: skipped (requires Qt 6 for multimedia playback)")
+    return()
+endif()
+
 set(AUDIOMATIC_MINI_WIDGET_SOURCES
     audiomaticplayerwidget.cpp
     audiomaticplayerwidget.h
@@ -6,10 +11,6 @@ set(AUDIOMATIC_MINI_WIDGET_SOURCES
     audiospectrumanalyzer.h
     jamendoclient.cpp
     jamendoclient.h
-    spectrumwidget.cpp
-    spectrumwidget.h
-    sinewavegenerator.cpp
-    sinewavegenerator.h
 )
 
 add_library(AudiomaticMiniWidgets STATIC ${AUDIOMATIC_MINI_WIDGET_SOURCES})
@@ -17,16 +18,15 @@ add_library(AudiomaticMiniWidgets STATIC ${AUDIOMATIC_MINI_WIDGET_SOURCES})
 target_include_directories(AudiomaticMiniWidgets PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../fluentui3style
-    ${CMAKE_CURRENT_SOURCE_DIR}/../3rd/kissfft
 )
 
 target_link_libraries(AudiomaticMiniWidgets PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Multimedia
-    Qt${QT_VERSION_MAJOR}::Network
-    kissfft
+    ExWidgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Multimedia
+    Qt6::Network
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 
@@ -37,22 +37,18 @@ if(BUILD_AUDIOMATIC_MINI)
         playerwindow.h
         spectrumdemowindow.cpp
         spectrumdemowindow.h
+        sinewavegenerator.cpp
+        sinewavegenerator.h
         ../Example/frameless/fluenttitlebar.cpp
         ../Example/frameless/fluenttitlebar.h
         ../Example/frameless/fluentwindowframe.cpp
         ../Example/frameless/fluentwindowframe.h
     )
 
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        qt_add_executable(AudiomaticMini
-            MANUAL_FINALIZATION
-            ${AUDIOMATIC_MINI_APP_SOURCES}
-        )
-    else()
-        add_executable(AudiomaticMini
-            ${AUDIOMATIC_MINI_APP_SOURCES}
-        )
-    endif()
+    qt_add_executable(AudiomaticMini
+        MANUAL_FINALIZATION
+        ${AUDIOMATIC_MINI_APP_SOURCES}
+    )
 
     target_compile_definitions(AudiomaticMini PRIVATE FLUENT_USE_QT_STYLE)
 
@@ -67,12 +63,12 @@ if(BUILD_AUDIOMATIC_MINI)
         AudiomaticMiniWidgets
         ExWidgets
         QWindowKit::Widgets
-        Qt${QT_VERSION_MAJOR}::Core
-        Qt${QT_VERSION_MAJOR}::Gui
-        Qt${QT_VERSION_MAJOR}::Widgets
-        Qt${QT_VERSION_MAJOR}::Svg
-        Qt${QT_VERSION_MAJOR}::Multimedia
-        Qt${QT_VERSION_MAJOR}::Network
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Svg
+        Qt6::Multimedia
+        Qt6::Network
         ${FLUENT_QT_PRIVATE_LIBS}
     )
 
@@ -104,34 +100,25 @@ if(BUILD_AUDIOMATIC_MINI)
             VERBATIM)
     endif()
 
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        qt_finalize_executable(AudiomaticMini)
-    endif()
+    qt_finalize_executable(AudiomaticMini)
 endif()
 
-# 独立频谱演示程序（正弦波模拟 PCM，无需音频文件）
-option(BUILD_SPECTRUM_DEMO "Build standalone SpectrumWidget demo" ON)
+option(BUILD_SPECTRUM_DEMO "Build standalone ExSpectrumWidget demo (Qt 6 only)" ON)
 if(BUILD_SPECTRUM_DEMO)
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        qt_add_executable(SpectrumDemo
-            MANUAL_FINALIZATION
-            spectrumdemomain.cpp
-            spectrumdemowindow.cpp
-            spectrumdemowindow.h
-        )
-    else()
-        add_executable(SpectrumDemo
-            spectrumdemomain.cpp
-            spectrumdemowindow.cpp
-            spectrumdemowindow.h
-        )
-    endif()
+    qt_add_executable(SpectrumDemo
+        MANUAL_FINALIZATION
+        spectrumdemomain.cpp
+        spectrumdemowindow.cpp
+        spectrumdemowindow.h
+        sinewavegenerator.cpp
+        sinewavegenerator.h
+    )
 
     target_link_libraries(SpectrumDemo PRIVATE
-        AudiomaticMiniWidgets
-        Qt${QT_VERSION_MAJOR}::Core
-        Qt${QT_VERSION_MAJOR}::Gui
-        Qt${QT_VERSION_MAJOR}::Widgets
+        ExWidgets
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
     )
 
     set_target_properties(SpectrumDemo PROPERTIES
@@ -139,7 +126,5 @@ if(BUILD_SPECTRUM_DEMO)
         DEBUG_POSTFIX d
     )
 
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        qt_finalize_executable(SpectrumDemo)
-    endif()
+    qt_finalize_executable(SpectrumDemo)
 endif()

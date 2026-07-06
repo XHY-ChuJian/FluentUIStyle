@@ -3400,7 +3400,7 @@ QRect FluentUI3Style::subElementRect(SubElement element, const QStyleOption *opt
                 optCopy.textAlignment = Qt::AlignCenter;
             }
 
-            //Don't use QProxyStyle
+            //不使用QProxyStyle，计算出来的opt->rect是错误的
             return QCommonStyle::subElementRect(element, &optCopy, widget);
         }
         break;

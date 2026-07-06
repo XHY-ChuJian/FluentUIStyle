@@ -2,8 +2,8 @@
 #include "ui_audiomaticplayerwidget.h"
 
 #include "audiospectrumanalyzer.h"
+#include "exspectrumwidget.h"
 #include "jamendoclient.h"
-#include "spectrumwidget.h"
 
 #include <QAudioOutput>
 #include <QApplication>
@@ -197,11 +197,11 @@ void AudiomaticPlayerWidget::setupPlayer()
     connect(m_spectrumAnalyzer,
             &AudioSpectrumAnalyzer::pcmDataReady,
             ui->visualizer,
-            &SpectrumWidget::setAudioData);
+            &ExSpectrumWidget::setAudioData);
     connect(m_spectrumAnalyzer,
             &AudioSpectrumAnalyzer::sampleRateChanged,
             ui->visualizer,
-            &SpectrumWidget::setSampleRate);
+            &ExSpectrumWidget::setSampleRate);
 
     connect(m_player, &QMediaPlayer::positionChanged, this, [this](qint64 position)
             {

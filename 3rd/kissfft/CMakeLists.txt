@@ -1,4 +1,4 @@
-# KissFFT - minimal real-FFT build for SpectrumWidget
+# KissFFT - minimal real-FFT build for ExSpectrumWidget
 set(_kissfft_sources kiss_fft.c kiss_fftr.c)
 
 add_library(kissfft STATIC ${_kissfft_sources})

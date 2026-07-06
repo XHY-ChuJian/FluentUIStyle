@@ -2,11 +2,11 @@
 
 #include <QMainWindow>
 
-class SpectrumWidget;
+class ExSpectrumWidget;
 class SineWaveGenerator;
 
 /**
- * @brief SpectrumWidget 独立演示窗口（MainWindow 使用示例）。
+ * @brief ExSpectrumWidget 独立演示窗口（正弦波模拟 PCM）。
  *
  * 通过 SineWaveGenerator 模拟 16-bit PCM 单声道数据，
  * 无需麦克风或音频文件即可观察频谱动画。
@@ -23,7 +23,7 @@ private slots:
     void feedSimulatedAudio();
 
 private:
-    SpectrumWidget *m_spectrum{nullptr};
+    ExSpectrumWidget *m_spectrum{nullptr};
     SineWaveGenerator *m_generator{nullptr};
     class QTimer *m_feedTimer{nullptr};
 };

@@ -5,7 +5,11 @@
 
 #include "mainwindow.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "audiomaticplayerwidget.h"
+#else
+#include "spectrumshowcasewidget.h"
+#endif
 
 #ifdef EXAMPLE_ENABLE_I18N
 #include "applanguage.h"
@@ -1262,13 +1266,11 @@ void MainWindow::setupAudiomaticPlayerPage()
     auto *pageLayout = new QHBoxLayout(m_audiomaticPlayerPage);
     pageLayout->setContentsMargins(24, 24, 24, 24);
 
-    auto *player = new AudiomaticPlayerWidget(m_audiomaticPlayerPage);
-    // player->setMaximumWidth(440);
-    // player->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-
-    // pageLayout->addStretch();
-    pageLayout->addWidget(player);
-    // pageLayout->addStretch();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    pageLayout->addWidget(new AudiomaticPlayerWidget(m_audiomaticPlayerPage));
+#else
+    pageLayout->addWidget(new SpectrumShowcaseWidget(m_audiomaticPlayerPage));
+#endif
 
     ui->stackedWidget->addWidget(m_audiomaticPlayerPage);
 }
@@ -1308,7 +1310,11 @@ void MainWindow::addExWidgetsNavigation()
     }
     if (audiomaticPageIndex >= 0)
     {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         addExWidgetItem(tr("Audiomatic Mini"), audiomaticPageIndex, QStringLiteral("\uE8D6"));
+#else
+        addExWidgetItem(QStringLiteral("ExSpectrumWidget"), audiomaticPageIndex, QStringLiteral("\uE8D6"));
+#endif
     }
 
     m_navExWidgetsRoot->setExpanded(true);

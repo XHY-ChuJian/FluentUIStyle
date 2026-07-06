@@ -88,16 +88,28 @@ target_include_directories(Example PRIVATE
 )
 
 target_link_libraries(Example PRIVATE
-    AudiomaticMiniWidgets
     ExWidgets
     QWindowKit::Widgets
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::Multimedia
     ${FLUENT_QT_PRIVATE_LIBS}
 )
+
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
+    target_link_libraries(Example PRIVATE
+        AudiomaticMiniWidgets
+        Qt6::Multimedia
+    )
+else()
+    target_sources(Example PRIVATE
+        spectrumshowcasewidget.cpp
+        spectrumshowcasewidget.h
+        sinewavegenerator.cpp
+        sinewavegenerator.h
+    )
+endif()
 
 set_target_properties(Example PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>

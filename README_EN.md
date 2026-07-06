@@ -36,6 +36,8 @@ Because of Qt’s widget model, not every WinUI control can be reproduced exactl
 
 The **Example** app may include extra widgets under **ExWidgets** for demonstration; those widgets are still drawn using the same style engine. More samples may be added over time, and those widgets are intended to remain usable without the style if needed.
 
+**ExWidgets usage guide (linking, APIs, PCM format for ExSpectrumWidget):** [ExWidgets/README_EN.md](ExWidgets/README_EN.md) ([中文](ExWidgets/README.md))
+
 If you try to restyle everything with **QSS** alone, you will often **override** the `QStyle` painting and lose this library’s look. For deep customization, extending or subclassing `QStyle` (as this project does) is the right level—but that is advanced and not the primary goal here.
 
 If you want a **consistent** Fluent look with small tweaks on top, this project is a good fit. It targets teams that already have Qt apps and want Fluent UI styling with minimal integration cost.

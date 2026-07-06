@@ -9,6 +9,8 @@ set(EXWIDGETS_SOURCES
     excolorpickerbutton.h
     exmessagebox.cpp
     exmessagebox.h
+    exspectrumwidget.cpp
+    exspectrumwidget.h
     excontentdialog.cpp
     excontentdialog.h
     exnavtreewidget.cpp
@@ -35,11 +37,17 @@ target_include_directories(ExWidgets PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/FluentUI3Colors>
 )
 
+target_include_directories(ExWidgets PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../3rd/kissfft
+)
+
 target_link_libraries(ExWidgets PUBLIC
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
 )
+
+target_link_libraries(ExWidgets PRIVATE kissfft)
 
 
 

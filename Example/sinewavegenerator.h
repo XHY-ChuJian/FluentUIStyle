@@ -3,9 +3,7 @@
 #include <QByteArray>
 #include <QVector>
 
-/**
- * @brief 正弦波 PCM 生成器，用于不接麦克风/音频文件时的频谱演示。
- */
+/// 正弦波 PCM 生成器，用于 Example 中 ExSpectrumWidget 的模拟演示。
 class SineWaveGenerator
 {
 public:
@@ -16,7 +14,6 @@ public:
     void setAmplitude(float amplitude);
     void setAnimated(bool animated);
 
-    /// 生成 sampleCount 个 16-bit PCM 单声道样本。
     QByteArray generate(int sampleCount);
 
 private:
