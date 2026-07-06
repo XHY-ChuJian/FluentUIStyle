@@ -54,7 +54,8 @@ Happy coding.
 
 ### Notes
 
-- **Tested versions:** Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 / 6.10 (MSVC).
+- **Tested versions:** Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
+- **Qt 6.8+ known issue:** **Drop shadows** on **Popup** surfaces such as `QMenu` and `QComboBox` lists may look wrong on Qt **6.8 and newer** (missing, clipped, dirty edges, or misaligned). FluentUI3Style turns off the native shadow (`Qt::NoDropShadowWindowHint`) and uses `WA_TranslucentBackground` so the style can **paint multi-layer shadows in `QStyle`**. From Qt 6.8 onward, the Windows platform changed how **translucent popup windows** are composited (paintable region, alpha blending, stacking). That no longer matches the assumptions of the hand-drawn shadow path, so shadows that looked correct on Qt 6.6 and earlier can break. This is a **Qt platform + custom shadow** interaction, not a single-widget logic bug; adaptation for newer Qt releases is ongoing.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
 - **Compatibility:** Qt has many versions; full parity everywhere is unrealistic, but recent stable Qt releases are the priority.
@@ -66,7 +67,8 @@ Happy coding.
 | Qt 5.14.2  | Supported | Tested |
 | Qt 5.15.2  | Supported | Tested |
 | Qt 6.6.3   | Supported | Tested |
-| Qt 6.10    | Supported | Tested |
+| Qt 6.8+    | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
+| Qt 6.10    | Partial | Same shadow issue; style sources are ported from Qt 6.10 Win11 style |
 
 ## Build (detailed)
 
