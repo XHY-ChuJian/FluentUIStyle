@@ -65,8 +65,6 @@ else()
 endif()
 
 if(FLUENT_ENABLE_QWINDOWKIT)
-    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QWindowKitQmsetupCompat.cmake")
-    qwk_check_cmake_toolchain_for_qwindowkit()
 
     set(QWINDOWKIT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(QWINDOWKIT_BUILD_QUICK OFF CACHE BOOL "" FORCE)
