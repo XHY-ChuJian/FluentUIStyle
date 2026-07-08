@@ -3,10 +3,6 @@ set(EXAMPLE_SOURCES
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    frameless/fluenttitlebar.cpp
-    frameless/fluenttitlebar.h
-    frameless/fluentwindowframe.cpp
-    frameless/fluentwindowframe.h
     installedsoftwaretablewidget.cpp
     installedsoftwaretablewidget.h
     tabshowcasewidget.cpp
@@ -26,6 +22,15 @@ set(EXAMPLE_SOURCES
     font-icon/resource.qrc
     resources.qrc
 )
+
+if(FLUENT_ENABLE_QWINDOWKIT)
+    list(APPEND EXAMPLE_SOURCES
+        frameless/fluenttitlebar.cpp
+        frameless/fluenttitlebar.h
+        frameless/fluentwindowframe.cpp
+        frameless/fluentwindowframe.h
+    )
+endif()
 
 if(WIN32)
     list(APPEND EXAMPLE_SOURCES
@@ -83,19 +88,25 @@ else()
     )
 endif()
 
-target_include_directories(Example PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/frameless
-)
+if(FLUENT_ENABLE_QWINDOWKIT)
+    target_compile_definitions(Example PRIVATE EXAMPLE_ENABLE_QWINDOWKIT)
+    target_include_directories(Example PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/frameless
+    )
+endif()
 
 target_link_libraries(Example PRIVATE
     ExWidgets
-    QWindowKit::Widgets
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Svg
     ${FLUENT_QT_PRIVATE_LIBS}
 )
+
+if(FLUENT_ENABLE_QWINDOWKIT)
+    target_link_libraries(Example PRIVATE QWindowKit::Widgets)
+endif()
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     target_link_libraries(Example PRIVATE
@@ -118,7 +129,7 @@ set_target_properties(Example PROPERTIES
 
 # $<TARGET_FILE:...> is configuration-aware (Debug -> QWKCored.dll, Release -> QWKCore.dll).
 # QWK targets already output to ${CMAKE_BINARY_DIR}/bin; this POST_BUILD is a safety net.
-if(TARGET QWKCore AND TARGET QWKWidgets)
+if(FLUENT_ENABLE_QWINDOWKIT AND TARGET QWKCore AND TARGET QWKWidgets)
     add_dependencies(Example QWKCore QWKWidgets)
 
     add_custom_command(TARGET Example POST_BUILD

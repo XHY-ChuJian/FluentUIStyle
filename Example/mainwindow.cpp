@@ -98,8 +98,10 @@
 #include "colorshowcasewidget.h"
 #include "rangeslidershowcasewidget.h"
 #include "fluentui3styleproperties.h"
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
 #include "frameless/fluenttitlebar.h"
 #include "frameless/fluentwindowframe.h"
+#endif
 
 #ifndef FLUENT_USE_QT_STYLE
 #include <fluentui3style.h>
@@ -330,7 +332,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui(new Ui::MainWindow),
     m_menuBar(nullptr),
     m_toolBar(nullptr),
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
     m_windowFrame(nullptr),
+#endif
     m_tabShowcaseWidget(nullptr),
     m_searchAction(nullptr),
     m_tabBarWidgetBg(nullptr),
@@ -344,9 +348,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_menuBar = new QMenuBar(this);
     m_menuBar->setObjectName(QStringLiteral("win-menu-bar"));
 
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
     m_windowFrame = new FluentWindowFrame(this, this);
     m_windowFrame->installChromeHeader(m_menuBar);
     setupTitleBarChrome();
+#else
+    setMenuBar(m_menuBar);
+#endif
 
     setWindowIcon(QIcon(":/appicon.ico"));
 
@@ -828,6 +836,7 @@ void MainWindow::setupToolBarControls(QToolBar *toolBar)
 
 void MainWindow::setupTitleBarChrome()
 {
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
     FluentTitleBar *titleBar = m_windowFrame ? m_windowFrame->titleBar() : nullptr;
     if (!titleBar)
     {
@@ -855,6 +864,7 @@ void MainWindow::setupTitleBarChrome()
         setTopMost(this, checked);
         titleBar->setPinned(checked);
     });
+#endif
 }
 
 void MainWindow::applyThemeIndex(int index)
@@ -883,10 +893,12 @@ void MainWindow::applyThemeIndex(int index)
         ui->rBDarkTheme->setChecked(true);
     }
 
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
     if (FluentTitleBar *titleBar = m_windowFrame ? m_windowFrame->titleBar() : nullptr)
     {
         titleBar->setThemeDark(index == 1);
     }
+#endif
 }
 
 void MainWindow::setupThemeSelector(QToolBar *toolBar)
@@ -980,14 +992,19 @@ void MainWindow::applyWidgetBgMode(WidgetBgMode mode)
     qApp->setProperty("_q_widget_mode", static_cast<int>(mode));
     refreshFluentStyle();
 
-    if (widgetBgModeUsesBackdrop(mode))
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+    if (m_windowFrame)
     {
-        m_windowFrame->setWindowBackdrop(widgetBgModeBackdropKey(mode));
+        if (widgetBgModeUsesBackdrop(mode))
+        {
+            m_windowFrame->setWindowBackdrop(widgetBgModeBackdropKey(mode));
+        }
+        else
+        {
+            m_windowFrame->clearWindowBackdrop();
+        }
     }
-    else
-    {
-        m_windowFrame->clearWindowBackdrop();
-    }
+#endif
 
     update();
 }
@@ -1863,7 +1880,11 @@ void MainWindow::setupAccentColorWidget()
     }
     layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Preferred));
 
+#if QT_VERSION <= QT_VERSION_CHECK(5,15,2)
+    connect(btnGroup, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, [=](int id)
+#else
     connect(btnGroup, &QButtonGroup::idClicked, this, [=](int id)
+#endif
             {
                 for (QAbstractButton *b : btnGroup->buttons())
                 {

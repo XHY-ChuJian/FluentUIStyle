@@ -900,6 +900,8 @@ void ExColorPickerPrivate::updateTabIcons()
 
 void ExColorPickerPrivate::updatePanelVisibility()
 {
+//Qt 5.15以下没有setTabVisible接口
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,2)
     if (!tabBar || !stack)
         return;
 
@@ -925,6 +927,7 @@ void ExColorPickerPrivate::updatePanelVisibility()
             }
         }
     }
+#endif
 }
 
 void ExColorPickerPrivate::applyColor(const QColor &color, bool emitSignal, bool updateInputs)

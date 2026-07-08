@@ -16,7 +16,9 @@ class QComboBox;
 class QTreeWidgetItem;
 class TabShowcaseWidget;
 class InstalledSoftwareTableWidget;
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
 class FluentWindowFrame;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -125,7 +127,9 @@ private:
 
     QMenuBar *m_menuBar{nullptr};
     QToolBar *m_toolBar{nullptr};
+#ifdef EXAMPLE_ENABLE_QWINDOWKIT
     FluentWindowFrame *m_windowFrame{nullptr};
+#endif
 
     TabShowcaseWidget *m_tabShowcaseWidget{nullptr};
     InstalledSoftwareTableWidget *m_installedSoftwareTable{nullptr};

@@ -1,3 +1,5 @@
+include($$PWD/../3rd/kissfft/kissfft.pri)
+
 SOURCES += \
     $$PWD/colorgradientslider.cpp \
     $$PWD/exrangeslider.cpp \
@@ -8,7 +10,8 @@ SOURCES += \
     $$PWD/exwinuinavigationview.cpp \
     $$PWD/exstackedwidget.cpp \
     $$PWD/extabwidget.cpp \
-    $$PWD/excontentdialog.cpp
+    $$PWD/excontentdialog.cpp \
+    $$PWD/exspectrumwidget.cpp
 
 HEADERS += \
     $$PWD/colorgradientslider.h \
@@ -21,7 +24,8 @@ HEADERS += \
     $$PWD/exstackedwidget.h \
     $$PWD/exwidgets_global.h \
     $$PWD/extabwidget.h \
-    $$PWD/excontentdialog.h
+    $$PWD/excontentdialog.h \
+    $$PWD/exspectrumwidget.h
 
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../FluentUI3Colors

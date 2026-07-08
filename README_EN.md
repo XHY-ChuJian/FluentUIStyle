@@ -48,13 +48,21 @@ Happy coding.
 
 ### Plugin benefits
 
-- **Auto deploy:** CMake / qmake builds copy the style plugin into the correct Qt `plugins/styles` directory.
+- **Auto deploy:** CMake builds can copy the style plugin into Qt’s `plugins/styles` directory (see `FLUENTUI3STYLE_COPY_TO_QT_DIR` below).
 - **Drop-in:** Call `app.setStyle("FluentUI3")` after `QApplication` starts.
 - **No extra linkage:** Your app does not need to link the style sources directly when using the plugin.
 
+### Build system
+
+| Method | Status | Notes |
+| ------ | ------ | ----- |
+| **CMake** | Recommended, actively maintained | Kept in sync with `Example/CMakeLists.txt` and new features—use this for daily development |
+| **qmake** | Legacy, **not synced** | `fluentw3uistyle.pro` remains for reference but is **no longer updated with CMake**; Example / QWindowKit behavior may differ |
+
 ### Notes
 
-- **Tested versions:** Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
+- **Tested versions:** Style library on Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
+- **Example frameless window (QWindowKit):** Enabled for **CMake builds with Qt ≥ 5.15.2**. **Qt 5.14.2 uses the system title bar and system window frame** (QWindowKit is not used).
 - **Qt 6.8+ known issue:** **Drop shadows** on **Popup** surfaces such as `QMenu` and `QComboBox` lists may look wrong on Qt **6.8 and newer** (missing, clipped, dirty edges, or misaligned). FluentUI3Style turns off the native shadow (`Qt::NoDropShadowWindowHint`) and uses `WA_TranslucentBackground` so the style can **paint multi-layer shadows in `QStyle`**. From Qt 6.8 onward, the Windows platform changed how **translucent popup windows** are composited (paintable region, alpha blending, stacking). That no longer matches the assumptions of the hand-drawn shadow path, so shadows that looked correct on Qt 6.6 and earlier can break. This is a **Qt platform + custom shadow** interaction, not a single-widget logic bug; adaptation for newer Qt releases is ongoing.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
@@ -62,20 +70,22 @@ Happy coding.
 
 ### Qt compatibility matrix
 
-| Qt version | Status | Notes |
-| ---------- | ------ | ----- |
-| Qt 5.14.2  | Supported | Tested |
-| Qt 5.15.2  | Supported | Tested |
-| Qt 6.6.3   | Supported | Tested |
-| Qt 6.8+    | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
-| Qt 6.10    | Partial | Same shadow issue; style sources are ported from Qt 6.10 Win11 style |
+| Qt version | Style library | Example (CMake) | Window chrome |
+| ---------- | ------------- | --------------- | ------------- |
+| Qt 5.14.2  | Supported | Supported | **System frame** (no QWindowKit frameless) |
+| Qt 5.15.2  | Supported | Supported | QWindowKit frameless + DWM backdrop |
+| Qt 6.6.3   | Supported | Supported | QWindowKit frameless + DWM backdrop |
+| Qt 6.8+    | Partial | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
+| Qt 6.10    | Partial | Partial | Same shadow issue; style sources are ported from Qt 6.10 Win11 style |
 
 ## Build (detailed)
 
 ### Get the source (including submodules)
 
-The Example app’s frameless window and DWM backdrop use **[QWindowKit](https://github.com/stdware/qwindowkit)**, vendored as a Git **submodule** at `3rd/qwindowkit/`.  
-A plain `git clone` does **not** fetch submodule contents; an empty or missing directory will break CMake.
+The Example app’s frameless window and DWM backdrop (via **[QWindowKit](https://github.com/stdware/qwindowkit)**) are enabled only for **CMake builds with Qt ≥ 5.15.2**. The submodule lives at `3rd/qwindowkit/`.  
+**Qt 5.14.2 uses the system window frame**—QWindowKit is not integrated; you can skip the submodule if you only build the style library/plugin.
+
+For **Qt 5.15.2+** with Example frameless features, initialize submodules after clone or CMake will fail to find `3rd/qwindowkit`.
 
 #### First-time clone (recommended)
 
@@ -91,7 +101,7 @@ git pull
 git submodule update --init --recursive
 ```
 
-> **Note:** `git pull` alone does **not** update submodules. If CMake cannot find `3rd/qwindowkit`, run `git submodule update --init --recursive` again.
+> **Note:** `git pull` alone does **not** update submodules. Only when using Qt ≥ 5.15.2 with QWindowKit, run `git submodule update --init --recursive` if CMake cannot find `3rd/qwindowkit`.
 
 Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 
@@ -108,7 +118,9 @@ Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 
 ---
 
-### Build with CMake (recommended)
+### Build with CMake (recommended—the only actively maintained build)
+
+**CMake is the source of truth.** Root and subdirectory `CMakeLists.txt` files are updated with new features; **qmake projects are no longer kept in sync.**
 
 #### 1) Open a shell in the repo
 
@@ -117,6 +129,14 @@ cd D:/workspace/Code/Github/Window11Style
 ```
 
 #### 2) Configure
+
+Qt 5.15.2 example (use a **64-bit** MSVC kit—the kit name should include `64bit`):
+
+```powershell
+cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH="D:/Qt/5.15.2/msvc2019_64" -DCMAKE_BUILD_TYPE=Debug
+```
+
+Qt 6 example:
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64"
@@ -131,13 +151,13 @@ You can also point CMake at Qt explicitly:
 #### 3) Build
 
 ```powershell
-cmake --build build --config Debug
+cmake --build build
 ```
 
-Release:
+For multi-config generators (Visual Studio):
 
 ```powershell
-cmake --build build --config Release
+cmake --build build --config Debug
 ```
 
 #### 4) Run the example
@@ -152,6 +172,7 @@ cmake --build build --config Release
 - `BUILD_LIBRARY` — build the style library (default **ON**).
 - `BUILD_PLUGIN` — build the Qt style plugin (default **ON**).
 - `BUILD_EXAMPLE` — build the demo app (default **ON**).
+- `FLUENTUI3STYLE_COPY_TO_QT_DIR` — copy the plugin into Qt’s `plugins/styles` after build (default **OFF**, avoids writing into a protected Qt install).
 
 Example: library + plugin only, no demo:
 
@@ -159,11 +180,19 @@ Example: library + plugin only, no demo:
 cmake -S . -B build -DBUILD_EXAMPLE=OFF
 ```
 
+#### 6) Qt 5.14.2 notes
+
+- **Style library, plugin, and Example all build with CMake**
+- Example uses the **system title bar and system window frame** (no QWindowKit)
+- No need to init the `3rd/qwindowkit` submodule unless you build QWindowKit-dependent targets on Qt ≥ 5.15.2
+
 ---
 
-### Build with qmake
+### qmake (legacy—not synced with CMake)
 
-The repo provides `fluentw3uistyle.pro` (SUBDIRS project):
+`fluentw3uistyle.pro` is kept for older workflows but **is not updated together with CMake**. It may lack recent Example features (QWindowKit frameless, AudiomaticMini, etc.).
+
+If you still want to try:
 
 ```powershell
 cd D:/workspace/Code/Github/Window11Style
@@ -171,7 +200,7 @@ qmake fluentw3uistyle.pro
 nmake
 ```
 
-Or open `fluentw3uistyle.pro` in Qt Creator and build with your kit.
+**Use CMake for new work and day-to-day development.**
 
 ---
 
@@ -187,7 +216,7 @@ Typical flow to adopt **FluentUI3Style** in your own Qt application.
 
 ### 1) Build and deploy the plugin
 
-Follow the CMake or qmake steps above. After a successful build, the plugin is copied to:
+Follow the **CMake** steps above. If you set `FLUENTUI3STYLE_COPY_TO_QT_DIR=ON`, the plugin is copied to:
 
 - `QT_INSTALL_PLUGINS/styles`
 
@@ -213,7 +242,7 @@ app.setStyle("FluentUI3");
 
 Prefer `setProperty` with named constants instead of raw numeric literals.
 
-### 4) Minimal CMake / qmake snippets
+### 4) Minimal CMake snippet
 
 #### CMake (sketch)
 
@@ -221,13 +250,6 @@ Prefer `setProperty` with named constants instead of raw numeric literals.
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 add_executable(MyApp main.cpp mainwindow.cpp)
 target_link_libraries(MyApp PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
-```
-
-#### qmake (sketch)
-
-```qmake
-QT += core gui widgets
-SOURCES += main.cpp mainwindow.cpp
 ```
 
 As long as the `FluentUI3` plugin is discoverable under `plugins/styles`, your app does **not** need to link `FluentUI3Style` explicitly to use `app.setStyle("FluentUI3")`.

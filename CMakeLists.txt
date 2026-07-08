@@ -56,31 +56,43 @@ foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
 endforeach()
 
-# QWindowKit (installs into the same prefix as this project: ./install)
-set(QWINDOWKIT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(QWINDOWKIT_BUILD_QUICK OFF CACHE BOOL "" FORCE)
-set(QWINDOWKIT_BUILD_WIDGETS ON CACHE BOOL "" FORCE)
-set(QWINDOWKIT_BUILD_DOCUMENTATIONS OFF CACHE BOOL "" FORCE)
-set(QWINDOWKIT_INSTALL ON CACHE BOOL "" FORCE)
-add_subdirectory(3rd/qwindowkit)
+# QWindowKit: Qt 5.15.2+ only (matches QWindowKit recommended Qt 5 baseline)
+if(QT_VERSION VERSION_LESS "5.15.2")
+    set(FLUENT_ENABLE_QWINDOWKIT OFF)
+    message(STATUS "QWindowKit disabled: Qt ${QT_VERSION} < 5.15.2")
+else()
+    set(FLUENT_ENABLE_QWINDOWKIT ON)
+endif()
 
-# qmsetup may override per-directory output paths; align QWK targets with the tree above.
-foreach(_qwk_target IN ITEMS QWKCore QWKWidgets)
-    if(TARGET ${_qwk_target})
-        set_target_properties(${_qwk_target} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY "${_out_bin}"
-            LIBRARY_OUTPUT_DIRECTORY "${_out_lib}"
-            ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}"
-        )
-        foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+if(FLUENT_ENABLE_QWINDOWKIT)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QWindowKitQmsetupCompat.cmake")
+    qwk_check_cmake_toolchain_for_qwindowkit()
+
+    set(QWINDOWKIT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(QWINDOWKIT_BUILD_QUICK OFF CACHE BOOL "" FORCE)
+    set(QWINDOWKIT_BUILD_WIDGETS ON CACHE BOOL "" FORCE)
+    set(QWINDOWKIT_BUILD_DOCUMENTATIONS OFF CACHE BOOL "" FORCE)
+    set(QWINDOWKIT_INSTALL ON CACHE BOOL "" FORCE)
+    add_subdirectory(3rd/qwindowkit)
+
+    # qmsetup may override per-directory output paths; align QWK targets with the tree above.
+    foreach(_qwk_target IN ITEMS QWKCore QWKWidgets)
+        if(TARGET ${_qwk_target})
             set_target_properties(${_qwk_target} PROPERTIES
-                RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}"
-                LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
-                ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
+                RUNTIME_OUTPUT_DIRECTORY "${_out_bin}"
+                LIBRARY_OUTPUT_DIRECTORY "${_out_lib}"
+                ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}"
             )
-        endforeach()
-    endif()
-endforeach()
+            foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+                set_target_properties(${_qwk_target} PROPERTIES
+                    RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}"
+                    LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
+                    ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
+                )
+            endforeach()
+        endif()
+    endforeach()
+endif()
 
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)

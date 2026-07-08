@@ -23,5 +23,6 @@ build_plugin {
 
 build_example {
     SUBDIRS += Example
-    Example.depends = ExWidgets FluentUI3Style
+    Example.depends = ExWidgets
+    build_library: Example.depends += FluentUI3Style
 }

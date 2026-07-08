@@ -23,3 +23,7 @@ RESOURCES += \
     $$PWD/resource.qrc
 
 INCLUDEPATH += $$PWD/../FluentUI3Colors
+
+win32 {
+    LIBS += -ldwmapi
+}
