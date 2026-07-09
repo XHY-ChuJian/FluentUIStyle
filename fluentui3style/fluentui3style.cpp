@@ -70,6 +70,8 @@
 #    include "palettemanager.h"
 #endif
 
+static constexpr int selectionIndicatorWidth = 2;
+static constexpr int selectionIndicatorRadius = 2;
 static constexpr int topLevelRoundingRadius    = 6;      // Radius for toplevel items like popups for round corners
 static constexpr int secondLevelRoundingRadius = 3;      // Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin        = 4;      // margin between content items (e.g. text and icon)
@@ -5003,7 +5005,7 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
 
     const qreal progress    = clamp01( animationValue( stateObject, animKey, 1.0f ) );
     const qreal normalInset = option->rect.height() / 4.0;
-    const qreal markerWidth = 2.0;
+    const qreal markerWidth = (qreal)selectionIndicatorWidth;
     const bool isRtl        = option->direction == Qt::RightToLeft;
     const qreal xPos        = isRtl ? option->rect.right() - 4.5f : option->rect.left() + 3.5f;
     const qreal halfHeight  = ( option->rect.height() - normalInset * 2.0 ) * progress * 0.5;
@@ -5014,7 +5016,7 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
 
     painter->setBrush( col );
     painter->setPen( col );
-    painter->drawRoundedRect( indicatorRect, 1.0, 1.0 );
+    painter->drawRoundedRect( indicatorRect, selectionIndicatorRadius, selectionIndicatorRadius );
 }
 
 void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
@@ -5061,7 +5063,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
     const qreal normalInset = rect.height() / 3.5f;
     const qreal targetTop   = rect.top() + normalInset;
     const qreal targetH     = rect.height() - normalInset * 2.0;
-    const qreal targetW     = 2.0;
+    const qreal targetW     = selectionIndicatorWidth;
 
     const QRectF fromRect   = stateObject->property( "_q_tree_indicator_from_rect" ).toRectF();
     const QRectF toRect     = stateObject->property( "_q_tree_indicator_to_rect" ).toRectF();
@@ -5290,7 +5292,7 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
     const QRectF mark( QPointF( drawX, drawTop ), QPointF( drawX + targetW, drawBottom ) );
     painter->setBrush( calculateAccentColor( option ) );
     painter->setPen( calculateAccentColor( option ) );
-    painter->drawRoundedRect( mark, 1.0, 1.0 );
+    painter->drawRoundedRect( mark, selectionIndicatorRadius, selectionIndicatorRadius );
 }
 
 void FluentUI3Style::drawTreeViewIndicator( const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget ) const
@@ -5318,11 +5320,11 @@ void FluentUI3Style::drawTreeViewIndicator( const QStyleOptionViewItem* option, 
         const bool isRtl = option->direction == Qt::RightToLeft;
         const qreal xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
         const qreal yOfs = rect.height() / 4.0;
-        const QRectF mark( QPointF( xPos, rect.y() + yOfs ), QPointF( xPos + 1.0, rect.y() + rect.height() - yOfs ) );
+        const QRectF mark( QPointF( xPos, rect.y() + yOfs ), QPointF( xPos + selectionIndicatorWidth, rect.y() + rect.height() - yOfs ) );
 
         painter->setBrush( col );
         painter->setPen( col );
-        painter->drawRoundedRect( mark, 1.0, 1.0 );
+        painter->drawRoundedRect( mark, selectionIndicatorRadius, selectionIndicatorRadius );
     }
 }
 
