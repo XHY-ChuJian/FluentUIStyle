@@ -71,7 +71,7 @@
 #endif
 
 static constexpr int topLevelRoundingRadius    = 6;      // Radius for toplevel items like popups for round corners
-static constexpr int secondLevelRoundingRadius = 4;      // Radius for second level items like hovered menu item round corners
+static constexpr int secondLevelRoundingRadius = 3;      // Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin        = 4;      // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin            = 2 * 3;  // margin between rounded border and content (= rounded border
                                                          // margin * 3)
@@ -1982,8 +1982,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
         {
             if ( const QStyleOptionComboBox* combobox = qstyleoption_cast<const QStyleOptionComboBox*>( option ) )
             {
-                const QRectF frameRect =
-                    QRectF( option->rect ).marginsRemoved( QMarginsF( cBShadowBorderWidth, 1, cBShadowBorderWidth, 1 ) );
+                const QRectF frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( cBShadowBorderWidth, 1, cBShadowBorderWidth, 1 ) );
                 QStyleOption opt( *option );
                 opt.state.setFlag( QStyle::State_On, false );
 
@@ -1993,10 +1992,10 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     p->setBrush( brush );
                     p->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
                 };
-                const QBrush rawBrush  = combobox->editable ? inputFillBrush( option, widget )
-                                                            : controlFillBrush( &opt, ControlType::Control );
+                const QBrush rawBrush  = combobox->editable ? inputFillBrush( option, widget ) : controlFillBrush( &opt, ControlType::Control );
                 const QColor blendBase = combobox->editable ? option->palette.base().color() : option->palette.button().color();
-                const QColor opaqueBg  = resolveOpaque( rawBrush.color(), blendBase );
+                //TODO 透明在表格时会把单元格内容显示出来，不透明颜色不好看
+                const QColor opaqueBg  = /*resolveOpaque( rawBrush.color(), blendBase )*/rawBrush.color();
 
                 if ( combobox->frame )
                 {
@@ -2879,7 +2878,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             const bool isEnabled   = state & QStyle::State_Enabled;
             const bool isMouseOver = state & QStyle::State_MouseOver;
             const bool isRaised    = state & QStyle::State_Raised;
-            const QRectF rect      = option->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
+            const QRectF rect      = option->rect.marginsRemoved( QMargins( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
             if ( element == PE_PanelButtonTool && ( ( !isMouseOver && !isRaised ) || !isEnabled ) )
             {
                 painter->setPen( Qt::NoPen );
@@ -2889,7 +2888,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->setPen( winUI3Color( controlStrokePrimary ) );
             }
 
-            drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
+            drawEffectShadow( painter, option->rect, cBShadowBorderWidth, secondLevelRoundingRadius );
             painter->setBrush( controlFillBrush( option, ControlType::Control ) );
             painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
         }
