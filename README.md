@@ -5,16 +5,13 @@
 
 ## 预览
 <img width="1920" height="1094" alt="QQ20260509-112403-HD" src="https://github.com/user-attachments/assets/2e5d044d-7f2a-41cd-a76d-e5faf3cbc140" />
+<img width="2081" height="1335" alt="QQ20260713-173357" src="https://github.com/user-attachments/assets/be4a2d53-adee-408e-b837-0e8f37ee418f" />
+<img width="2081" height="1335" alt="QQ20260713-173544" src="https://github.com/user-attachments/assets/3438b9bc-cfc8-4b81-a199-ee635cfcb7bb" />
+<img width="1972" height="1329" alt="QQ20260713-173612" src="https://github.com/user-attachments/assets/856a6e6c-ec98-46f6-9c6d-7657b361dc63" />
+<img width="2081" height="1335" alt="QQ20260713-173534" src="https://github.com/user-attachments/assets/e7ec0db1-617f-4ee3-a157-4b1192581e21" />
+<img width="2081" height="1335" alt="QQ20260713-173524" src="https://github.com/user-attachments/assets/ae64d4d3-4d87-4347-a424-74dd3e6532f8" />
+<img width="2081" height="1335" alt="QQ20260713-173434" src="https://github.com/user-attachments/assets/d8b81324-02f9-4604-96d1-3d9d172cedd8" />
 
-<img width="2438" height="1390" alt="screenshot-20260509-112513" src="https://github.com/user-attachments/assets/d1180649-0722-4824-8158-3771debb4a8f" />
-
-<img width="2438" height="1390" alt="screenshot-20260509-112526" src="https://github.com/user-attachments/assets/5d813ac2-3dd8-4ba9-8e60-c823fcf26c5f" />
-
-<img width="2438" height="1390" alt="screenshot-20260509-112552" src="https://github.com/user-attachments/assets/6e297f08-d381-4725-891d-3e9c057563f3" />
-
-<img width="2247" height="1407" alt="screenshot-20260511-094643" src="https://github.com/user-attachments/assets/e59e6846-a9f5-4349-9a30-09251308f00c" />
-
-<img width="2468" height="1390" alt="screenshot-20260509-112806" src="https://github.com/user-attachments/assets/4f0c8084-864e-409c-afc2-98918ff2ec36" />
 
 ## QDesigner展示
 <img width="2616" height="1234" alt="image" src="https://github.com/user-attachments/assets/9f3526d0-cd38-46ee-a325-0c667a11d341" />
