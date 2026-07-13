@@ -73,7 +73,7 @@
 static constexpr int selectionIndicatorWidth = 2;
 static constexpr int selectionIndicatorRadius = 2;
 static constexpr int topLevelRoundingRadius    = 6;      // Radius for toplevel items like popups for round corners
-static constexpr int secondLevelRoundingRadius = 3;      // Radius for second level items like hovered menu item round corners
+static constexpr int secondLevelRoundingRadius = 4;      // Radius for second level items like hovered menu item round corners
 static constexpr int contentItemHMargin        = 4;      // margin between content items (e.g. text and icon)
 static constexpr int contentHMargin            = 2 * 3;  // margin between rounded border and content (= rounded border
                                                          // margin * 3)
