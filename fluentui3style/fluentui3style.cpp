@@ -84,33 +84,27 @@ static constexpr int pivotIndicatorPreferredWidth = 24;  // Pivot_Grow / Slide /
 static constexpr int menuItemVMargin = 3;  // vertical margin for menu items
 static constexpr int menuItemHMargin = 3;  // horizontal margin for menu items
 
-static constexpr int cBShadowBorderWidth               = 2;
+static constexpr int cBShadowBorderWidth               = ComboBoxControlFrameHorizontalInset;
 static constexpr int cBRoundingRadius                  = 4;
-static constexpr int cBPopupOffset                     = 3;
 static constexpr const char* cBPopupAnimatorProperty   = "_q_fluent_combo_popup_animator";
 static constexpr int menuPopupAnimationDuration        = 400;
 static constexpr const char* menuPopupAnimatorProperty = "_q_fluent_menu_popup_animator";
 
 static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 {
-    const QMarginsF shadowMargins( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth );
-
-    QComboBox* comboBox = ComboBoxPopupAnimator::comboBoxForPopup( popup );
-    if ( !comboBox || !ComboBoxPopupAnimator::isEnabled( comboBox ) )
-    {
-        return shadowMargins;
-    }
-
-    const bool opensAbove = popup->property( ComboBoxPopupOpensAboveProperty ).toBool();
-    return opensAbove ? QMarginsF( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, 0 )
-                      : QMarginsF( cBShadowBorderWidth, 0, cBShadowBorderWidth, cBShadowBorderWidth );
+    Q_UNUSED( popup )
+    return QMarginsF( FlyoutShadowBorderWidth,
+                      FlyoutShadowBorderWidth,
+                      FlyoutShadowBorderWidth,
+                      FlyoutShadowBorderWidth );
 }
 
 static constexpr int ProgressBarThickness       = 4;
 static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
 static constexpr int NavigationIconRole         = Qt::UserRole + 1;
 
-static constexpr int toolTipShadowBorderWidth      = 2;
+// The shared FluShadow profile extends four logical pixels beyond the panel.
+static constexpr int toolTipShadowBorderWidth      = FlyoutShadowBorderWidth;
 static constexpr int toolTipContentPadding         = 4;
 static constexpr int kSliderValueTipGapAboveHandle = 4;
 
@@ -1155,6 +1149,75 @@ private:
     QPainter* m_painter;
 };
 
+static void drawRoundedUnderline( QPainter* painter,
+                                  const QRectF& shapeRect,
+                                  const QRectF& frameRect,
+                                  qreal radius,
+                                  const QPen& pen )
+{
+    PainterStateGuard guard( painter );
+    const QRectF underlineClip(
+        frameRect.left(),
+        frameRect.bottom() - 1.0,
+        frameRect.width(),
+        3.0 );
+    painter->setClipRect( underlineClip, Qt::IntersectClip );
+    painter->setPen( pen );
+    painter->setBrush( Qt::NoBrush );
+    painter->drawRoundedRect( shapeRect, radius, radius );
+}
+
+static void drawRoundedBorderSurface( QPainter* painter,
+                                      const QRectF& rect,
+                                      qreal radius,
+                                      const QBrush& background,
+                                      const QBrush& border,
+                                      qreal borderWidth,
+                                      bool backgroundInsideBorder )
+{
+    if ( !rect.isValid() )
+    {
+        return;
+    }
+
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing );
+    painter->setPen( Qt::NoPen );
+
+    const qreal width = qBound( 0.0, borderWidth, qMin( rect.width(), rect.height() ) / 2.0 );
+    const QRectF innerRect = rect.adjusted( width, width, -width, -width );
+    const qreal innerRadius = qMax( 0.0, radius - width );
+
+    if ( background.style() != Qt::NoBrush )
+    {
+        painter->setBrush( background );
+        if ( backgroundInsideBorder && innerRect.isValid() )
+        {
+            painter->drawRoundedRect( innerRect, innerRadius, innerRadius );
+        }
+        else
+        {
+            painter->drawRoundedRect( rect, radius, radius );
+        }
+    }
+
+    if ( width <= 0.0 || border.style() == Qt::NoBrush )
+    {
+        return;
+    }
+
+    QPainterPath borderPath;
+    borderPath.setFillRule( Qt::OddEvenFill );
+    borderPath.addRoundedRect( rect, radius, radius );
+    if ( innerRect.isValid() )
+    {
+        borderPath.addRoundedRect( innerRect, innerRadius, innerRadius );
+    }
+
+    painter->setBrush( border );
+    painter->drawPath( borderPath );
+}
+
 inline void
 qDrawPlainRoundedRect( QPainter* p, int x, int y, int w, int h, qreal rx, qreal ry, const QColor& c, int lineWidth, const QBrush* fill )
 {
@@ -1769,6 +1832,14 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 SpinBoxButtonLayout buttonLayout =
                     widget ? static_cast<SpinBoxButtonLayout>( widget->property( "spinBoxButtonLayout" ).toInt() )
                            : SpinBoxButtonLayout::ArrowsVertical;
+                const auto frameRect =
+                    QRectF( option->rect ).marginsRemoved(
+                        QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
+                const auto* spinBox =
+                    qobject_cast<const QAbstractSpinBox*>( widget );
+                const bool isEditable =
+                    spinBox ? !spinBox->isReadOnly()
+                            : !( state & State_ReadOnly );
 
                 QCachedPainter cp(
                     painter,
@@ -1777,7 +1848,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     sb->rect.size() );
                 if ( cp.needsPainting() )
                 {
-                    const auto frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
                     if ( sb->frame && ( sub & SC_SpinBoxFrame ) )
                     {
                         QStyleOptionFrame panel;
@@ -1785,6 +1855,10 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         panel.rect         = option->rect;
                         panel.lineWidth    = 1;
                         panel.midLineWidth = 0;
+                        // The underline is composited directly below.  Keeping
+                        // it out of the Qt 5 pixmap cache avoids a different
+                        // antialiasing result from the direct QLineEdit path.
+                        panel.state |= State_ReadOnly;
 
                         const auto fillColor = [ & ]() -> WINUI3Color
                         {
@@ -1848,6 +1922,25 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         fropt.QStyleOption::operator=( *option );
                         proxy()->drawPrimitive( PE_FrameFocusRect, &fropt, cp.painter(), widget );
                     }
+                }
+                cp.finish();
+
+                if ( sb->frame && ( sub & SC_SpinBoxFrame )
+                     && isEditable )
+                {
+                    const bool hasFocus = state & State_HasFocus;
+                    const auto underlineCol =
+                        hasFocus
+                            ? accentColor( option )
+                            : ( colorSchemeIndex == 0
+                                    ? QColor( 0x80, 0x80, 0x80 )
+                                    : QColor( 0xa0, 0xa0, 0xa0 ) );
+                    drawRoundedUnderline(
+                        painter,
+                        frameRect,
+                        frameRect,
+                        secondLevelRoundingRadius,
+                        QPen( underlineCol, hasFocus ? 2 : 1 ) );
                 }
             }
             break;
@@ -2048,33 +2141,23 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 #    endif
                                                             : winUI3Color( frameColorLight );
 
-                    const QRectF pFrameRect = frameRect.marginsRemoved( QMarginsF( 0, 1.5, 0, 1.5 ) );
                     painter->setPen( frameCol );
                     painter->setBrush( Qt::NoBrush );
                     painter->drawRoundedRect( frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
                     if ( combobox->editable )
                     {
-                        const bool hasFocus  = option->state & State_HasFocus;
-                        const qreal penWidth = hasFocus ? 2.0 : 1.0;
-                        const qreal halfPen  = penWidth / 2.0;
-
-                        auto pRect = pFrameRect;
-                        QRectF underlineClip( pRect.left(), pRect.bottom() - halfPen, pRect.width(), penWidth );
-
-                        PainterStateGuard guard( painter );
-                        painter->setClipRect( underlineClip );
-
+                        const bool hasFocus = option->state & State_HasFocus;
                         const auto underlineCol = hasFocus
                                                       ? accentColor( option )
                                                       : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
 
-                        const auto penUnderline = QPen( underlineCol, hasFocus ? 2 : 1 );
-
-                        QPen pen( underlineCol, penWidth );
-                        painter->setPen( pen );
-                        painter->setBrush( Qt::NoBrush );
-                        drawRoundedRect( painter, pRect, penUnderline, Qt::NoBrush );
+                        drawRoundedUnderline(
+                            painter,
+                            frameRect,
+                            frameRect,
+                            secondLevelRoundingRadius,
+                            QPen( underlineCol, hasFocus ? 2 : 1 ) );
                     }
                 }
 
@@ -2695,15 +2778,27 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             panelRect.adjust( shadowReserve, shadowReserve, -shadowReserve, -shadowReserve );
 
             painter->save();
+            painter->setCompositionMode( QPainter::CompositionMode_Source );
+            painter->fillRect( option->rect, QColor( 0, 0, 0, 0 ) );
+            painter->setCompositionMode( QPainter::CompositionMode_SourceOver );
             painter->setRenderHint( QPainter::Antialiasing );
 
-            drawFluentShadow( painter, option->rect, toolTipShadowBorderWidth, secondLevelRoundingRadius );
+            drawPopupShadow( painter,
+                             QRectF( panelRect ),
+                             secondLevelRoundingRadius,
+                             toolTipShadowBorderWidth );
 
-            const QRectF fillRect  = panelRect;
-            const QColor fillColor = highContrastTheme ? option->palette.toolTipBase().color() : winUI3Color( menuPanelFill );
-            painter->setPen( highContrastTheme ? QPen( option->palette.windowText().color(), 2 ) : winUI3Color( frameColorLight ) );
-            painter->setBrush( fillColor );
-            painter->drawRoundedRect( fillRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+            const QColor fillColor =
+                highContrastTheme ? option->palette.toolTipBase().color() : winUI3Color( acrylicInAppFillFallback );
+            const QBrush borderBrush = highContrastTheme ? option->palette.toolTipText()
+                                                         : QBrush( winUI3Color( surfaceStrokeFlyout ) );
+            drawRoundedBorderSurface( painter,
+                                      QRectF( panelRect ),
+                                      secondLevelRoundingRadius,
+                                      fillColor,
+                                      borderBrush,
+                                      highContrastTheme ? 2.0 : 1.0,
+                                      true );
 
             painter->restore();
             break;
@@ -2941,12 +3036,21 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 break;
             }
-            drawFluentShadow( painter, option->rect, cBShadowBorderWidth, topLevelRoundingRadius );
-            const QRect rect = option->rect.marginsRemoved(
-                QMargins( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
-            painter->setPen( highContrastTheme ? QPen( option->palette.windowText().color(), 2 ) : winUI3Color( frameColorLight ) );
-            painter->setBrush( winUI3Color( menuPanelFill ) );
-            painter->drawRoundedRect( rect, topLevelRoundingRadius, topLevelRoundingRadius );
+            const QRectF rect = QRectF( option->rect ).marginsRemoved(
+                QMargins( FlyoutShadowBorderWidth,
+                          FlyoutShadowBorderWidth,
+                          FlyoutShadowBorderWidth,
+                          FlyoutShadowBorderWidth ) );
+            drawPopupShadow( painter, rect, cBRoundingRadius, FlyoutShadowBorderWidth );
+            drawRoundedBorderSurface( painter,
+                                      rect,
+                                      cBRoundingRadius,
+                                      highContrastTheme ? option->palette.window()
+                                                        : QBrush( winUI3Color( acrylicInAppFillFallback ) ),
+                                      highContrastTheme ? option->palette.windowText()
+                                                        : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                                      highContrastTheme ? 2.0 : 1.0,
+                                      true );
             break;
         }
         case PE_PanelLineEdit :
@@ -3017,10 +3121,17 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 bool noRoundedCorners = widget && widget->property( NoRoundedCorners ).toBool();
                 if ( isComboPopup )
                 {
-                    drawFluentShadow( painter, rect.toRect(), cBShadowBorderWidth, cBRoundingRadius );
-                    painter->setBrush( winUI3Color( menuPanelFill ) );
                     auto pRect = QRectF( rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
+                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
+                    drawRoundedBorderSurface( painter,
+                                              pRect,
+                                              cBRoundingRadius,
+                                              winUI3Color( acrylicInAppFillFallback ),
+                                              highContrastTheme ? option->palette.windowText()
+                                                                : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                                              highContrastTheme ? 2.0 : 1.0,
+                                              true );
+                    break;
                 }
                 else
                 {
@@ -5775,11 +5886,16 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 const bool isComboPopup = widget && widget->inherits( "QComboBoxPrivateContainer" );
                 if ( isComboPopup )
                 {
-                    painter->setPen( highContrastTheme ? QPen( option->palette.windowText().color(), 1 ) : winUI3Color( frameColorLight ) );
-                    drawFluentShadow( painter, option->rect, cBShadowBorderWidth, cBRoundingRadius );
-                    painter->setBrush( winUI3Color( menuPanelFill ) );
                     auto pRect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    painter->drawRoundedRect( pRect, cBRoundingRadius, cBRoundingRadius );
+                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
+                    drawRoundedBorderSurface( painter,
+                                              pRect,
+                                              cBRoundingRadius,
+                                              winUI3Color( acrylicInAppFillFallback ),
+                                              highContrastTheme ? option->palette.windowText()
+                                                                : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                                              highContrastTheme ? 2.0 : 1.0,
+                                              true );
                     break;
                 }
 
@@ -6224,8 +6340,28 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     painter->setPen( defaultButton ? accentColor( option ) : winUI3Color( controlStrokePrimary ) );
                     painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
-                    painter->setPen( defaultButton ? winUI3Color( controlStrokeOnAccentSecondary )
-                                                   : winUI3Color( controlStrokeSecondary ) );
+                    // WinUI control borders use a stronger lower edge.  Keep
+                    // the original QPen-based button drawing and repaint only
+                    // the bottom part of the same rounded outline.
+                    {
+                        PainterStateGuard bottomStrokeGuard( painter );
+                        const QColor bottomStroke =
+                            defaultButton
+                                ? winUI3Color( controlStrokeOnAccentSecondary )
+                                : winUI3Color( controlStrokeSecondary );
+                        const QRectF bottomClip(
+                            rect.left(),
+                            rect.bottom() - 1.0,
+                            rect.width(),
+                            1.5 );
+                        painter->setClipRect( bottomClip );
+                        painter->setPen( QPen( bottomStroke, 1.0 ) );
+                        painter->setBrush( Qt::NoBrush );
+                        painter->drawRoundedRect(
+                            rect,
+                            secondLevelRoundingRadius,
+                            secondLevelRoundingRadius );
+                    }
                 }
 
                 if ( btn->features.testFlag( QStyleOptionButton::HasMenu ) )
@@ -7077,7 +7213,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                 else
                 {
                     height                             = menuItem->fontMetrics.height() + 8;
-                    constexpr int fluentMenuItemHeight = 34;  // WinUI3 menu item height, including 3px top and bottom margins
+                    constexpr int fluentMenuItemHeight = 36;  // WinUI3 menu item height, including 3px top and bottom margins
                     height                             = height < fluentMenuItemHeight ? fluentMenuItemHeight : height;
                     if ( !menuItem->icon.isNull() )
                     {
@@ -7513,7 +7649,13 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             res = -1;
             break;
         case PM_MenuPanelWidth :
-            res = 3;
+            res = FlyoutShadowBorderWidth;
+            break;
+        case PM_MenuHMargin:
+            res = 2;
+            break;
+        case PM_MenuVMargin:
+            res = 2;
             break;
         case PM_MenuButtonIndicator :
         {
@@ -7546,9 +7688,9 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
             }
             if ( isComboBoxPopup( const_cast<QWidget*>( widget ) ) )
             {
-                // 该 metric 只决定 Container 内部 frame/layout，不能用于
-                // popup 顶层窗口定位；动画的 2px 外部偏移由动画器负责。
-                res = cBPopupOffset + cBShadowBorderWidth;
+                // 透明阴影由 popup 窗口内部承载；额外的 FlyoutPopupOffset
+                // 留作面板与列表内容之间的间隔。
+                res = FlyoutPopupOffset + FlyoutShadowBorderWidth;
             }
         }
         break;
@@ -7702,6 +7844,11 @@ void FluentUI3Style::polish( QWidget* widget )
 
         widget->setAttribute( Qt::WA_RightToLeft, layoutDirection );
         widget->setAttribute( Qt::WA_WState_Created, wasCreated );
+
+        if ( isComboPopup )
+        {
+            widget->installEventFilter( this );
+        }
     }
     else if ( widget && widget->windowType() == Qt::ToolTip )
     {
@@ -7722,7 +7869,7 @@ void FluentUI3Style::polish( QWidget* widget )
         if ( !highContrastTheme )
         {
             QPalette pal = widget->palette();
-            pal.setColor( QPalette::ToolTipBase, winUI3Color( controlFillSolid ) );
+            pal.setColor( QPalette::ToolTipBase, winUI3Color( acrylicInAppFillFallback ) );
             pal.setColor( QPalette::ToolTipText, winUI3Color( textPrimary ) );
             widget->setPalette( pal );
         }
@@ -8346,13 +8493,6 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
         return;
     }
 
-    PainterStateGuard psg( painter );
-    // painter->setClipRect( rect.marginsRemoved( QMarginsF( 0, rect.height() - 0.5, 0, -1 ) ) );
-    const qreal h = 1;
-    QRectF underlineClip( rect.left(), rect.bottom() - 1, rect.width(), h + 2.0 );
-
-    painter->setClipRect( underlineClip );
-
     const bool hasFocus = option->state & State_HasFocus;
 
     const QColor focusColor = accentColor( option );
@@ -8391,30 +8531,38 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 
             if ( !hasFocus )
             {
-                drawRoundedRect( painter, rect, penUnderline, Qt::NoBrush );
+                drawRoundedUnderline(
+                    painter,
+                    rect,
+                    rect,
+                    roundingRadius,
+                    penUnderline );
             }
-            drawRoundedRect( painter, animRect, QPen( focusColor, 2 ), Qt::NoBrush );
+            drawRoundedUnderline(
+                painter,
+                animRect,
+                rect,
+                roundingRadius,
+                QPen( focusColor, 2 ) );
         }
         else
         {
-            drawRoundedRect( painter, rect, penUnderline, Qt::NoBrush );
+            drawRoundedUnderline(
+                painter,
+                rect,
+                rect,
+                roundingRadius,
+                penUnderline );
         }
     }
     else
     {
-        const qreal penWidth = hasFocus ? 2.0 : 1.0;
-        const qreal halfPen  = penWidth / 2.0;
-
-        auto pRect = rect;
-        QRectF underlineClip( pRect.left(), pRect.bottom() - halfPen, pRect.width(), penWidth );
-
-        PainterStateGuard guard( painter );
-        painter->setClipRect( underlineClip );
-
-        QPen pen( underlineCol, penWidth );
-        painter->setPen( pen );
-        painter->setBrush( Qt::NoBrush );
-        drawRoundedRect( painter, rect, penUnderline, Qt::NoBrush );
+        drawRoundedUnderline(
+            painter,
+            rect,
+            rect,
+            roundingRadius,
+            penUnderline );
     }
 }
 
@@ -8462,42 +8610,56 @@ QIcon FluentUI3Style::fluentIcon( const QChar& ch, const QColor& color ) const
     return QIcon( pix );
 }
 
-void FluentUI3Style::drawToolTipShadow( QPainter* painter, const QRect& panelRect, int radius ) const
+void FluentUI3Style::drawPopupShadow( QPainter* painter,
+                                      const QRectF& panelRect,
+                                      int radius,
+                                      int extent ) const
 {
-    painter->save();
-    painter->setRenderHint( QPainter::Antialiasing );
-    painter->setPen( Qt::NoPen );
-
-    const int shadowWidth = toolTipShadowBorderWidth;
-    const int peakAlpha   = colorSchemeIndex == 1 ? 56 : 40;
-    for ( int spread = shadowWidth; spread >= 1; --spread )
+    if ( extent <= 0 || !panelRect.isValid() )
     {
-        QRectF shadowRect = QRectF( panelRect ).adjusted( -spread, -spread, spread, spread );
-
-        QColor color( 0, 0, 0, peakAlpha * spread / shadowWidth );
-        painter->setBrush( color );
-        painter->drawRoundedRect( shadowRect, radius + spread * 0.5, radius + spread * 0.5 );
+        return;
     }
 
-    painter->restore();
-}
-
-void FluentUI3Style::drawFluentShadow( QPainter* painter, QRect rect, int shadowWidth, int radius ) const
-{
     painter->save();
     painter->setRenderHint( QPainter::Antialiasing );
+
+    // Match FluShadow's inexpensive elevation rings.  elevation == 5 creates
+    // indices 0..4; index 0 has a zero-width border, leaving four visible
+    // levels that extend 1..4 px beyond the panel.
+    constexpr int elevation = 5;
+    const int visibleLevels = qMin( elevation - 1, extent );
+    const QColor baseColor =
+        colorSchemeIndex == 1 ? QColor( 0x00, 0x00, 0x00 )
+                              : QColor( 0x99, 0x99, 0x99 );
+    const qreal inheritedOpacity = painter->opacity();
     painter->setPen( Qt::NoPen );
-
-    QColor color = colorSchemeIndex == 1 ? QColor( 0x70, 0x70, 0x70 ) : QColor( 0x9C, 0x9B, 0x9E );
-
-    for ( int i = 0; i < shadowWidth; ++i )
+    for ( int level = 1; level <= visibleLevels; ++level )
     {
-        QRect r   = rect.adjusted( i, i, -i, -i );
-        int alpha = 25 * ( shadowWidth - i ) / shadowWidth;
-        color.setAlpha( alpha );
-        painter->setBrush( color );
+        // QML expands the Rectangle and its inside border by the same amount.
+        // With the shared 4 px reserve this maps directly to 1/2/3/4 px.
+        const qreal levelExtent =
+            qreal( extent ) * level / visibleLevels;
+        const QRectF outerRect =
+            panelRect.adjusted( -levelExtent,
+                                -levelExtent,
+                                levelExtent,
+                                levelExtent );
 
-        painter->drawRoundedRect( r, radius + shadowWidth - i, radius + shadowWidth - i );
+        // QML Rectangle borders are drawn inside their expanded bounds.
+        // Filling this odd-even path reproduces that border without the
+        // centered-stroke edge produced by QPen.
+        QPainterPath ringPath;
+        ringPath.setFillRule( Qt::OddEvenFill );
+        ringPath.addRoundedRect( outerRect,
+                                 radius + levelExtent,
+                                 radius + levelExtent );
+        ringPath.addRoundedRect( panelRect, radius, radius );
+
+        painter->setOpacity(
+            inheritedOpacity
+            * 0.01 * ( elevation - level + 1 ) );
+        painter->setBrush( baseColor );
+        painter->drawPath( ringPath );
     }
 
     painter->restore();
@@ -8541,7 +8703,24 @@ void FluentUI3Style::drawSliderHandleShadow( QPainter* painter, const QPointF& c
 
 bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
 {
-    if ( auto dial = qobject_cast<QDial*>( watched ) )
+    if ( auto* popup = qobject_cast<QWidget*>( watched );
+         isComboBoxPopup( popup )
+         && ( event->type() == QEvent::Show || event->type() == QEvent::Hide ) )
+    {
+        if ( event->type() == QEvent::Show )
+        {
+            // This path also covers custom/animation-disabled ComboBoxes.  A
+            // per-show guard makes the result independent of event-filter
+            // ordering while allowing the animator to capture the corrected
+            // geometry.
+            ComboBoxPopupAnimator::positionPopupForShadow( popup );
+        }
+        else
+        {
+            popup->setProperty( ComboBoxPopupShadowPositionedProperty, false );
+        }
+    }
+    else if ( auto dial = qobject_cast<QDial*>( watched ) )
     {
         if ( event->type() == QEvent::HoverMove || event->type() == QEvent::MouseMove || event->type() == QEvent::HoverEnter
              || event->type() == QEvent::HoverLeave || event->type() == QEvent::MouseButtonPress
