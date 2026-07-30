@@ -5847,14 +5847,15 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 {
                     auto pRect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
                     drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
-                    drawRoundedBorderSurface(
-                        painter,
-                        pRect,
-                        cBRoundingRadius,
-                        winUI3Color( acrylicInAppFillFallback ),
-                        highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                        highContrastTheme ? 2.0 : 1.0,
-                        true );
+                    drawRoundedRect(painter, pRect, QPen(winUI3Color( surfaceStrokeFlyout )), QBrush(winUI3Color(acrylicInAppFillFallback)));
+                    // drawRoundedBorderSurface(
+                    //     painter,
+                    //     pRect,
+                    //     cBRoundingRadius,
+                    //     winUI3Color( acrylicInAppFillFallback ),
+                    //     highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                    //     highContrastTheme ? 2.0 : 1.0,
+                    //     true );
                     break;
                 }
 
@@ -6566,6 +6567,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         s = s.left( t );
                     }
                     QFont font = menuitem->font;
+                    font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
                     if ( menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem )
                     {
                         font.setBold( true );
