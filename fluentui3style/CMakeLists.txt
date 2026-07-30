@@ -39,7 +39,9 @@ target_link_libraries(FluentUI3Style PUBLIC
     Qt${QT_VERSION_MAJOR}::Svg
 )
 
-target_link_libraries(FluentUI3Style PRIVATE -ldwmapi)
+if(WIN32)
+    target_link_libraries(FluentUI3Style PRIVATE dwmapi)
+endif()
 
 
 
