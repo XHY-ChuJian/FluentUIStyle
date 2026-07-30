@@ -10,12 +10,13 @@
 #include <QParallelAnimationGroup>
 #include <QPointer>
 #include <QPropertyAnimation>
+#include <QRegion>
 #include <QVariantAnimation>
+#include <QScreen>
 #include <QWidget>
 
 #include "fluentui3styleproperties.h"
 
-static constexpr int PopupOffset       = 3;
 static constexpr int AnimationDuration = 300;
 
 static bool comboBoxAnimationPropertyEnabled( const QComboBox* comboBox,
@@ -104,6 +105,7 @@ protected:
             if ( !m_popupShown )
             {
                 m_popupShown = true;
+                ComboBoxPopupAnimator::positionPopupForShadow( m_popup );
                 if ( comboBoxPopupAnimationEnabled( m_comboBox ) )
                 {
                     animatePopup( m_popup );
@@ -115,6 +117,9 @@ protected:
         if ( watched == m_popup && event->type() == QEvent::Hide )
         {
             m_popupShown = false;
+            m_popup->setProperty(
+                ComboBoxPopupShadowPositionedProperty,
+                false );
             stopAnimation( m_popup );
             removeApplicationEventFilter();
             return QObject::eventFilter( watched, event );
@@ -223,22 +228,17 @@ private:
 
         m_isOpening     = true;
         m_finalGeometry = popup->geometry();
-
-        const QPoint comboCenter =
-            m_comboBox->mapToGlobal( m_comboBox->rect().center() );
-        m_opensAbove =
-            m_finalGeometry.center().y() < comboCenter.y();
-        m_finalGeometry.translate(
-            0,
-            m_opensAbove ? -PopupOffset : PopupOffset );
-        popup->setProperty(
-            ComboBoxPopupOpensAboveProperty,
-            m_opensAbove );
-        popup->update();
+        m_opensAbove = popup->property(
+            ComboBoxPopupOpensAboveProperty ).toBool();
 
         m_popupLayout       = popupLayout;
         m_viewLayoutIndex   = viewLayoutIndex;
         m_finalViewPosition = popupView->pos();
+        m_viewBottomMargin =
+            qMax( 0,
+                  m_finalGeometry.height()
+                      - ( popupView->geometry().bottom() + 1 ) );
+        m_originalViewMask = popupView->mask();
 
         popupLayout->removeWidget( popupView );
         m_viewDetached = true;
@@ -270,6 +270,7 @@ private:
             popup->move( m_finalGeometry.topLeft() );
         }
         popupView->move( startViewPosition );
+        updateViewClip( popup, popupView );
 
         m_animationGroup = new QParallelAnimationGroup( popup );
 
@@ -298,7 +299,8 @@ private:
                      {
                          popup->move( m_finalGeometry.topLeft() );
                      }
-                 } );
+                     updateViewClip( popup, m_comboBox->view() );
+                  } );
 
         auto* viewAnimation =
             new QPropertyAnimation(
@@ -309,6 +311,13 @@ private:
         viewAnimation->setEndValue( m_finalViewPosition );
         viewAnimation->setDuration( AnimationDuration );
         viewAnimation->setEasingCurve( QEasingCurve::OutCubic );
+        connect( viewAnimation,
+                 &QPropertyAnimation::valueChanged,
+                 this,
+                 [ this, popup, popupView ]( const QVariant& )
+                 {
+                     updateViewClip( popup, popupView );
+                 } );
 
         m_animationGroup->addAnimation( heightAnimation );
         m_animationGroup->addAnimation( viewAnimation );
@@ -362,6 +371,14 @@ private:
 
         auto* popupView = m_comboBox->view();
         popupView->move( m_finalViewPosition );
+        if ( m_originalViewMask.isEmpty() )
+        {
+            popupView->clearMask();
+        }
+        else
+        {
+            popupView->setMask( m_originalViewMask );
+        }
 
         auto* boxLayout =
             qobject_cast<QBoxLayout*>( m_popupLayout.data() );
@@ -372,6 +389,50 @@ private:
 
         boxLayout->insertWidget( m_viewLayoutIndex, popupView );
         m_viewDetached = false;
+    }
+
+    void updateViewClip( QWidget* popup, QWidget* popupView )
+    {
+        if ( !popup || !popupView || !m_viewDetached )
+        {
+            return;
+        }
+
+        // The final layout position defines the actual content area.  Clip
+        // the detached moving view to that area instead of to popup->rect(),
+        // whose top and bottom also contain the transparent shadow reserve.
+        const int contentHeight =
+            popup->height() - m_finalViewPosition.y()
+            - m_viewBottomMargin;
+        if ( contentHeight <= 0 )
+        {
+            popupView->setMask( QRegion( QRect( -1, -1, 1, 1 ) ) );
+            return;
+        }
+
+        const QRect contentRect(
+            m_finalViewPosition.x(),
+            m_finalViewPosition.y(),
+            popupView->width(),
+            contentHeight );
+        const QRect visibleRect =
+            contentRect.intersected( popupView->geometry() );
+        if ( visibleRect.isEmpty() )
+        {
+            popupView->setMask( QRegion( QRect( -1, -1, 1, 1 ) ) );
+            return;
+        }
+
+        const QRect localVisibleRect =
+            visibleRect.translated( -popupView->pos() );
+        if ( localVisibleRect == popupView->rect() )
+        {
+            popupView->clearMask();
+        }
+        else
+        {
+            popupView->setMask( QRegion( localVisibleRect ) );
+        }
     }
 
     void restoreHeightConstraints( QWidget* popup )
@@ -386,6 +447,8 @@ private:
     QPointer<QLayout> m_popupLayout;
     QRect m_finalGeometry;
     QPoint m_finalViewPosition;
+    QRegion m_originalViewMask;
+    int m_viewBottomMargin            = 0;
     int m_viewLayoutIndex             = -1;
     bool m_isOpening                  = false;
     bool m_viewDetached               = false;
@@ -426,4 +489,109 @@ QComboBox* ComboBoxPopupAnimator::comboBoxForPopup(
         parent = parent->parentWidget();
     }
     return nullptr;
+}
+
+void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
+{
+    QComboBox* comboBox = comboBoxForPopup( popup );
+    if ( !popup || !comboBox
+         || popup->property(
+                ComboBoxPopupShadowPositionedProperty ).toBool() )
+    {
+        return;
+    }
+
+    QRect geometry = popup->geometry();
+    if ( !geometry.isValid() )
+    {
+        return;
+    }
+
+    const QRect comboGeometry( comboBox->mapToGlobal( QPoint( 0, 0 ) ),
+                               comboBox->size() );
+    const QRect comboFrameGeometry =
+        comboGeometry.adjusted( ComboBoxControlFrameHorizontalInset,
+                                0,
+                                -ComboBoxControlFrameHorizontalInset,
+                                0 );
+    const bool opensAbove =
+        geometry.center().y() < comboGeometry.center().y();
+
+    // Keep the visible popup panel exactly as wide as the painted ComboBox.
+    // QComboBoxPrivateContainer may otherwise widen it from the item sizeHint.
+    // The transparent shadow reserve belongs to the popup window outside that
+    // visible width.
+    const int shadow = FlyoutShadowBorderWidth;
+    // The ComboBox body uses a centered 1 px QPen.  Qt 5 rasterizes its
+    // outside edge one pixel beyond both sides of the geometric frame, while
+    // the filled popup path starts at the frame edge.  Expand the popup panel
+    // by one more pixel on Qt 5 so their visible edges match.
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+    constexpr int panelHorizontalExpansion = 2;
+#else
+    constexpr int panelHorizontalExpansion = 2;
+#endif
+    const int panelWidth =
+        comboFrameGeometry.width() + panelHorizontalExpansion;
+    const int panelHeight = qMax( 1, geometry.height() - 2 * shadow );
+    geometry.setSize( QSize( panelWidth + 2 * shadow,
+                             panelHeight + 2 * shadow ) );
+
+    if ( comboBox->layoutDirection() == Qt::RightToLeft )
+    {
+        geometry.moveRight(
+            comboFrameGeometry.right() + shadow
+            + ( panelHorizontalExpansion - 1 ) );
+    }
+    else
+    {
+        geometry.moveLeft(
+            comboFrameGeometry.left() - shadow
+            - ( panelHorizontalExpansion - 1 ) );
+    }
+
+    if ( opensAbove )
+    {
+        const int panelBottom =
+            comboGeometry.top() - FlyoutPopupOffset - 1;
+        geometry.moveBottom( panelBottom + shadow );
+    }
+    else
+    {
+        const int panelTop =
+            comboGeometry.bottom() + 1 + FlyoutPopupOffset;
+        geometry.moveTop( panelTop - shadow );
+    }
+
+    // Before its first native show the popup can still report the primary
+    // screen even when its ComboBox is on another monitor.  Clamp against the
+    // anchor widget's screen so the corrected geometry stays on that monitor.
+    QScreen* targetScreen = comboBox->screen();
+    if ( !targetScreen )
+    {
+        targetScreen = popup->screen();
+    }
+    if ( targetScreen )
+    {
+        const QRect available = targetScreen->availableGeometry();
+        if ( geometry.width() <= available.width() )
+        {
+            geometry.moveLeft(
+                qBound( available.left(),
+                        geometry.left(),
+                        available.right() - geometry.width() + 1 ) );
+        }
+        if ( geometry.height() <= available.height() )
+        {
+            geometry.moveTop(
+                qBound( available.top(),
+                        geometry.top(),
+                        available.bottom() - geometry.height() + 1 ) );
+        }
+    }
+
+    popup->setGeometry( geometry );
+    popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
+    popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+    popup->update();
 }

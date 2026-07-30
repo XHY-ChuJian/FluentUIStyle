@@ -15,8 +15,10 @@ enum WINUI3Color
     controlStrongFill,         // Color of controls with strong filling such as the right side of a slider
     controlStrokeSecondary,
     controlStrokePrimary,
-    menuPanelFill,                   // Color of menu panel
     controlStrokeOnAccentSecondary,  // Color of frame around Buttons in accent color
+    surfaceStrokeFlyout,             // Border color of ToolTip, ComboBox popup and other flyouts
+    acrylicInAppFillFallback,        // Solid fallback for AcrylicInAppFillColorDefaultBrush
+    menuPanelFill,                   // Color of menu panel
     controlFillSolid,                // Color for solid fill
     surfaceStroke,                   // Color of MDI window frames
     focusFrameInnerStroke,
@@ -64,15 +66,17 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
     QColor(0x00, 0x00, 0x00, percentToAlpha(21.69)),   // frameColorStrongDisabled
     QColor(0x00, 0x00, 0x00, 0x72),                   // controlStrongFill
     QColor(0x00, 0x00, 0x00, 0x29),                   // controlStrokeSecondary
-    QColor(0x00, 0x00, 0x00, 0x14),                   // controlStrokePrimary
-    QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // menuPanelFill
+    QColor(0x00, 0x00, 0x00, 0x0F),                   // controlStrokePrimary (ControlStrokeColorDefault)
     QColor(0x00, 0x00, 0x00, 0x66),                   // controlStrokeOnAccentSecondary
+    QColor(0xC8, 0xC8, 0xC8, 0xFF),                   // surfaceStrokeFlyout
+    QColor(0xFC, 0xFC, 0xFC, 0xFF),                   // acrylicInAppFillFallback
+    QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // menuPanelFill
     QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // controlFillSolid
     QColor(0x75, 0x75, 0x75, 0x66),                   // surfaceStroke
     QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // focusFrameInnerStroke
     QColor(0x00, 0x00, 0x00, 0xFF),                   // focusFrameOuterStroke
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(70)),     // fillControlDefault
-    QColor(0xF0, 0xF0, 0xF0, percentToAlpha(80)),     // fillControlSecondary
+    QColor(0xF9, 0xF9, 0xF9, percentToAlpha(50)),     // fillControlSecondary
     QColor(0xF9, 0xF9, 0xF9, percentToAlpha(30)),     // fillControlTertiary
     QColor(0xF9, 0xF9, 0xF9, percentToAlpha(30)),     // fillControlDisabled
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(100)),    // fillControlInputActive
@@ -109,14 +113,16 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
     QColor(0xFF, 0xFF, 0xFF, 0x8B),                   // controlStrongFill
     QColor(0xFF, 0xFF, 0xFF, 0x18),                   // controlStrokeSecondary
     QColor(0xFF, 0xFF, 0xFF, 0x12),                   // controlStrokePrimary
+    QColor(0x00, 0x00, 0x00, 0x23),                   // controlStrokeOnAccentSecondary
+    QColor(0x20, 0x20, 0x20, 0xFF),                   // surfaceStrokeFlyout
+    QColor(0x2D, 0x2D, 0x2D, 0xFF),                   // acrylicInAppFillFallback
     QColor(45, 45, 45),                               // menuPanelFill
-    QColor(0xFF, 0xFF, 0xFF, 0x14),                   // controlStrokeOnAccentSecondary
     QColor(0x45, 0x45, 0x45, 0xFF),                   // controlFillSolid
     QColor(0x75, 0x75, 0x75, 0x66),                   // surfaceStroke
     QColor(0x00, 0x00, 0x00, 0xFF),                   // focusFrameInnerStroke
     QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // focusFrameOuterStroke
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(6.05)),   // fillControlDefault
-    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(15.0)),   // fillControlSecondary
+    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(8.37)),   // fillControlSecondary
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(3.26)),   // fillControlTertiary
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(4.19)),   // fillControlDisabled
     QColor(0x21, 0x21, 0x21, percentToAlpha(100)),    // fillControlInputActive (LineEdit/SpinBox focused)

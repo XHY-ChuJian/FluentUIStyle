@@ -44,6 +44,11 @@ enum ProgressBarStyle
     "comboBoxPopupDropDownAnimationEnabled";
 // 可同时设置在 qApp 和单个 QMenu 上，规则同 ComboBox。
 [[maybe_unused]] constexpr const char *MenuPopupAnimationEnabledProperty = "menuPopupAnimationEnabled";
+// Flyout 阴影绘制在透明顶层窗口内部；布局和弹出位置必须共用同一预留宽度。
+[[maybe_unused]] constexpr int FlyoutShadowBorderWidth = 4;
+[[maybe_unused]] constexpr int FlyoutPopupOffset = 3;
+// QComboBox 的可见主题边框相对控件 rect 左右各收进 2 px。
+[[maybe_unused]] constexpr int ComboBoxControlFrameHorizontalInset = 2;
 enum DialStyle
 {
     DialDots = 1,

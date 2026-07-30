@@ -131,6 +131,7 @@ protected:
             // QMenu 在发送 Show 前已经完成 UI_AnimateMenu 判断，此时可以
             // 立即恢复全局原值，不影响当前 popup。
             restoreNativeMenuEffect();
+            offsetMenuForShadow();
         }
 
         if ( menuContainsWidgetAction( m_menu ) )
@@ -151,12 +152,6 @@ protected:
 
                 if ( m_preparedForShow )
                 {
-                    QWidget* menuParent = m_menu->parentWidget();
-                    if ( menuParent && menuParent->inherits( "QMenuBar" ) )
-                    {
-                        const bool opensAbove = m_menu->geometry().center().y() < QCursor::pos().y();
-                        m_menu->move( m_menu->pos().x() + 3, m_menu->pos().y() + ( opensAbove ? -4 : 4 ) );
-                    }
                     animate();
                 }
             }
@@ -189,6 +184,85 @@ protected:
     }
 
 private:
+    void offsetMenuForShadow()
+    {
+        if ( !m_menu || !m_menu->geometry().isValid() )
+        {
+            return;
+        }
+
+        constexpr int menuBarItemInset = 5;
+        constexpr int buttonFrameInset = 2;
+        constexpr int anchoredPopupPixelCorrection = 1;
+
+        const QWidget* menuParent = m_menu->parentWidget();
+        const int shadow          = FlyoutShadowBorderWidth;
+        const bool rtl =
+            menuParent
+            && menuParent->layoutDirection() == Qt::RightToLeft;
+
+        int horizontalOffset = rtl ? shadow : -shadow;
+        int verticalOffset   = 0;
+
+        if ( menuParent && menuParent->inherits( "QMenuBar" ) )
+        {
+            // Qt aligns the popup window to the complete MenuBar item.  Align
+            // the visible menu panel to the item's frame, which is inset 5 px.
+            horizontalOffset =
+                rtl ? shadow - menuBarItemInset
+                    : menuBarItemInset - shadow;
+            horizontalOffset +=
+                rtl ? anchoredPopupPixelCorrection
+                    : -anchoredPopupPixelCorrection;
+            const bool opensAbove =
+                m_menu->geometry().center().y()
+                < menuParent->mapToGlobal(
+                      menuParent->rect().center() ).y();
+            // verticalOffset = opensAbove ? shadow : -shadow;
+            verticalOffset = 0;
+        }
+        else if ( menuParent
+                  && menuParent->inherits( "QAbstractButton" ) )
+        {
+            // PushButton/ToolButton frames are inset 2 px.  The visible menu
+            // edge must line up with that frame rather than the widget rect.
+            horizontalOffset =
+                rtl ? shadow - buttonFrameInset
+                    : buttonFrameInset - shadow;
+            horizontalOffset +=
+                rtl ? anchoredPopupPixelCorrection
+                    : -anchoredPopupPixelCorrection;
+            const bool opensAbove =
+                m_menu->geometry().center().y()
+                < menuParent->mapToGlobal(
+                      menuParent->rect().center() ).y();
+            // verticalOffset = opensAbove ? shadow : -shadow;
+            verticalOffset = 0;
+        }
+        else if ( menuParent && menuParent->inherits( "QMenu" ) )
+        {
+            // A submenu can open on either side of its parent menu.
+            const bool opensLeft =
+                m_menu->geometry().center().x()
+                < menuParent->geometry().center().x();
+            horizontalOffset = opensLeft ? shadow : -shadow;
+            verticalOffset   = -shadow;
+        }
+        else
+        {
+            // Context menus have no visual anchor to align with.  Keep the
+            // visible panel at Qt's requested popup point by compensating the
+            // transparent shadow reserve directly.
+            const QPoint anchor = QCursor::pos();
+            const bool opensAbove =
+                m_menu->geometry().center().y() < anchor.y();
+            verticalOffset = opensAbove ? shadow : -shadow;
+        }
+
+        m_menu->move( m_menu->pos()
+                      + QPoint( horizontalOffset, verticalOffset ) );
+    }
+
     void suppressNativeMenuEffect()
     {
         if ( !qApp || m_nativeMenuEffectSuppressed )

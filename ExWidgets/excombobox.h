@@ -2,6 +2,7 @@
 
 #include <QComboBox>
 #include <QPointer>
+#include <QRegion>
 
 #include "exwidgets_global.h"
 
@@ -40,6 +41,7 @@ private:
     void finishAnimation( QWidget* popup );
     void stopAnimation();
     void restorePopup( QWidget* popup );
+    void updateViewClip( QWidget* popup, QWidget* popupView );
     void hidePopupImmediately();
 
     QPointer<QWidget> m_popup;
@@ -47,6 +49,8 @@ private:
     QRect m_finalGeometry;
     QPoint m_finalViewPosition;
     QPoint m_collapsedViewPosition;
+    QRegion m_originalViewMask;
+    int m_viewBottomMargin = 0;
     int m_viewLayoutIndex  = -1;
     bool m_viewDetached    = false;
     bool m_opensAbove      = false;
