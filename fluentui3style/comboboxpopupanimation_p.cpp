@@ -507,156 +507,40 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
         return;
     }
 
-    QGraphicsProxyWidget* comboProxy = nullptr;
-    for ( QWidget* ancestor = comboBox;
-          ancestor && !comboProxy;
-          ancestor = ancestor->parentWidget() )
-    {
-        comboProxy = ancestor->graphicsProxyWidget();
-    }
+    // 与 QComboBox::showPopup() 相同：锚点用角点 mapToGlobal，不用
+    // topLeft + size()。GraphicsView 缩放时后者会把未缩放高度混进 Y。
+    const QPoint above = comboBox->mapToGlobal( QPoint( 0, 0 ) );
+    const QPoint below = comboBox->mapToGlobal( QPoint( 0, comboBox->height() ) );
+    const bool opensAbove = geometry.center().y() < ( above.y() + below.y() ) / 2;
 
-    QGraphicsProxyWidget* popupProxy = popup->graphicsProxyWidget();
-    auto* popupProxyParent =
-        popupProxy
-            ? qobject_cast<QGraphicsProxyWidget*>( popupProxy->parentWidget() )
-            : nullptr;
-    QWidget* popupParentWidget = popup->parentWidget();
-    const QRectF popupParentRect =
-        popupProxyParent && popupParentWidget
-            ? popupProxyParent->subWidgetRect( popupParentWidget )
-            : QRectF();
-    if ( comboProxy && popupProxy && popupProxyParent && popupParentWidget
-         && popupParentRect.isValid() )
+    // QGraphicsProxyWidget 里 Qt 已在同一变换空间算好 popup；再改 geometry
+    // 容易让绘制和命中错位。这里只记录方向，保留 showPopup() 结果。
+    if ( comboBoxGraphicsProxy( comboBox ) )
     {
-        const QRectF comboRectInParent =
-            popupProxyParent->mapRectFromItem(
-                comboProxy,
-                comboProxy->subWidgetRect( comboBox ) );
-        QRectF proxyGeometry = popupProxy->geometry();
-        if ( comboRectInParent.isValid() && proxyGeometry.isValid() )
+        if ( QGraphicsProxyWidget* popupProxy = popup->graphicsProxyWidget() )
         {
-            const QRectF comboFrameRect =
-                comboRectInParent.adjusted(
-                    ComboBoxControlFrameHorizontalInset,
-                    0,
-                    -ComboBoxControlFrameHorizontalInset,
-                    0 );
-            const bool opensAbove =
-                proxyGeometry.center().y() < comboRectInParent.center().y();
-            const qreal shadow = FlyoutShadowBorderWidth;
-
-#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
-            constexpr int panelHorizontalExpansion = 2;
-#else
-            constexpr int panelHorizontalExpansion = 2;
-#endif
-            const qreal panelWidth =
-                comboFrameRect.width() + panelHorizontalExpansion;
-            const qreal panelHeight =
-                qMax( 1.0, proxyGeometry.height() - 2.0 * shadow );
-            proxyGeometry.setSize(
-                QSizeF( panelWidth + 2.0 * shadow,
-                        panelHeight + 2.0 * shadow ) );
-
-            if ( comboBox->layoutDirection() == Qt::RightToLeft )
-            {
-                proxyGeometry.moveRight(
-                    comboFrameRect.right() + shadow
-                    + ( panelHorizontalExpansion - 1 ) );
-            }
-            else
-            {
-                proxyGeometry.moveLeft(
-                    comboFrameRect.left() - shadow
-                    - ( panelHorizontalExpansion - 1 ) );
-            }
-
-            if ( opensAbove )
-            {
-                const qreal panelBottom =
-                    comboRectInParent.top() - FlyoutPopupOffset;
-                proxyGeometry.moveBottom( panelBottom + shadow );
-            }
-            else
-            {
-                const qreal panelTop =
-                    comboRectInParent.bottom() + FlyoutPopupOffset;
-                proxyGeometry.moveTop( panelTop - shadow );
-            }
-
-            // Nested popup widgets keep a fake-global geometry for painting under
-            // QGraphicsView transforms.  Keep that path for visibility, and sync
-            // the proxy item separately so mouse delivery follows the visual rect.
-            const QPointF popupParentTopLeft = popupParentRect.topLeft();
-            const QPoint popupLocalPosition =
-                ( proxyGeometry.topLeft() - popupParentTopLeft ).toPoint();
-            const QPoint popupWidgetPosition =
-                popupParentWidget->mapToGlobal( popupLocalPosition );
-
-            popup->setGeometry(
-                QRect( popupWidgetPosition,
-                       QSize( qRound( proxyGeometry.width() ),
-                              qRound( proxyGeometry.height() ) ) ) );
-
-            if ( popupProxy->parentItem() == popupProxyParent )
-            {
-                popupProxy->setGeometry( proxyGeometry );
-            }
-
-            if ( comboProxy )
+            if ( QGraphicsProxyWidget* comboProxy = comboBoxGraphicsProxy( comboBox ) )
             {
                 popupProxy->setZValue( comboProxy->zValue() + 1.0 );
             }
-
-            popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
-            popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
-            ensurePopupViewInteractive( comboBox );
-            popup->update();
-            return;
         }
+        popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
+        popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+        ensurePopupViewInteractive( comboBox );
+        popup->update();
+        return;
     }
 
-    const QRect comboGeometry( comboBox->mapToGlobal( QPoint( 0, 0 ) ), comboBox->size() );
-    const QRect comboFrameGeometry =
-        comboGeometry.adjusted( ComboBoxControlFrameHorizontalInset, 0, -ComboBoxControlFrameHorizontalInset, 0 );
-    const bool opensAbove = geometry.center().y() < comboGeometry.center().y();
-
-    // Keep the visible popup panel exactly as wide as the painted ComboBox.
-    // QComboBoxPrivateContainer may otherwise widen it from the item sizeHint.
-    // The transparent shadow reserve belongs to the popup window outside that
-    // visible width.
+    // 普通窗口：宽度/水平位置已由 SC_ComboBoxListBoxPopup + showPopup() 定好，
+    // 这里只按同样的角点锚法补 FlyoutPopupOffset 与阴影预留。
     const int shadow = FlyoutShadowBorderWidth;
-    // The ComboBox body uses a centered 1 px QPen.  Qt 5 rasterizes its
-    // outside edge one pixel beyond both sides of the geometric frame, while
-    // the filled popup path starts at the frame edge.  Expand the popup panel
-    // by one more pixel on Qt 5 so their visible edges match.
-#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
-    constexpr int panelHorizontalExpansion = 2;
-#else
-    constexpr int panelHorizontalExpansion = 1;
-#endif
-    const int panelWidth  = comboFrameGeometry.width() + panelHorizontalExpansion;
-    const int panelHeight = qMax( 1, geometry.height() - 2 * shadow );
-    geometry.setSize( QSize( panelWidth + 2 * shadow, panelHeight + 2 * shadow ) );
-
-    if ( comboBox->layoutDirection() == Qt::RightToLeft )
-    {
-        geometry.moveRight( comboFrameGeometry.right() + shadow + ( panelHorizontalExpansion - 1 ) );
-    }
-    else
-    {
-        geometry.moveLeft( comboFrameGeometry.left() - shadow - ( panelHorizontalExpansion - 1 ) );
-    }
-
     if ( opensAbove )
     {
-        const int panelBottom = comboGeometry.top() - FlyoutPopupOffset - 1;
-        geometry.moveBottom( panelBottom + shadow );
+        geometry.moveBottom( above.y() - FlyoutPopupOffset - 1 + shadow );
     }
     else
     {
-        const int panelTop = comboGeometry.bottom() + 1 + FlyoutPopupOffset;
-        geometry.moveTop( panelTop - shadow );
+        geometry.moveTop( below.y() + FlyoutPopupOffset - shadow );
     }
 
     // Before its first native show the popup can still report the primary

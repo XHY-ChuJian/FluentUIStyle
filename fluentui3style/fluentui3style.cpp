@@ -3882,6 +3882,39 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
                         ret = visualRect( option->direction, option->rect, ret );
                         break;
                     }
+                    case SC_ComboBoxListBoxPopup :
+                    {
+                        // QComboBox::showPopup() 用该 rect 的宽度和 bottomLeft 作为
+                        // popup 窗口种子；高度随后按 item 重算，这里只定水平尺寸。
+                        ret = QProxyStyle::subControlRect( control, option, subControl, widget );
+
+                        const int inset  = ComboBoxControlFrameHorizontalInset;
+                        const int shadow = FlyoutShadowBorderWidth;
+                        // ComboBox 主体用居中 1px QPen：Qt5 外缘会多扩约 1px，
+                        // popup 内描边从几何边开始，故 Qt5 多补 1px。
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+                        constexpr int panelHorizontalExpansion = 2;
+#else
+                        constexpr int panelHorizontalExpansion = 1;
+#endif
+
+                        const QRect outer     = option->rect;
+                        const int frameWidth  = outer.width() - 2 * inset;
+                        const int panelWidth  = frameWidth + panelHorizontalExpansion;
+                        const int windowWidth = panelWidth + 2 * shadow;
+                        const int xOffset     = inset - shadow - ( panelHorizontalExpansion - 1 );
+
+                        if ( option->direction == Qt::RightToLeft )
+                        {
+                            const int windowRight = outer.right() - inset + shadow + ( panelHorizontalExpansion - 1 );
+                            ret.setRect( windowRight - windowWidth + 1, ret.top(), windowWidth, ret.height() );
+                        }
+                        else
+                        {
+                            ret.setRect( outer.left() + xOffset, ret.top(), windowWidth, ret.height() );
+                        }
+                        break;
+                    }
                     default :
                         ret = QProxyStyle::subControlRect( control, option, subControl, widget );
                         break;
