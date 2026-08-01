@@ -17,6 +17,8 @@
 #include "ui_mainwindow.h"
 
 #include <algorithm>
+#include <functional>
+#include <utility>
 
 // Qt Core Headers
 #include <QAction>

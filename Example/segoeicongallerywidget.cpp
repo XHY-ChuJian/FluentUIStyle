@@ -154,6 +154,9 @@ QList<SegoeIconGalleryWidget::IconEntry> SegoeIconGalleryWidget::iconEntries()
         QStringLiteral("^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*0x([0-9A-Fa-f]+)\\s*,?\\s*$"));
 
     QTextStream stream(&enumFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    stream.setCodec("UTF-8");
+#endif
     while (!stream.atEnd())
     {
         const QString line = stream.readLine();

@@ -15,6 +15,7 @@
 #include <QScreen>
 #include <QVariantAnimation>
 #include <QWidget>
+#include <QWindow>
 
 #include "fluentui3styleproperties.h"
 
@@ -546,11 +547,26 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
     // Before its first native show the popup can still report the primary
     // screen even when its ComboBox is on another monitor.  Clamp against the
     // anchor widget's screen so the corrected geometry stays on that monitor.
-    QScreen* targetScreen = comboBox->screen();
+    QScreen* targetScreen = nullptr;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    targetScreen = comboBox->screen();
     if ( !targetScreen )
     {
         targetScreen = popup->screen();
     }
+#else
+    if ( auto handle = comboBox->windowHandle() )
+    {
+        targetScreen = handle->screen();
+    }
+    if ( !targetScreen )
+    {
+        if ( auto popupHandle = popup->windowHandle() )
+        {
+            targetScreen = popupHandle->screen();
+        }
+    }
+#endif
     if ( targetScreen )
     {
         const QRect available = targetScreen->availableGeometry();

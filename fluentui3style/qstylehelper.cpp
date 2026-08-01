@@ -164,7 +164,11 @@ qreal dpi( const QStyleOption* option )
     // Expect that QStyleOption::QFontMetrics::QFont has the correct DPI set
     if ( option )
     {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
         return option->fontMetrics.fontDpi();
+#else
+        return qt_defaultDpiX();
+#endif
     }
 
     // Fall back to historical Qt behavior: hardocded 72 DPI on mac,
