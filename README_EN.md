@@ -62,7 +62,7 @@ Happy coding.
 ### Notes
 
 - **Tested versions:** Style library on Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
-- **Example frameless window (QWindowKit):** Enabled for **CMake builds with Qt ≥ 5.15.2**. **Qt 5.14.2 uses the system title bar and system window frame** (QWindowKit is not used).
+- **Example frameless window (QWindowKit):** Enabled for **CMake builds with Qt ≥ 5.12** (requires initialized submodules). Below Qt 5.12 the system title bar and system window frame are used.
 - **Qt 6.8+ known issue:** **Drop shadows** on **Popup** surfaces such as `QMenu` and `QComboBox` lists may look wrong on Qt **6.8 and newer** (missing, clipped, dirty edges, or misaligned). FluentUI3Style turns off the native shadow (`Qt::NoDropShadowWindowHint`) and uses `WA_TranslucentBackground` so the style can **paint multi-layer shadows in `QStyle`**. From Qt 6.8 onward, the Windows platform changed how **translucent popup windows** are composited (paintable region, alpha blending, stacking). That no longer matches the assumptions of the hand-drawn shadow path, so shadows that looked correct on Qt 6.6 and earlier can break. This is a **Qt platform + custom shadow** interaction, not a single-widget logic bug; adaptation for newer Qt releases is ongoing.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
@@ -72,7 +72,7 @@ Happy coding.
 
 | Qt version | Style library | Example (CMake) | Window chrome |
 | ---------- | ------------- | --------------- | ------------- |
-| Qt 5.14.2  | Supported | Supported | **System frame** (no QWindowKit frameless) |
+| Qt 5.14.2  | Supported | Supported | QWindowKit frameless |
 | Qt 5.15.2  | Supported | Supported | QWindowKit frameless + DWM backdrop |
 | Qt 6.6.3   | Supported | Supported | QWindowKit frameless + DWM backdrop |
 | Qt 6.8+    | Partial | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
@@ -82,10 +82,10 @@ Happy coding.
 
 ### Get the source (including submodules)
 
-The Example app’s frameless window and DWM backdrop (via **[QWindowKit](https://github.com/stdware/qwindowkit)**) are enabled only for **CMake builds with Qt ≥ 5.15.2**. The submodule lives at `3rd/qwindowkit/`.  
-**Qt 5.14.2 uses the system window frame**—QWindowKit is not integrated; you can skip the submodule if you only build the style library/plugin.
+The Example app’s frameless window and DWM backdrop (via **[QWindowKit](https://github.com/stdware/qwindowkit)**) are enabled for **CMake builds with Qt ≥ 5.12**. The submodule lives at `3rd/qwindowkit/`.  
+**Below Qt 5.12** the system window frame is used—QWindowKit is not integrated; you can skip the submodule if you only build the style library/plugin.
 
-For **Qt 5.15.2+** with Example frameless features, initialize submodules after clone or CMake will fail to find `3rd/qwindowkit`.
+For **Qt 5.12+** with Example frameless features, initialize submodules after clone or CMake will fail to find `3rd/qwindowkit`. Note `3rd/qwindowkit` contains nested submodules (`qmsetup` → `syscmdline`), so `--recursive` is required.
 
 #### First-time clone (recommended)
 
@@ -101,7 +101,7 @@ git pull
 git submodule update --init --recursive
 ```
 
-> **Note:** `git pull` alone does **not** update submodules. Only when using Qt ≥ 5.15.2 with QWindowKit, run `git submodule update --init --recursive` if CMake cannot find `3rd/qwindowkit`.
+> **Note:** `git pull` alone does **not** update submodules. Only when using Qt ≥ 5.12 with QWindowKit, run `git submodule update --init --recursive` if CMake cannot find `3rd/qwindowkit`.
 
 Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 
@@ -183,8 +183,8 @@ cmake -S . -B build -DBUILD_EXAMPLE=OFF
 #### 6) Qt 5.14.2 notes
 
 - **Style library, plugin, and Example all build with CMake**
-- Example uses the **system title bar and system window frame** (no QWindowKit)
-- No need to init the `3rd/qwindowkit` submodule unless you build QWindowKit-dependent targets on Qt ≥ 5.15.2
+- Example uses **QWindowKit frameless** (Qt ≥ 5.12), same as other supported Qt 5 versions
+- Init the `3rd/qwindowkit` submodule (`--recursive`) before building Example
 
 ---
 
