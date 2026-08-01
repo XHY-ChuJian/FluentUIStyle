@@ -53,13 +53,16 @@ if(WIN32)
     find_program(EXAMPLE_LUPDATE NAMES lupdate lupdate-qt6 lupdate-qt5 HINTS "${_ex_qt_bin}" "${_ex_qt_bin}/..")
 
     if(EXAMPLE_LRELEASE)
-        add_custom_command(
-            OUTPUT "${_ex_qm}"
+        # OBJECT_DEPENDS on the source-dir .qm is not honored reliably by
+        # MSBuild, so rcc can run before lrelease and fail the build on a
+        # clean checkout. A dedicated ALL target with an explicit dependency
+        # on Example guarantees the .qm exists before resource compilation.
+        add_custom_target(example-lrelease ALL
             COMMAND "${EXAMPLE_LRELEASE}" "${_ex_ts}" -qm "${_ex_qm}"
             DEPENDS "${_ex_ts}"
             COMMENT "lrelease: Example_en_US.ts -> Example_en_US.qm"
             VERBATIM)
-        set_source_files_properties("${_ex_i18n_qrc}" PROPERTIES OBJECT_DEPENDS "${_ex_qm}")
+        set(EXAMPLE_NEEDS_LRELEASE_DEP ON)
     else()
         if(NOT EXISTS "${_ex_qm}")
             message(FATAL_ERROR "Example: 'lrelease' not found and translations/Example_en_US.qm is missing. Install Qt Linguist tools.")
@@ -76,6 +79,10 @@ else()
     add_executable(Example
         ${EXAMPLE_SOURCES}
     )
+endif()
+
+if(EXAMPLE_NEEDS_LRELEASE_DEP)
+    add_dependencies(Example example-lrelease)
 endif()
 
 if(WIN32)
