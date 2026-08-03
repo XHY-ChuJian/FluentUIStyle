@@ -1592,7 +1592,6 @@ inline bool isHighContrastTheme()
 }
 
 FluentUI3Style::FluentUI3Style( QStyle* style )
-    : QProxyStyle( style )
 {
     static bool resourceInit = false;
     static int fontId        = -1;
@@ -2056,7 +2055,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                             innerRadius         = outerRadius * sliderInnerRadius( state, isInsideHandle );
                         }
                     }
-                    // drawSliderHandleShadow(painter, handleCenter, outerRadius);
+                    drawSliderHandleShadow(painter, handleCenter, outerRadius);
 
                     painter->setPen( Qt::NoPen );
                     painter->setBrush( winUI3Color( controlFillSolid ) );
@@ -2755,14 +2754,36 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             painter->setCompositionMode( QPainter::CompositionMode_SourceOver );
             painter->setRenderHint( QPainter::Antialiasing );
 
-            drawPopupShadow( painter, QRectF( panelRect ), secondLevelRoundingRadius, toolTipShadowBorderWidth );
-
-            const QColor fillColor   = highContrastTheme ? option->palette.toolTipBase().color() : winUI3Color( acrylicInAppFillFallback );
-            const QBrush borderBrush = highContrastTheme ? option->palette.toolTipText() : QBrush( winUI3Color( surfaceStrokeFlyout ) );
-            drawRoundedBorderSurface(
-                painter, QRectF( panelRect ), secondLevelRoundingRadius, fillColor, borderBrush, highContrastTheme ? 2.0 : 1.0, true );
+            QStyleOption tipOpt( *option );
+            tipOpt.rect = panelRect;
+            if ( highContrastTheme )
+            {
+                tipOpt.palette.setBrush( QPalette::Window, option->palette.toolTipBase() );
+                tipOpt.palette.setBrush( QPalette::WindowText, option->palette.toolTipText() );
+            }
+            proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &tipOpt, painter, widget );
 
             painter->restore();
+            break;
+        }
+        case PrimitiveElement( PE_FluentFlyoutSurface ) :
+        {
+            // option->rect：阴影内侧可见面板。阴影画在其外侧透明区。
+            const QRectF panelRect( option->rect );
+            if ( !panelRect.isValid() )
+            {
+                break;
+            }
+
+            drawPopupShadow( painter, panelRect, cBRoundingRadius, FlyoutShadowBorderWidth );
+            drawRoundedBorderSurface(
+                painter,
+                panelRect,
+                cBRoundingRadius,
+                highContrastTheme ? option->palette.window() : QBrush( winUI3Color( acrylicInAppFillFallback ) ),
+                highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                highContrastTheme ? 2.0 : 1.0,
+                true );
             break;
         }
         case PE_FrameTabWidget :
@@ -2998,18 +3019,10 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 break;
             }
-            const QRectF rect =
-                QRectF( option->rect )
-                    .marginsRemoved(
-                        QMargins( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth ) );
-            drawPopupShadow( painter, rect, cBRoundingRadius, FlyoutShadowBorderWidth );
-            drawRoundedBorderSurface( painter,
-                                      rect,
-                                      cBRoundingRadius,
-                                      highContrastTheme ? option->palette.window() : QBrush( winUI3Color( acrylicInAppFillFallback ) ),
-                                      highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                                      highContrastTheme ? 2.0 : 1.0,
-                                      true );
+            QStyleOption menuOpt( *option );
+            menuOpt.rect = option->rect.marginsRemoved(
+                QMargins( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth ) );
+            proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &menuOpt, painter, widget );
             break;
         }
         case PE_PanelLineEdit :
@@ -3080,16 +3093,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 bool noRoundedCorners = widget && widget->property( NoRoundedCorners ).toBool();
                 if ( isComboPopup )
                 {
-                    auto pRect = QRectF( rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
-                    drawRoundedBorderSurface(
-                        painter,
-                        pRect,
-                        cBRoundingRadius,
-                        winUI3Color( acrylicInAppFillFallback ),
-                        highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                        highContrastTheme ? 2.0 : 1.0,
-                        true );
+                    QStyleOption popupOpt( *option );
+                    popupOpt.rect = rect.marginsRemoved( comboBoxPopupPanelMargins( widget ) ).toRect();
+                    proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &popupOpt, painter, widget );
                     break;
                 }
                 else
@@ -3895,7 +3901,7 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 #if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
                         constexpr int panelHorizontalExpansion = 2;
 #else
-                        constexpr int panelHorizontalExpansion = 1;
+                        constexpr int panelHorizontalExpansion = 2;
 #endif
 
                         const QRect outer     = option->rect;
@@ -5878,17 +5884,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 const bool isComboPopup = widget && widget->inherits( "QComboBoxPrivateContainer" );
                 if ( isComboPopup )
                 {
-                    auto pRect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
-                    drawRoundedRect(painter, pRect, QPen(winUI3Color( surfaceStrokeFlyout )), QBrush(winUI3Color(acrylicInAppFillFallback)));
-                    // drawRoundedBorderSurface(
-                    //     painter,
-                    //     pRect,
-                    //     cBRoundingRadius,
-                    //     winUI3Color( acrylicInAppFillFallback ),
-                    //     highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                    //     highContrastTheme ? 2.0 : 1.0,
-                    //     true );
+                    QStyleOption popupOpt( *option );
+                    popupOpt.rect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) ).toRect();
+                    proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &popupOpt, painter, widget );
                     break;
                 }
 

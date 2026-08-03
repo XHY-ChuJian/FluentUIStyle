@@ -38,22 +38,18 @@ static QGraphicsProxyWidget* comboBoxGraphicsProxy( const QComboBox* comboBox )
     return nullptr;
 }
 
-static void ensurePopupViewInteractive( QComboBox* comboBox )
+static void clearPopupViewMasks( const QPointer<QAbstractItemView>& popupView )
 {
-    if ( !comboBox )
+    // 必须用已持有的 QPointer：析构期 comboBox->view() 可能返回悬空裸指针。
+    if ( !popupView )
     {
         return;
     }
 
-    if ( QAbstractItemView* popupView = comboBox->view() )
+    popupView->clearMask();
+    if ( QWidget* viewport = popupView->viewport() )
     {
-        popupView->clearMask();
-        popupView->setEnabled( true );
-        if ( popupView->viewport() )
-        {
-            popupView->viewport()->clearMask();
-            popupView->viewport()->setEnabled( true );
-        }
+        viewport->clearMask();
     }
 }
 
@@ -104,19 +100,28 @@ public:
     explicit ComboBoxPopupAnimatorImpl( QComboBox* comboBox, QObject* parent )
         : QObject( parent ? parent : comboBox )
         , m_comboBox( comboBox )
+        , m_view( comboBox ? comboBox->view() : nullptr )
     {
-        attachPopup( comboBox->view()->window() );
+        if ( m_view )
+        {
+            attachPopup( m_view->window() );
+        }
     }
 
     ~ComboBoxPopupAnimatorImpl() override { stop(); }
 
     void stop()
     {
+        removeApplicationEventFilter();
         if ( m_popup )
         {
-            stopAnimation( m_popup );
+            m_popup->removeEventFilter( this );
+            if ( hasActiveAnimationWork() )
+            {
+                stopAnimation( m_popup );
+            }
         }
-        removeApplicationEventFilter();
+        resetAnimationState();
     }
 
 protected:
@@ -127,21 +132,31 @@ protected:
             return QObject::eventFilter( watched, event );
         }
 
-        if ( event->type() == QEvent::ApplicationDeactivate
-             || ( watched == m_comboBox->window() && ( event->type() == QEvent::Hide || event->type() == QEvent::Close ) ) )
+        // popup 正在销毁：只摘过滤器，绝不再碰 view/mask。
+        if ( watched == m_popup
+             && ( event->type() == QEvent::Destroy || event->type() == QEvent::DeferredDelete ) )
         {
-            stopAnimation( m_popup );
+            m_popupShown = false;
+            resetAnimationState();
             removeApplicationEventFilter();
+            m_popup.clear();
             return QObject::eventFilter( watched, event );
         }
 
+        const bool animEnabled = comboBoxPopupAnimationEnabled( m_comboBox );
+
+        // 定位与开关属性始终处理；动画相关逻辑仅在 animEnabled 时继续。
         if ( watched == m_popup && event->type() == QEvent::Show )
         {
             if ( !m_popupShown )
             {
                 m_popupShown = true;
+                if ( !m_view && m_comboBox )
+                {
+                    m_view = m_comboBox->view();
+                }
                 ComboBoxPopupAnimator::positionPopupForShadow( m_popup );
-                if ( comboBoxPopupAnimationEnabled( m_comboBox ) )
+                if ( animEnabled )
                 {
                     animatePopup( m_popup );
                 }
@@ -153,14 +168,32 @@ protected:
         {
             m_popupShown = false;
             m_popup->setProperty( ComboBoxPopupShadowPositionedProperty, false );
-            stopAnimation( m_popup );
+            if ( hasActiveAnimationWork() )
+            {
+                stopAnimation( m_popup );
+            }
             removeApplicationEventFilter();
             return QObject::eventFilter( watched, event );
         }
 
-        if ( !comboBoxPopupAnimationEnabled( m_comboBox ) )
+        if ( !animEnabled )
         {
-            stopAnimation( m_popup );
+            // 运行中被关掉动画时收尾一次，其余事件不再进入动画分支。
+            if ( hasActiveAnimationWork() )
+            {
+                stopAnimation( m_popup );
+                removeApplicationEventFilter();
+            }
+            return QObject::eventFilter( watched, event );
+        }
+
+        if ( event->type() == QEvent::ApplicationDeactivate
+             || ( watched == m_comboBox->window() && ( event->type() == QEvent::Hide || event->type() == QEvent::Close ) ) )
+        {
+            if ( hasActiveAnimationWork() )
+            {
+                stopAnimation( m_popup );
+            }
             removeApplicationEventFilter();
             return QObject::eventFilter( watched, event );
         }
@@ -195,6 +228,18 @@ protected:
     }
 
 private:
+    bool hasActiveAnimationWork() const
+    {
+        return m_isOpening || m_viewDetached || m_animationGroup;
+    }
+
+    void resetAnimationState()
+    {
+        m_isOpening     = false;
+        m_viewDetached  = false;
+        m_animationGroup = nullptr;
+    }
+
     void attachPopup( QWidget* popup )
     {
         if ( !popup || !popup->inherits( "QComboBoxPrivateContainer" ) || m_popup == popup )
@@ -244,10 +289,14 @@ private:
 
     bool beginPopupAnimation( QWidget* popup )
     {
-        auto* popupView           = m_comboBox->view();
+        if ( !m_view && m_comboBox )
+        {
+            m_view = m_comboBox->view();
+        }
+        auto* popupView           = m_view.data();
         auto* popupLayout         = popup->layout();
         auto* popupBoxLayout      = qobject_cast<QBoxLayout*>( popupLayout );
-        const int viewLayoutIndex = popupLayout ? popupLayout->indexOf( popupView ) : -1;
+        const int viewLayoutIndex = popupLayout && popupView ? popupLayout->indexOf( popupView ) : -1;
         if ( !popupView || !popupBoxLayout || viewLayoutIndex < 0 )
         {
             return false;
@@ -261,7 +310,9 @@ private:
         m_viewLayoutIndex   = viewLayoutIndex;
         m_finalViewPosition = popupView->pos();
         m_viewBottomMargin  = qMax( 0, m_finalGeometry.height() - ( popupView->geometry().bottom() + 1 ) );
-        m_originalViewMask  = popupView->mask();
+
+        // 动画开始前清掉残留 mask；过程中由 updateViewClip 临时裁剪。
+        clearPopupViewMasks( m_view );
 
         popupLayout->removeWidget( popupView );
         m_viewDetached = true;
@@ -270,7 +321,12 @@ private:
 
     void startPopupAnimation( QWidget* popup )
     {
-        auto* popupView          = m_comboBox->view();
+        auto* popupView = m_view.data();
+        if ( !popupView )
+        {
+            return;
+        }
+
         QPoint startViewPosition = m_finalViewPosition;
         if ( m_opensAbove )
         {
@@ -306,6 +362,10 @@ private:
                  this,
                  [ this, popup ]( const QVariant& value )
                  {
+                     if ( !m_view )
+                     {
+                         return;
+                     }
                      const int height = value.toInt();
                      popup->setFixedHeight( height );
 
@@ -317,7 +377,7 @@ private:
                      {
                          popup->move( m_finalGeometry.topLeft() );
                      }
-                     updateViewClip( popup, m_comboBox->view() );
+                     updateViewClip( popup, m_view );
                  } );
 
         auto* viewAnimation = new QPropertyAnimation( popupView, "pos", m_animationGroup );
@@ -328,7 +388,13 @@ private:
         connect( viewAnimation,
                  &QPropertyAnimation::valueChanged,
                  this,
-                 [ this, popup, popupView ]( const QVariant& ) { updateViewClip( popup, popupView ); } );
+                 [ this, popup, popupView ]( const QVariant& )
+                 {
+                     if ( m_view )
+                     {
+                         updateViewClip( popup, popupView );
+                     }
+                 } );
 
         m_animationGroup->addAnimation( heightAnimation );
         m_animationGroup->addAnimation( viewAnimation );
@@ -343,7 +409,6 @@ private:
                      m_animationGroup = nullptr;
                      m_isOpening      = false;
                      removeApplicationEventFilter();
-                     ensurePopupViewInteractive( m_comboBox );
                  } );
 
         m_animationGroup->start( QAbstractAnimation::DeleteWhenStopped );
@@ -366,36 +431,32 @@ private:
             restorePopup( popup );
         }
         restoreHeightConstraints( popup );
-        ensurePopupViewInteractive( m_comboBox );
     }
 
     void restorePopup( QWidget* popup )
     {
-        if ( m_finalGeometry.isValid() )
+        if ( popup && m_finalGeometry.isValid() )
         {
             popup->setFixedHeight( m_finalGeometry.height() );
             popup->move( m_finalGeometry.topLeft() );
         }
 
-        if ( !m_viewDetached || !m_comboBox || !m_popupLayout )
+        if ( !m_viewDetached || !m_view || !m_popupLayout )
         {
+            m_viewDetached = false;
+            clearPopupViewMasks( m_view );
             return;
         }
 
-        auto* popupView = m_comboBox->view();
+        auto* popupView = m_view.data();
         popupView->move( m_finalViewPosition );
-        if ( m_originalViewMask.isEmpty() )
-        {
-            popupView->clearMask();
-        }
-        else
-        {
-            popupView->setMask( m_originalViewMask );
-        }
+        // 动画结束：清掉裁剪 mask，恢复可点选。
+        clearPopupViewMasks( m_view );
 
         auto* boxLayout = qobject_cast<QBoxLayout*>( m_popupLayout.data() );
         if ( !boxLayout )
         {
+            m_viewDetached = false;
             return;
         }
 
@@ -441,17 +502,21 @@ private:
 
     void restoreHeightConstraints( QWidget* popup )
     {
+        if ( !popup )
+        {
+            return;
+        }
         popup->setMinimumHeight( 0 );
         popup->setMaximumHeight( QWIDGETSIZE_MAX );
     }
 
     QPointer<QComboBox> m_comboBox;
+    QPointer<QAbstractItemView> m_view;
     QPointer<QWidget> m_popup;
     QPointer<QParallelAnimationGroup> m_animationGroup;
     QPointer<QLayout> m_popupLayout;
     QRect m_finalGeometry;
     QPoint m_finalViewPosition;
-    QRegion m_originalViewMask;
     int m_viewBottomMargin            = 0;
     int m_viewLayoutIndex             = -1;
     bool m_isOpening                  = false;
@@ -526,7 +591,6 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
         }
         popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
         popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
-        ensurePopupViewInteractive( comboBox );
         popup->update();
         return;
     }
@@ -567,6 +631,5 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
     popup->setGeometry( geometry );
     popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
     popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
-    ensurePopupViewInteractive( comboBox );
     popup->update();
 }
