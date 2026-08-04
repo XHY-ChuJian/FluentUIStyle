@@ -1319,6 +1319,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
                       <height>0</height>
                      </size>
                     </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
                     <property name="buttonSymbols">
                      <enum>QAbstractSpinBox::UpDownArrows</enum>
                     </property>

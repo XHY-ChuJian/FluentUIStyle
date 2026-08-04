@@ -33,6 +33,7 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QString>
+#include <QStyleFactory>
 #include <QStyleHints>
 #include <QStyleOptionFrame>
 #include <QStyleOptionSlider>
@@ -1617,7 +1618,7 @@ inline bool isHighContrastTheme()
 #endif
 }
 
-FluentUI3Style::FluentUI3Style( QStyle* style )
+FluentUI3Style::FluentUI3Style( QStyle* style ) /*: QProxyStyle(QStyleFactory::create("windows"))*/
 {
     static bool resourceInit = false;
     static int fontId        = -1;
