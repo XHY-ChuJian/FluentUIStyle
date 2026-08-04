@@ -96,6 +96,7 @@ option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLE "Build example application" ON)
 option(BUILD_AUDIOMATIC_MINI "Build Audiomatic mini player" ON)
+option(BUILD_WIN11_CLOCK "Build the Win11 Clock sample application" ON)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
@@ -124,6 +125,10 @@ endif()
 
 if(BUILD_EXAMPLE)
     add_subdirectory(Example)
+endif()
+
+if(BUILD_WIN11_CLOCK)
+    add_subdirectory(Win11Clock)
 endif()
 
 # --- Install (DLL / import lib / headers / CMake packages) ---

@@ -1,0 +1,293 @@
+{
+	"AUTOGEN_COMMAND_LINE_LENGTH_MAX" : 32000,
+	"BUILD_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/ExWidgets_autogen",
+	"CMAKE_BINARY_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets",
+	"CMAKE_CURRENT_SOURCE_DIR" : "D:/workspace/Code/Github/Window11Style/ExWidgets",
+	"CMAKE_EXECUTABLE" : "D:/Qt/Qt6.10/Tools/CMake_64/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"D:/workspace/Code/Github/Window11Style/ExWidgets/CMakeLists.txt",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCompilerIdDetection.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ADSP-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ARMCC-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ARMClang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/AppleClang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Clang-DetermineCompilerInternal.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Borland-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Bruce-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Clang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Clang-DetermineCompilerInternal.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Compaq-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Cray-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CrayClang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Embarcadero-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Fujitsu-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GHS-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/HP-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IAR-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMClang-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Intel-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/LCC-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/MSVC-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/NVHPC-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/NVIDIA-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/OrangeC-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/PGI-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/PathScale-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/SCO-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/SDCC-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/SunPro-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/TI-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/TIClang-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Tasking-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/TinyCC-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/VisualAge-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Watcom-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/XL-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/XLClang-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/zOS-C-DetermineCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMCPP-C-DetermineVersionInternal.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindBinUtils.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCCompiler.cmake.in",
+		"D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCInformation.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/MSVC-C.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/MSVC.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-MSVC-C.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-MSVC.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCompilerCommon.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseImplicitIncludeInfo.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseLibraryArchitecture.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCompilerCommon.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCCompilerABI.c",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerSupport.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/Internal/FeatureTesting.cmake",
+		"D:/Qt/Qt6.10/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCCompiler.cmake.in",
+		"D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock",
+	"CROSS_CONFIG" : false,
+	"DEP_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/ExWidgets_autogen/deps",
+	"DEP_FILE_RULE_NAME" : "ExWidgets_autogen/timestamp",
+	"HEADERS" : 
+	[
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/colorgradientslider.h",
+			"MU",
+			"EWIEGA46WW/moc_colorgradientslider.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excolorpicker.h",
+			"MU",
+			"EWIEGA46WW/moc_excolorpicker.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excolorpickerbutton.h",
+			"MU",
+			"EWIEGA46WW/moc_excolorpickerbutton.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excombobox.h",
+			"MU",
+			"EWIEGA46WW/moc_excombobox.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excontentdialog.h",
+			"MU",
+			"EWIEGA46WW/moc_excontentdialog.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exmessagebox.h",
+			"MU",
+			"EWIEGA46WW/moc_exmessagebox.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exnavtreewidget.h",
+			"MU",
+			"EWIEGA46WW/moc_exnavtreewidget.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exrangeslider.h",
+			"MU",
+			"EWIEGA46WW/moc_exrangeslider.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exspectrumwidget.h",
+			"MU",
+			"EWIEGA46WW/moc_exspectrumwidget.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exstackedwidget.h",
+			"MU",
+			"EWIEGA46WW/moc_exstackedwidget.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/extabwidget.h",
+			"MU",
+			"EWIEGA46WW/moc_extabwidget.cpp",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exwinuinavigationview.h",
+			"MU",
+			"EWIEGA46WW/moc_exwinuinavigationview.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/ExWidgets_autogen/include",
+	"MOC_COMPILATION_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/ExWidgets_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"EXWIDGETS_LIBRARY",
+		"ExWidgets_EXPORTS",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_QML_DEBUG",
+		"QT_WIDGETS_LIB",
+		"UNICODE",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_UNICODE",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"D:/workspace/Code/Github/Window11Style/ExWidgets",
+		"D:/workspace/Code/Github/Window11Style/FluentUI3Colors",
+		"D:/workspace/Code/Github/Window11Style/FluentUI3Style",
+		"D:/workspace/Code/Github/Window11Style/3rd/kissfft",
+		"D:/workspace/Code/Github/Window11Style/3rd/kissfft",
+		"D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/include/QtCore",
+		"D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/include",
+		"D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/mkspecs/win32-msvc",
+		"D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/include/QtGui",
+		"D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/include/QtWidgets"
+	],
+	"MOC_MACRO_NAMES" : 
+	[
+		"Q_OBJECT",
+		"Q_GADGET",
+		"Q_NAMESPACE",
+		"Q_NAMESPACE_EXPORT",
+		"Q_GADGET_EXPORT"
+	],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 10,
+	"PARSE_CACHE_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/./bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/./bin/uic.exe",
+	"QT_VERSION_MAJOR" : 6,
+	"QT_VERSION_MINOR" : 6,
+	"SETTINGS_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/colorgradientslider.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excolorpicker.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excolorpickerbutton.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excombobox.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/excontentdialog.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exmessagebox.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exnavtreewidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exrangeslider.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exspectrumwidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exstackedwidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/extabwidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/exwinuinavigationview.cpp",
+			"MU",
+			null
+		]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"USE_BETTER_GRAPH" : false,
+	"VERBOSITY" : 0
+}

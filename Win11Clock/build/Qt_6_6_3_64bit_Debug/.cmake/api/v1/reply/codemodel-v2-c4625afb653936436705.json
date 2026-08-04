@@ -1,0 +1,152 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						3,
+						4,
+						5
+					]
+				},
+				{
+					"build" : "dependencies/ExWidgets",
+					"childIndexes" : 
+					[
+						2
+					],
+					"jsonFile" : "directory-dependencies.ExWidgets-Debug-45b77687de20a31190d4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "D:/workspace/Code/Github/Window11Style/ExWidgets",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"build" : "dependencies/ExWidgets/kissfft",
+					"jsonFile" : "directory-dependencies.ExWidgets.kissfft-Debug-dbf283a5c48879dbc88b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "D:/workspace/Code/Github/Window11Style/3rd/kissfft",
+					"targetIndexes" : 
+					[
+						6
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "Win11Clock",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "ExWidgets::@06a9769a8cf48c42dfdf",
+					"jsonFile" : "target-ExWidgets-Debug-691a9a05a591022ee059.json",
+					"name" : "ExWidgets",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExWidgets_autogen::@06a9769a8cf48c42dfdf",
+					"jsonFile" : "target-ExWidgets_autogen-Debug-8030ab067081b732a452.json",
+					"name" : "ExWidgets_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ExWidgets_autogen_timestamp_deps::@06a9769a8cf48c42dfdf",
+					"jsonFile" : "target-ExWidgets_autogen_timestamp_deps-Debug-8670ca41e140015b7239.json",
+					"name" : "ExWidgets_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Win11Clock::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Win11Clock-Debug-e49a3094971af1b8d315.json",
+					"name" : "Win11Clock",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Win11Clock_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Win11Clock_autogen-Debug-f0b0f15ac15f93eeb7a2.json",
+					"name" : "Win11Clock_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Win11Clock_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Win11Clock_autogen_timestamp_deps-Debug-30a5195f798101027082.json",
+					"name" : "Win11Clock_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "kissfft::@f255285621e36df00ef7",
+					"jsonFile" : "target-kissfft-Debug-ca0c9ff7b52edabbaded.json",
+					"name" : "kissfft",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug",
+		"source" : "D:/workspace/Code/Github/Window11Style/Win11Clock"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

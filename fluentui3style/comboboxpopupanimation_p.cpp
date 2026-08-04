@@ -13,6 +13,7 @@
 #include <QPropertyAnimation>
 #include <QRegion>
 #include <QScreen>
+#include <QVariant>
 #include <QVariantAnimation>
 #include <QWidget>
 
@@ -75,8 +76,8 @@ static bool comboBoxAnimationPropertyEnabled( const QComboBox* comboBox, const c
 
 static bool comboBoxPopupAnimationEnabled( const QComboBox* comboBox )
 {
-    // 该 Qt 私有属性只选择 Qt 自己的 popup 行为；开启时不叠加任何
-    // FluentUI3Style 自定义动画。
+    // 该 Qt 私有属性选择“当前项对齐 ComboBox”的 popup 行为；
+    // 开启时不叠加任何 FluentUI3Style 自定义动画。
     if ( qApp->property( "_q_scrollHint_center" ).toBool() )
     {
         return false;
@@ -145,7 +146,8 @@ protected:
 
         const bool animEnabled = comboBoxPopupAnimationEnabled( m_comboBox );
 
-        // 定位与开关属性始终处理；动画相关逻辑仅在 animEnabled 时继续。
+        // 普通下拉模式校正阴影定位；居中 popup 模式只校正
+        // 当前项的视觉中心，动画相关逻辑仍由 animEnabled 完全禁用。
         if ( watched == m_popup && event->type() == QEvent::Show )
         {
             if ( !m_popupShown )
@@ -167,7 +169,7 @@ protected:
         if ( watched == m_popup && event->type() == QEvent::Hide )
         {
             m_popupShown = false;
-            m_popup->setProperty( ComboBoxPopupShadowPositionedProperty, false );
+            m_popup->setProperty( ComboBoxPopupShadowPositionedProperty, QVariant() );
             if ( hasActiveAnimationWork() )
             {
                 stopAnimation( m_popup );
@@ -561,7 +563,14 @@ QComboBox* ComboBoxPopupAnimator::comboBoxForPopup( const QWidget* popup )
 void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
 {
     QComboBox* comboBox = comboBoxForPopup( popup );
-    if ( !popup || !comboBox || popup->property( ComboBoxPopupShadowPositionedProperty ).toBool() )
+    if ( !popup || !comboBox )
+    {
+        return;
+    }
+
+    const bool useCenteredPopup =
+        qApp && qApp->property( "_q_scrollHint_center" ).toBool();
+    if ( !useCenteredPopup && popup->property( ComboBoxPopupShadowPositionedProperty ).toBool() )
     {
         return;
     }
@@ -576,6 +585,7 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
     // topLeft + size()。GraphicsView 缩放时后者会把未缩放高度混进 Y。
     const QPoint above = comboBox->mapToGlobal( QPoint( 0, 0 ) );
     const QPoint below = comboBox->mapToGlobal( QPoint( 0, comboBox->height() ) );
+    const int comboBoxCenterY = ( above.y() + below.y() ) / 2;
     const bool opensAbove = geometry.center().y() < ( above.y() + below.y() ) / 2;
 
     // QGraphicsProxyWidget 里 Qt 已在同一变换空间算好 popup；再改 geometry
@@ -589,22 +599,47 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
                 popupProxy->setZValue( comboProxy->zValue() + 1.0 );
             }
         }
-        popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
-        popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+        if ( !useCenteredPopup )
+        {
+            popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
+            popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+        }
         popup->update();
         return;
     }
 
-    // 普通窗口：宽度/水平位置已由 SC_ComboBoxListBoxPopup + showPopup() 定好，
-    // 这里只按同样的角点锚法补 FlyoutPopupOffset 与阴影预留。
-    const int shadow = FlyoutShadowBorderWidth;
-    if ( opensAbove )
+    if ( useCenteredPopup )
     {
-        geometry.moveBottom( above.y() - FlyoutPopupOffset - 1 + shadow );
+        // Qt 用 currentItemRect 对齐当前项，但它不知道 popup 窗口内部
+        // 还有一圈透明阴影和内边距，所以内容视觉上会偏下。
+        // 直接对齐当前项与 ComboBox 的实际中心，自动包含阴影、
+        // layout margin 和不同的 item 高度。这里只移动窗口，不创建动画。
+        QAbstractItemView* view = comboBox->view();
+        if ( view && view->viewport() && view->currentIndex().isValid() )
+        {
+            const QRect currentItemRect = view->visualRect( view->currentIndex() );
+            if ( currentItemRect.isValid() )
+            {
+                const int currentItemCenterY =
+                    view->viewport()->mapToGlobal( currentItemRect.center() ).y();
+                geometry.translate( 0, comboBoxCenterY - currentItemCenterY );
+            }
+        }
     }
     else
     {
-        geometry.moveTop( below.y() + FlyoutPopupOffset - shadow );
+        // 普通下拉模式：宽度/水平位置已由
+        // SC_ComboBoxListBoxPopup + showPopup() 定好，这里只补
+        // FlyoutPopupOffset 与阴影预留。
+        const int shadow = FlyoutShadowBorderWidth;
+        if ( opensAbove )
+        {
+            geometry.moveBottom( above.y() - FlyoutPopupOffset - 1 + shadow );
+        }
+        else
+        {
+            geometry.moveTop( below.y() + FlyoutPopupOffset - shadow );
+        }
     }
 
     // Before its first native show the popup can still report the primary
@@ -629,7 +664,10 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
     }
 
     popup->setGeometry( geometry );
-    popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
-    popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+    if ( !useCenteredPopup )
+    {
+        popup->setProperty( ComboBoxPopupOpensAboveProperty, opensAbove );
+        popup->setProperty( ComboBoxPopupShadowPositionedProperty, true );
+    }
     popup->update();
 }

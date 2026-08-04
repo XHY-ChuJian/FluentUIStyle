@@ -1,0 +1,71 @@
+{
+	"backtrace" : 0,
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : 
+		[
+			"D:/workspace/Code/Github/Window11Style/ExWidgets/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"id" : "ExWidgets_autogen_timestamp_deps::@06a9769a8cf48c42dfdf"
+		}
+	],
+	"id" : "ExWidgets_autogen::@06a9769a8cf48c42dfdf",
+	"isGeneratorProvided" : true,
+	"name" : "ExWidgets_autogen",
+	"paths" : 
+	{
+		"build" : "dependencies/ExWidgets",
+		"source" : "D:/workspace/Code/Github/Window11Style/ExWidgets"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				1,
+				2
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen.rule",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/ExWidgets_autogen/timestamp.rule",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "UTILITY"
+}

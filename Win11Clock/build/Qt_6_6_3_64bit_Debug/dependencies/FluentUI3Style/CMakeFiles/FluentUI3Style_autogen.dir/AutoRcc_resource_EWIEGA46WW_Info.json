@@ -1,0 +1,27 @@
+{
+	"BUILD_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/FluentUI3Style/FluentUI3Style_autogen",
+	"CMAKE_BINARY_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/FluentUI3Style",
+	"CMAKE_CURRENT_SOURCE_DIR" : "D:/workspace/Code/Github/Window11Style/FluentUI3Style",
+	"CMAKE_SOURCE_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock",
+	"CROSS_CONFIG" : false,
+	"GENERATOR" : "Ninja",
+	"INCLUDE_DIR" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/FluentUI3Style/FluentUI3Style_autogen/include",
+	"INPUTS" : 
+	[
+		"D:/workspace/Code/Github/Window11Style/FluentUI3Style/resource/Segoe Fluent Icons.ttf",
+		"D:/workspace/Code/Github/Window11Style/FluentUI3Style/resource/images/window-restore-s-light.png",
+		"D:/workspace/Code/Github/Window11Style/FluentUI3Style/resource/images/window-restore-s-dark.png"
+	],
+	"LOCK_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/FluentUI3Style/CMakeFiles/FluentUI3Style_autogen.dir/AutoRcc_resource_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "--no-zstd", "-name", "resource" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_resource.cpp",
+	"RCC_EXECUTABLE" : "D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/./bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/FluentUI3Style/CMakeFiles/FluentUI3Style_autogen.dir/AutoRcc_resource_EWIEGA46WW_Used.txt",
+	"SOURCE" : "D:/workspace/Code/Github/Window11Style/FluentUI3Style/resource.qrc",
+	"USE_BETTER_GRAPH" : false,
+	"VERBOSITY" : 0
+}

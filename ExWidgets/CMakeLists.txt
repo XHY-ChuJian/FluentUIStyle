@@ -25,6 +25,18 @@ set(EXWIDGETS_SOURCES
     extabwidget.h
 )
 
+# ExWidgets owns the spectrum backend dependency.  Parent applications only
+# need to link ExWidgets and should not have to create the kissfft target.
+if(NOT TARGET kissfft)
+    if(NOT CMAKE_C_COMPILER_LOADED)
+        enable_language(C)
+    endif()
+    add_subdirectory(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../3rd/kissfft"
+        "${CMAKE_CURRENT_BINARY_DIR}/kissfft"
+    )
+endif()
+
 add_library(ExWidgets SHARED
     ${EXWIDGETS_SOURCES}
 )

@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "dependencies/ExWidgets/kissfft",
+		"source" : "D:/workspace/Code/Github/Window11Style/3rd/kissfft"
+	}
+}

@@ -1,0 +1,13 @@
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/Win11Clock.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/edit_cache.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/rebuild_cache.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/Win11Clock_autogen_timestamp_deps.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/CMakeFiles/Win11Clock_autogen.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/edit_cache.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/rebuild_cache.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen_timestamp_deps.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/CMakeFiles/ExWidgets_autogen.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/kissfft/CMakeFiles/kissfft.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/kissfft/CMakeFiles/edit_cache.dir
+D:/workspace/Code/Github/Window11Style/Win11Clock/build/Qt_6_6_3_64bit_Debug/dependencies/ExWidgets/kissfft/CMakeFiles/rebuild_cache.dir
