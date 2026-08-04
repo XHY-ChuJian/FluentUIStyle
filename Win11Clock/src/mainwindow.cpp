@@ -9,6 +9,14 @@
 #include "pages/settingspage.h"
 #include "pages/timerpage.h"
 
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+#include <fluenttitlebar.h>
+#include <fluentwindowframe.h>
+#include <QApplication>
+#include <QLineEdit>
+#include <QToolButton>
+#endif
+
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -20,13 +28,34 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(tr("时钟"));
     resize(1460, 900);
     setMinimumSize(1050, 680);
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+    setAttribute(Qt::WA_DontCreateNativeAncestors);
+#endif
     setupUi();
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+    m_windowFrame = new FluentWindowFrame(this, this);
+    m_windowFrame->installChromeHeader(nullptr);
+    if (FluentTitleBar* titleBar = m_windowFrame->titleBar())
+    {
+        titleBar->searchLineEdit()->hide();
+        titleBar->pinButton()->hide();
+        titleBar->setThemeDark(qApp->property("_q_colorscheme").toInt() == 1);
+        connect(titleBar->themeButton(),
+                &QToolButton::clicked,
+                this,
+                [this]
+                {
+                    const bool isDark = qApp->property("_q_colorscheme").toInt() == 1;
+                    m_settingsPage->setDarkTheme(!isDark);
+                });
+    }
+#endif
 }
 
 void MainWindow::setupUi()
 {
     auto* centralWidget = new QWidget(this);
-    centralWidget->setBackgroundRole(QPalette::Base);
+    centralWidget->setBackgroundRole(QPalette::Window);
     centralWidget->setProperty("MainBackground", true);
     setCentralWidget(centralWidget);
 
@@ -43,16 +72,10 @@ void MainWindow::setupUi()
     navigationLayout->setContentsMargins(0, 0, 0, 0);
     navigationLayout->setSpacing(0);
 
-    // auto* brandRow = new QWidget(navigationPane);
-    // brandRow->setFixedHeight(54);
-    // auto* brandLayout = new QHBoxLayout(brandRow);
-    // brandLayout->setContentsMargins(20, 0, 8, 0);
-    // brandLayout->setSpacing(12);
-    // navigationLayout->addWidget(brandRow);
-
     m_navigation = new ExWinUINavigationView(navigationPane);
     navigationLayout->addWidget(m_navigation, 1);
     m_pages = new ExStackedWidget(centralWidget);
+    m_pages->setFrameShape(QFrame::StyledPanel);
     m_pages->setVerticalMode(true);
     m_pages->setSpeed(230);
     m_pages->setAnimation(QEasingCurve::OutCubic);
@@ -63,17 +86,17 @@ void MainWindow::setupUi()
     m_pages->addWidget(new StopwatchPage(m_pages));
     m_pages->addWidget(new WorldClockPage(m_pages));
     m_pages->addWidget(new AccountPage(m_pages));
-    auto* settingsPage = new SettingsPage(m_pages);
-    m_pages->addWidget(settingsPage);
+    m_settingsPage = new SettingsPage(m_pages);
+    m_pages->addWidget(m_settingsPage);
 
     rootLayout->addWidget(navigationPane);
     rootLayout->addWidget(m_pages, 1);
 
     setupNavigation();
-    connect(settingsPage,
+    connect(m_settingsPage,
             &SettingsPage::appearanceChanged,
             this,
-            &MainWindow::refreshNavigationIcons);
+            &MainWindow::refreshAppearance);
 }
 
 void MainWindow::setupNavigation()
@@ -115,11 +138,15 @@ void MainWindow::setupNavigation()
     m_navigation->setSelectedPageIndex(TimerPageIndex);
 }
 
-void MainWindow::refreshNavigationIcons()
+void MainWindow::refreshAppearance()
 {
     if (m_navigation->mainNavView())
         m_navigation->mainNavView()->refreshNavigationIcons();
     if (m_navigation->footerNavView())
         m_navigation->footerNavView()->refreshNavigationIcons();
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+    if (FluentTitleBar* titleBar = m_windowFrame ? m_windowFrame->titleBar() : nullptr)
+        titleBar->setThemeDark(qApp->property("_q_colorscheme").toInt() == 1);
+#endif
     update();
 }

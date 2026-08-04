@@ -28,11 +28,6 @@ FluentWindowFrame::~FluentWindowFrame()
     }
 }
 
-QWK::WidgetWindowAgent *FluentWindowFrame::windowAgent() const
-{
-    return m_windowAgent;
-}
-
 FluentTitleBar *FluentWindowFrame::titleBar() const
 {
     return m_titleBar;
@@ -99,7 +94,10 @@ void FluentWindowFrame::installChromeHeader(QMenuBar *menuBar)
         layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
         layout->addWidget(m_titleBar);
-        layout->addWidget(m_menuBar);
+        if (m_menuBar)
+        {
+            layout->addWidget(m_menuBar);
+        }
     }
 
     attachChromeHeader();

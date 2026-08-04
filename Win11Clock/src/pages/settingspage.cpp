@@ -149,14 +149,14 @@ SettingsPage::SettingsPage(QWidget* parent)
 
     pageLayout->addSpacing(8);
     pageLayout->addWidget(createSettingsSectionTitle(tr("常规")));
-    auto* themeCombo = new QComboBox(content);
-    themeCombo->addItems({tr("深色"), tr("浅色"), tr("使用系统设置")});
-    themeCombo->setMinimumWidth(160);
+    m_themeCombo = new QComboBox(content);
+    m_themeCombo->addItems({tr("深色"), tr("浅色"), tr("使用系统设置")});
+    m_themeCombo->setMinimumWidth(160);
     pageLayout->addWidget(createSettingsRow(
         QStringLiteral("\uE790"),
         tr("应用程序主题"),
         tr("选择时钟使用的颜色模式"),
-        themeCombo,
+        m_themeCombo,
         content));
 
     auto* notificationButton = new QPushButton(tr("打开系统设置"), content);
@@ -189,7 +189,7 @@ SettingsPage::SettingsPage(QWidget* parent)
     scrollArea->setWidget(content);
     outerLayout->addWidget(scrollArea);
 
-    connect(themeCombo,
+    connect(m_themeCombo,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             [this](int index)
@@ -221,4 +221,9 @@ SettingsPage::SettingsPage(QWidget* parent)
                 QSettings settings;
                 settings.clear();
             });
+}
+
+void SettingsPage::setDarkTheme(bool dark)
+{
+    m_themeCombo->setCurrentIndex(dark ? 0 : 1);
 }

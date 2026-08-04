@@ -19,7 +19,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
 
 # Reuse the repository's shared widgets. The ExWidgets target owns its
 # secondary implementation dependencies.
-if(NOT TARGET ExWidgets)
+if(NOT TARGET ExWidgets::ExWidgets)
     get_filename_component(WINDOW11STYLE_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
     add_subdirectory("${WINDOW11STYLE_ROOT}/ExWidgets"
                      "${CMAKE_CURRENT_BINARY_DIR}/dependencies/ExWidgets")
@@ -64,11 +64,16 @@ endif()
 target_include_directories(Win11Clock PRIVATE src)
 
 target_link_libraries(Win11Clock PRIVATE
-    ExWidgets
+    ExWidgets::ExWidgets
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
 )
+
+if(TARGET ExWidgets::Frameless)
+    target_compile_definitions(Win11Clock PRIVATE WIN11CLOCK_ENABLE_FRAMELESS)
+    target_link_libraries(Win11Clock PRIVATE ExWidgets::Frameless)
+endif()
 
 set_target_properties(Win11Clock PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>

@@ -11,8 +11,18 @@ The **Example** app includes live demos under the **ExWidgets** navigation group
 ## Linking (CMake)
 
 ```cmake
-target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::ExWidgets Qt6::Widgets)
 ```
+
+For the optional QWindowKit-based window chrome:
+
+```cmake
+set(EXWIDGETS_BUILD_FRAMELESS ON CACHE BOOL "" FORCE)
+add_subdirectory(path/to/Window11Style/ExWidgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
+```
+
+Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)`. The option defaults to ON with Qt ≥ 5.15.2 and OFF with older Qt; explicitly setting it OFF keeps base `ExWidgets` free of QWindowKit.
 
 ```cpp
 #include "exspectrumwidget.h"
@@ -36,6 +46,7 @@ target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
 | `ExStackedWidget` | `exstackedwidget.h` | Animated stacked pages |
 | `ExTabWidget` | `extabwidget.h` | Animated tab widget |
 | `ColorGradientSlider` | `colorgradientslider.h` | Gradient groove slider |
+| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | Optional QWindowKit window chrome |
 
 See [README.md](README.md) for detailed API examples (Chinese).
 

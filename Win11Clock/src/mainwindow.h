@@ -5,6 +5,9 @@
 class ExStackedWidget;
 class ExWinUINavigationView;
 class SettingsPage;
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+class FluentWindowFrame;
+#endif
 
 class MainWindow final : public QMainWindow
 {
@@ -27,8 +30,12 @@ private:
 
     void setupUi();
     void setupNavigation();
-    void refreshNavigationIcons();
+    void refreshAppearance();
 
     ExWinUINavigationView* m_navigation{nullptr};
     ExStackedWidget* m_pages{nullptr};
+    SettingsPage* m_settingsPage{nullptr};
+#ifdef WIN11CLOCK_ENABLE_FRAMELESS
+    FluentWindowFrame* m_windowFrame{nullptr};
+#endif
 };

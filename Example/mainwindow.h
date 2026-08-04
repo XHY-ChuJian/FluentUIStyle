@@ -16,7 +16,7 @@ class ExComboBox;
 class QTreeWidgetItem;
 class TabShowcaseWidget;
 class InstalledSoftwareTableWidget;
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
 class FluentWindowFrame;
 #endif
 
@@ -127,7 +127,7 @@ private:
 
     QMenuBar *m_menuBar{nullptr};
     QToolBar *m_toolBar{nullptr};
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     FluentWindowFrame *m_windowFrame{nullptr};
 #endif
 

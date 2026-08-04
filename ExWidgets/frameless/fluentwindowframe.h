@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QString>
 
+#include "exwidgetsframeless_global.h"
+
 class FluentTitleBar;
 class QMainWindow;
 class QMenuBar;
@@ -12,7 +14,7 @@ namespace QWK {
 class WidgetWindowAgent;
 }  // namespace QWK
 
-class FluentWindowFrame : public QObject
+class EXWIDGETS_FRAMELESS_EXPORT FluentWindowFrame : public QObject
 {
     Q_OBJECT
 
@@ -22,7 +24,6 @@ public:
 
     void installChromeHeader( QMenuBar* menuBar );
 
-    QWK::WidgetWindowAgent* windowAgent() const;
     FluentTitleBar* titleBar() const;
 
     void clearWindowBackdrop();

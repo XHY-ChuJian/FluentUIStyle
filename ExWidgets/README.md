@@ -17,7 +17,25 @@ Example 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可
 add_subdirectory(path/to/Window11Style/ExWidgets)  # 或通过本仓库顶层工程
 
 add_executable(MyApp main.cpp)
-target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::ExWidgets Qt6::Widgets)
+```
+
+安装后可使用 `find_package(ExWidgets CONFIG REQUIRED)` 和同名 target。
+
+### 可选无边框组件
+
+```cmake
+set(EXWIDGETS_BUILD_FRAMELESS ON CACHE BOOL "" FORCE)
+add_subdirectory(path/to/Window11Style/ExWidgets)
+
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
+```
+
+`ExWidgets::Frameless` 提供 `FluentTitleBar` / `FluentWindowFrame`，并会传递 QWindowKit 依赖。Qt ≥ 5.15.2 时该 option 默认 ON，旧版 Qt 自动关闭；显式设为 OFF 时不影响基础 `ExWidgets` DLL。安装后也可显式请求组件：
+
+```cmake
+find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
 ```
 
 头文件示例：
@@ -57,6 +75,7 @@ LIBS += -lExWidgets
 | `ExStackedWidget` | `exstackedwidget.h` | 带动画的 `QStackedWidget` | MainWindow 中央区域 |
 | `ExTabWidget` | `extabwidget.h` | 带动画的 `QTabWidget` | Tab 演示 |
 | `ColorGradientSlider` | `colorgradientslider.h` | 渐变轨道滑条（ExColorPicker 内部） | ExColorPicker 内部 |
+| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | 可选 QWindowKit 无边框窗口组件 | Example / AudiomaticMini |
 
 ---
 

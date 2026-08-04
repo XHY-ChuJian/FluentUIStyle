@@ -21,7 +21,7 @@ target_include_directories(AudiomaticMiniWidgets PUBLIC
 )
 
 target_link_libraries(AudiomaticMiniWidgets PUBLIC
-    ExWidgets
+    ExWidgets::ExWidgets
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -41,39 +41,21 @@ if(BUILD_AUDIOMATIC_MINI)
         sinewavegenerator.h
     )
 
-    if(FLUENT_ENABLE_QWINDOWKIT)
-        list(APPEND AUDIOMATIC_MINI_APP_SOURCES
-            ../Example/frameless/fluenttitlebar.cpp
-            ../Example/frameless/fluenttitlebar.h
-            ../Example/frameless/fluentwindowframe.cpp
-            ../Example/frameless/fluentwindowframe.h
-        )
-    endif()
-
     qt_add_executable(AudiomaticMini
         MANUAL_FINALIZATION
         ${AUDIOMATIC_MINI_APP_SOURCES}
     )
 
     target_compile_definitions(AudiomaticMini PRIVATE FLUENT_USE_QT_STYLE)
-    if(FLUENT_ENABLE_QWINDOWKIT)
-        target_compile_definitions(AudiomaticMini PRIVATE EXAMPLE_ENABLE_QWINDOWKIT)
-    endif()
 
     target_include_directories(AudiomaticMini PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../fluentui3style
         ${CMAKE_CURRENT_SOURCE_DIR}/../FluentUI3Colors
     )
-    if(FLUENT_ENABLE_QWINDOWKIT)
-        target_include_directories(AudiomaticMini PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/../Example/frameless
-        )
-    endif()
-
     target_link_libraries(AudiomaticMini PRIVATE
         AudiomaticMiniWidgets
-        ExWidgets
+        ExWidgets::ExWidgets
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
@@ -82,26 +64,15 @@ if(BUILD_AUDIOMATIC_MINI)
         Qt6::Network
         ${FLUENT_QT_PRIVATE_LIBS}
     )
-    if(FLUENT_ENABLE_QWINDOWKIT)
-        target_link_libraries(AudiomaticMini PRIVATE QWindowKit::Widgets)
+    if(TARGET ExWidgets::Frameless)
+        target_compile_definitions(AudiomaticMini PRIVATE AUDIOMATIC_ENABLE_FRAMELESS)
+        target_link_libraries(AudiomaticMini PRIVATE ExWidgets::Frameless)
     endif()
 
     set_target_properties(AudiomaticMini PROPERTIES
         WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
         DEBUG_POSTFIX d
     )
-
-    if(FLUENT_ENABLE_QWINDOWKIT AND TARGET QWKCore AND TARGET QWKWidgets)
-        add_dependencies(AudiomaticMini QWKCore QWKWidgets)
-        add_custom_command(TARGET AudiomaticMini POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:QWKCore>"
-                "$<TARGET_FILE_DIR:AudiomaticMini>"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:QWKWidgets>"
-                "$<TARGET_FILE_DIR:AudiomaticMini>"
-            VERBATIM)
-    endif()
 
     if(TARGET FluentUI3StylePlugin)
         add_dependencies(AudiomaticMini FluentUI3StylePlugin)

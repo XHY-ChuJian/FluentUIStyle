@@ -1,12 +1,15 @@
 #include "playerwindow.h"
 
 #include "audiomaticplayerwidget.h"
-#include "fluenttitlebar.h"
-#include "fluentwindowframe.h"
 
-#include <QMenuBar>
+#ifdef AUDIOMATIC_ENABLE_FRAMELESS
+#include <fluenttitlebar.h>
+#include <fluentwindowframe.h>
 #include <QLineEdit>
 #include <QToolButton>
+#endif
+
+#include <QMenuBar>
 
 PlayerWindow::PlayerWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,9 +23,13 @@ PlayerWindow::PlayerWindow(QWidget *parent)
     menuBar->setObjectName(QStringLiteral("win-menu-bar"));
     menuBar->hide();
 
+#ifdef AUDIOMATIC_ENABLE_FRAMELESS
     m_windowFrame = new FluentWindowFrame(this, this);
     m_windowFrame->installChromeHeader(menuBar);
     setupTitleBar();
+#else
+    setMenuBar(menuBar);
+#endif
 
     m_playerWidget = new AudiomaticPlayerWidget(this);
     setCentralWidget(m_playerWidget);
@@ -32,6 +39,7 @@ PlayerWindow::PlayerWindow(QWidget *parent)
 
 PlayerWindow::~PlayerWindow() = default;
 
+#ifdef AUDIOMATIC_ENABLE_FRAMELESS
 void PlayerWindow::setupTitleBar()
 {
     if (FluentTitleBar *titleBar = m_windowFrame->titleBar())
@@ -41,3 +49,4 @@ void PlayerWindow::setupTitleBar()
         titleBar->pinButton()->hide();
     }
 }
+#endif

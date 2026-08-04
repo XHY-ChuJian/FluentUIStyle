@@ -24,6 +24,8 @@ public:
     void setAnimation( QEasingCurve::Type curve );
     QEasingCurve::Type animation() const;
 
+    int addWidget(QWidget *w);
+
 public slots:
     void setCurrentIndex( int index );
     void setCurrentWidget( QWidget* widget );

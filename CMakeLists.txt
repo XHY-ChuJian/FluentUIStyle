@@ -41,8 +41,7 @@ if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION VERSION_GREATER_EQUAL "6.10.0")
 endif()
 
 # Local runs: keep all configs in the same output dir (Windows/MSVC convenience).
-# Must be set before add_subdirectory(3rd/qwindowkit); otherwise QWK DLLs land in
-# qmsetup's out-*-*/bin instead of ${CMAKE_BINARY_DIR}/bin.
+# Optional components such as ExWidgetsFrameless also inherit these paths.
 set(_out_bin "${CMAKE_BINARY_DIR}/bin")
 set(_out_lib "${CMAKE_BINARY_DIR}/lib")
 
@@ -56,42 +55,6 @@ foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
 endforeach()
 
-# QWindowKit: Qt 5.15.2+ only (matches QWindowKit recommended Qt 5 baseline)
-if(QT_VERSION VERSION_LESS "5.15.2")
-    set(FLUENT_ENABLE_QWINDOWKIT OFF)
-    message(STATUS "QWindowKit disabled: Qt ${QT_VERSION} < 5.15.2")
-else()
-    set(FLUENT_ENABLE_QWINDOWKIT ON)
-endif()
-
-if(FLUENT_ENABLE_QWINDOWKIT)
-
-    set(QWINDOWKIT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_QUICK OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_WIDGETS ON CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_DOCUMENTATIONS OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_INSTALL ON CACHE BOOL "" FORCE)
-    add_subdirectory(3rd/qwindowkit)
-
-    # qmsetup may override per-directory output paths; align QWK targets with the tree above.
-    foreach(_qwk_target IN ITEMS QWKCore QWKWidgets)
-        if(TARGET ${_qwk_target})
-            set_target_properties(${_qwk_target} PROPERTIES
-                RUNTIME_OUTPUT_DIRECTORY "${_out_bin}"
-                LIBRARY_OUTPUT_DIRECTORY "${_out_lib}"
-                ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}"
-            )
-            foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-                set_target_properties(${_qwk_target} PROPERTIES
-                    RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}"
-                    LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
-                    ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
-                )
-            endforeach()
-        endif()
-    endforeach()
-endif()
-
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLE "Build example application" ON)
@@ -101,8 +64,6 @@ option(BUILD_WIN11_CLOCK "Build the Win11 Clock sample application" ON)
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
 endif()
-
-add_subdirectory(3rd/kissfft)
 
 add_subdirectory(ExWidgets)
 
@@ -139,11 +100,26 @@ install(TARGETS ExWidgets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+if(TARGET ExWidgetsFrameless)
+    install(TARGETS ExWidgetsFrameless
+        EXPORT ExWidgetsTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
+
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:ExWidgets>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
         OPTIONAL
     )
+    if(TARGET ExWidgetsFrameless)
+        install(FILES $<TARGET_PDB_FILE:ExWidgetsFrameless>
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            OPTIONAL
+        )
+    endif()
 endif()
 
 if(BUILD_LIBRARY)

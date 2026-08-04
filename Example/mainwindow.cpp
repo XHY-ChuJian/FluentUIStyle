@@ -99,9 +99,9 @@
 #include "colorshowcasewidget.h"
 #include "rangeslidershowcasewidget.h"
 #include "fluentui3styleproperties.h"
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
-#include "frameless/fluenttitlebar.h"
-#include "frameless/fluentwindowframe.h"
+#ifdef EXAMPLE_ENABLE_FRAMELESS
+#include <fluenttitlebar.h>
+#include <fluentwindowframe.h>
 #endif
 
 #ifndef FLUENT_USE_QT_STYLE
@@ -314,7 +314,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui(new Ui::MainWindow),
     m_menuBar(nullptr),
     m_toolBar(nullptr),
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     m_windowFrame(nullptr),
 #endif
     m_tabShowcaseWidget(nullptr),
@@ -330,7 +330,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_menuBar = new QMenuBar(this);
     m_menuBar->setObjectName(QStringLiteral("win-menu-bar"));
 
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     m_windowFrame = new FluentWindowFrame(this, this);
     m_windowFrame->installChromeHeader(m_menuBar);
     setupTitleBarChrome();
@@ -823,7 +823,7 @@ void MainWindow::setupToolBarControls(QToolBar *toolBar)
 
 void MainWindow::setupTitleBarChrome()
 {
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     FluentTitleBar *titleBar = m_windowFrame ? m_windowFrame->titleBar() : nullptr;
     if (!titleBar)
     {
@@ -880,7 +880,7 @@ void MainWindow::applyThemeIndex(int index)
         ui->rBDarkTheme->setChecked(true);
     }
 
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     if (FluentTitleBar *titleBar = m_windowFrame ? m_windowFrame->titleBar() : nullptr)
     {
         titleBar->setThemeDark(index == 1);
@@ -979,7 +979,7 @@ void MainWindow::applyWidgetBgMode(WidgetBgMode mode)
     qApp->setProperty("_q_widget_mode", static_cast<int>(mode));
     refreshFluentStyle();
 
-#ifdef EXAMPLE_ENABLE_QWINDOWKIT
+#ifdef EXAMPLE_ENABLE_FRAMELESS
     if (m_windowFrame)
     {
         if (widgetBgModeUsesBackdrop(mode))

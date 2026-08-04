@@ -2,13 +2,15 @@
 
 #include <QWidget>
 
+#include "exwidgetsframeless_global.h"
+
 class QAction;
 class QLineEdit;
 class QMainWindow;
 class QLabel;
 class QToolButton;
 
-class FluentTitleBar : public QWidget
+class EXWIDGETS_FRAMELESS_EXPORT FluentTitleBar : public QWidget
 {
     Q_OBJECT
 

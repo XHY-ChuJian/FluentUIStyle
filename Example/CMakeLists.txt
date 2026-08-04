@@ -23,15 +23,6 @@ set(EXAMPLE_SOURCES
     resources.qrc
 )
 
-if(FLUENT_ENABLE_QWINDOWKIT)
-    list(APPEND EXAMPLE_SOURCES
-        frameless/fluenttitlebar.cpp
-        frameless/fluenttitlebar.h
-        frameless/fluentwindowframe.cpp
-        frameless/fluentwindowframe.h
-    )
-endif()
-
 if(WIN32)
     list(APPEND EXAMPLE_SOURCES
         applanguage.cpp
@@ -88,15 +79,8 @@ else()
     )
 endif()
 
-if(FLUENT_ENABLE_QWINDOWKIT)
-    target_compile_definitions(Example PRIVATE EXAMPLE_ENABLE_QWINDOWKIT)
-    target_include_directories(Example PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/frameless
-    )
-endif()
-
 target_link_libraries(Example PRIVATE
-    ExWidgets
+    ExWidgets::ExWidgets
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -104,8 +88,9 @@ target_link_libraries(Example PRIVATE
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 
-if(FLUENT_ENABLE_QWINDOWKIT)
-    target_link_libraries(Example PRIVATE QWindowKit::Widgets)
+if(TARGET ExWidgets::Frameless)
+    target_compile_definitions(Example PRIVATE EXAMPLE_ENABLE_FRAMELESS)
+    target_link_libraries(Example PRIVATE ExWidgets::Frameless)
 endif()
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
@@ -126,23 +111,6 @@ set_target_properties(Example PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
     DEBUG_POSTFIX d
 )
-
-# $<TARGET_FILE:...> is configuration-aware (Debug -> QWKCored.dll, Release -> QWKCore.dll).
-# QWK targets already output to ${CMAKE_BINARY_DIR}/bin; this POST_BUILD is a safety net.
-if(FLUENT_ENABLE_QWINDOWKIT AND TARGET QWKCore AND TARGET QWKWidgets)
-    add_dependencies(Example QWKCore QWKWidgets)
-
-    add_custom_command(TARGET Example POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:QWKCore>"
-            "$<TARGET_FILE_DIR:Example>"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:QWKWidgets>"
-            "$<TARGET_FILE_DIR:Example>"
-        COMMENT "Copy QWindowKit ($<CONFIG>) runtime libraries next to Example"
-        VERBATIM
-    )
-endif()
 
 if(WIN32 AND EXAMPLE_LUPDATE)
     add_custom_target(
