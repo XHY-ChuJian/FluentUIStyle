@@ -300,6 +300,15 @@ QIcon createFluentIcon(const QString &unicode, QColor color = QColor())
 // MainWindow Constructor & Destructor
 //=============================================================================
 
+void changeAccentPalette(QWidget* w, QColor c)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    auto p = w->palette();
+    p.setColor(QPalette::Accent, c);
+    w->setPalette(p);
+#endif
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -470,6 +479,14 @@ void MainWindow::initializeComponents()
     ui->checkBox_5->setText(tr("Off"));
     ui->treeWidget->setProperty("ItemHeight", 32);
     ui->treeWidget->setIndentation(20);
+
+    // 修改部分控件的Accent色
+    changeAccentPalette(ui->checkBox_2, QColor("#4CAF50"));
+    changeAccentPalette(ui->checkBox_3, QColor("#FFC107"));
+    changeAccentPalette(ui->checkBox_4, "#FF8F00");
+
+    changeAccentPalette(ui->radioButton, QColor("#FFC107"));
+    changeAccentPalette(ui->radioButton_2, "#FF8F00");
 
     // Setup tabs
     setupTabs();

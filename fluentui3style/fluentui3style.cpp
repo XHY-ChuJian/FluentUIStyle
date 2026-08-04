@@ -89,6 +89,7 @@ static constexpr int cBRoundingRadius                  = 4;
 static constexpr const char* cBPopupAnimatorProperty   = "_q_fluent_combo_popup_animator";
 static constexpr int menuPopupAnimationDuration        = 400;
 static constexpr const char* menuPopupAnimatorProperty = "_q_fluent_menu_popup_animator";
+static constexpr const int sliderShadowBorderWidth = cBShadowBorderWidth;
 
 static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 {
@@ -196,7 +197,20 @@ static void showSliderValueTip( QSlider* slider, int value )
         }
     }
 
-    tip->setText( QString::number( value ) );
+    QVariant  scale = slider->property("scale");
+    QVariant  precision = slider->property("precision");
+    if (scale.isValid())
+    {
+        double realVal = value / scale.toDouble();
+        int prec = precision.isValid() ? precision.toInt() : 2;
+
+        QString formattedStr = QString::number(realVal, 'f', prec);
+        tip->setText( formattedStr );
+    }
+    else
+    {
+        tip->setText( QString::number( value ) );
+    }
     tip->adjustSize();
 
     QStyleOptionSlider opt;
@@ -1169,6 +1183,18 @@ static void drawRoundedBorderSurface( QPainter* painter,
         return;
     }
 
+    // {
+    //     PainterStateGuard guard( painter );
+    //     painter->setRenderHint( QPainter::Antialiasing );
+    //     painter->setPen( QPen(border, borderWidth) );
+    //     painter->setBrush(background);
+    //     painter->drawRoundedRect(rect, radius, radius);
+
+    //     // drawRoundedRect(painter, rect, QPen(border, borderWidth), background);
+
+    //     return;
+    // }
+
     PainterStateGuard guard( painter );
     painter->setRenderHint( QPainter::Antialiasing );
     painter->setPen( Qt::NoPen );
@@ -1711,6 +1737,8 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 QObject* styleObject = option->styleObject;  // Can be widget or qquickitem
 
                 QRectF thumbRect = proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget );
+                thumbRect = thumbRect.marginsRemoved(QMargins{sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth});
+
                 const qreal outerRadius =
                     qMin( 10.0, ( slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0 ) - 1 );
                 bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
@@ -1926,7 +1954,10 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             {
                 const auto& slrect      = slider->rect;
                 const bool isHorizontal = slider->orientation == Qt::Horizontal;
-                const QRectF handleRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                QRectF handleOriginRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                QRectF handleRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                handleRect = handleRect.marginsRemoved(QMargins{sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth});
+
                 const QPointF handleCenter( handleRect.center() );
 
                 if ( sub & SC_SliderGroove )
@@ -3071,7 +3102,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         case PE_FrameLineEdit :
         {
             const auto frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
-            drawLineEditFrame( painter, frameRect, option, !( option->state & State_ReadOnly ) );
+            drawLineEditFrame( painter, frameRect, option, !( option->state & State_ReadOnly ) , secondLevelRoundingRadius);
             if ( state & State_KeyboardFocusChange && state & State_HasFocus )
             {
                 QStyleOptionFocusRect fropt;
@@ -3135,7 +3166,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
                 else
                 {
-                    drawLineEditFrame( painter, borderRect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr );
+                    drawLineEditFrame( painter, borderRect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr , secondLevelRoundingRadius);
                 }
             }
             break;
@@ -3979,6 +4010,10 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 #endif  // QT_CONFIG(toolbutton)
         case CC_Slider :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
+            if (subControl == SC_SliderHandle)
+            {
+                ret.adjust(-sliderShadowBorderWidth, -sliderShadowBorderWidth, sliderShadowBorderWidth , sliderShadowBorderWidth);
+            }
             break;
         default :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
@@ -4545,7 +4580,14 @@ void FluentUI3Style::drawPillTab( const QStyleOptionTab* tab, QPainter* painter,
     const bool isSelected                 = tab->state.testFlag( QStyle::State_Selected );
     const bool isHover                    = tab->state.testFlag( QStyle::State_MouseOver );
     [[maybe_unused]] const bool isEnabled = tab->state.testFlag( QStyle::State_Enabled );
-    const QRectF tabRect                  = tab->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
+
+    const bool isFirstSegment            = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
+    const bool isLastSegment             = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
+
+    const QRectF tabRect                  = tab->rect.marginsRemoved( QMargins( isFirstSegment ? 1 : 2,
+                                                                                2,
+                                                                                isLastSegment ? 1 : 2,
+                                                                                2 ) );
     const qreal radius                    = 2;
 
     QColor hoverColor    = winUI3Color( tabBarHoverBackground );

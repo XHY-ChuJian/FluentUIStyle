@@ -98,7 +98,7 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
     QColor(0xFF, 0xFF, 0xFF, 0xFF),                   // switchThumbOn
     QColor(0x5A, 0x5A, 0x5A, 0xFF),                  // switchThumbOff
     QColor(0x5A, 0x5A, 0x5A, percentToAlpha(40)),     // switchThumbDisabled
-    QColor(230, 230, 230),                            // tabBarSelectedBackground
+    QColor(206,206,206),                            // tabBarSelectedBackground
     QColor(0, 0, 0, 18),                              // tabBarHoverBackground
     QColor(255, 255, 255, 179),                       // cardBackgroundFillColorDefault
     QColor(0, 0, 0, 15)                               // cardStrokeColorDefault
