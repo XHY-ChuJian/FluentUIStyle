@@ -3355,7 +3355,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     const QColor blendBase = opaqueBlendBase( option->palette, colorSchemeIndex == 1 );
                     brColor                = resolveOpaque( cardColor, blendBase );
 
-                    // Example项目:
+                    // Gallery项目:
                     // WidgetBgMode::Pixmap 会把 Base/Window 设为透明，这里保留最低透明度避免 card 过深或过透。
                     // 不需要的话，直接使用cardColor即可
                     const bool wallpaperMode = qApp && qApp->property( "_q_widget_mode" ).toInt() >= 1;

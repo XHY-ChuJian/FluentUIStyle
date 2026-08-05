@@ -4,7 +4,7 @@
 
 ExWidgets are **WinUI3 / CommunityToolkit–style Qt Widget extensions** shipped alongside FluentUI3Style. They can be used standalone, but **`app.setStyle("FluentUI3")` is recommended** for a consistent look.
 
-The **Example** app includes live demos under the **ExWidgets** navigation group.
+The **Gallery** app includes live demos under the **ExWidgets** navigation group.
 
 ---
 
@@ -72,7 +72,7 @@ spectrum->clear();  // on stop
 | Feature | Qt 5 | Qt 6 |
 |---------|------|------|
 | All ExWidgets | Yes | Yes |
-| Example Audiomatic Mini player | No | Yes |
-| Example spectrum (simulated PCM) | Yes | Yes |
+| Gallery Audiomatic Mini player | No | Yes |
+| Gallery spectrum (simulated PCM) | Yes | Yes |
 
 Build instructions: [README_EN.md](../README_EN.md)

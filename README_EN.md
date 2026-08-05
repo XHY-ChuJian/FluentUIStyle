@@ -34,7 +34,7 @@ Because of Qt’s widget model, not every WinUI control can be reproduced exactl
 - Switch-style `QCheckBox` (“SwitchButton”)
 - `QTabBar` variants such as **Pivot** and **Segmented**
 
-The **Example** app may include extra widgets under **ExWidgets** for demonstration; those widgets are still drawn using the same style engine. More samples may be added over time, and those widgets are intended to remain usable without the style if needed.
+The **Gallery** app may include extra widgets under **ExWidgets** for demonstration; those widgets are still drawn using the same style engine. More samples may be added over time, and those widgets are intended to remain usable without the style if needed.
 
 **ExWidgets usage guide (linking, APIs, PCM format for ExSpectrumWidget):** [ExWidgets/README_EN.md](ExWidgets/README_EN.md) ([中文](ExWidgets/README.md))
 
@@ -56,8 +56,8 @@ Happy coding.
 
 | Method | Status | Notes |
 | ------ | ------ | ----- |
-| **CMake** | Recommended, actively maintained | Kept in sync with `Example/CMakeLists.txt` and new features—use this for daily development |
-| **qmake** | Legacy, **not synced** | `fluentw3uistyle.pro` remains for reference but is **no longer updated with CMake**; Example / QWindowKit behavior may differ |
+| **CMake** | Recommended, actively maintained | Kept in sync with `examples/Gallery/CMakeLists.txt` and new features—use this for daily development |
+| **qmake** | Legacy, **not synced** | `fluentw3uistyle.pro` remains for reference but is **no longer updated with CMake**; Gallery / QWindowKit behavior may differ |
 
 ### Notes
 
@@ -70,7 +70,7 @@ Happy coding.
 
 ### Qt compatibility matrix
 
-| Qt version | Style library | Example (CMake) | Window chrome |
+| Qt version | Style library | Gallery (CMake) | Window chrome |
 | ---------- | ------------- | --------------- | ------------- |
 | Qt 5.14.2  | Supported | Supported | **System frame** (no QWindowKit frameless) |
 | Qt 5.15.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
@@ -163,35 +163,35 @@ cmake --build build --config Debug
 #### 4) Run the example
 
 ```powershell
-./build/bin/Exampled.exe   # Debug
-./build/bin/Example.exe    # Release
+./build/bin/Galleryd.exe   # Debug
+./build/bin/Gallery.exe    # Release
 ```
 
 #### 5) Main CMake options
 
 - `BUILD_LIBRARY` — build the style library (default **ON**).
 - `BUILD_PLUGIN` — build the Qt style plugin (default **ON**).
-- `BUILD_EXAMPLE` — build the demo app (default **ON**).
+- `BUILD_GALLERY` — build Gallery (default **ON**).
 - `EXWIDGETS_BUILD_FRAMELESS` — build `ExWidgets::Frameless` and bring in QWindowKit (default **ON** with Qt ≥ 5.15.2; **OFF** with older Qt).
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR` — copy the plugin into Qt’s `plugins/styles` after build (default **OFF**, avoids writing into a protected Qt install).
 
-Example: library + plugin only, no demo:
+For example, to build only the library and plugin:
 
 ```powershell
-cmake -S . -B build -DBUILD_EXAMPLE=OFF
+cmake -S . -B build -DBUILD_GALLERY=OFF
 ```
 
 #### 6) Qt 5.14.2 notes
 
-- **Style library, plugin, and Example all build with CMake**
-- Example uses the **system title bar and system window frame** (no QWindowKit)
+- **Style library, plugin, and Gallery all build with CMake**
+- Gallery uses the **system title bar and system window frame** (no QWindowKit)
 - No need to init the `3rd/qwindowkit` submodule unless you build QWindowKit-dependent targets on Qt ≥ 5.15.2
 
 ---
 
 ### qmake (legacy—not synced with CMake)
 
-`fluentw3uistyle.pro` is kept for older workflows but **is not updated together with CMake**. It may lack recent Example features (QWindowKit frameless, AudiomaticMini, etc.).
+`fluentw3uistyle.pro` is kept for older workflows but **is not updated together with CMake**. It may lack recent Gallery features (QWindowKit frameless, AudiomaticMini, etc.).
 
 If you still want to try:
 
@@ -330,7 +330,7 @@ FluentUI3 styling is driven mainly by **dynamic properties** on standard widgets
 
 ## Usage examples
 
-### Property examples (from Example / MainWindow)
+### Property examples (from examples/Gallery/MainWindow)
 
 Prefer constants from `fluentui3styleproperties.h` instead of magic numbers.
 
@@ -425,7 +425,7 @@ The style can follow the OS theme on Windows 11 via system APIs; on other platfo
 
 - **`BUILD_LIBRARY`** — build the static style library (default **ON**).
 - **`BUILD_PLUGIN`** — build the Qt style plugin (default **ON**).
-- **`BUILD_EXAMPLE`** — build the demo application (default **ON**).
+- **`BUILD_GALLERY`** — build Gallery (default **ON**).
 
 ## Demo gallery
 

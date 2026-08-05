@@ -32,7 +32,7 @@ void PaletteManager::applyPalette(QPalette &palette, bool isDark) const
         strategy->applyLight(palette);
     }
 
-    // Example项目
+    // Gallery项目
     // 通过属性设置强调色，供样式使用，实际项目中可以根据需要选择是否使用
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
     const QVariant accentColorVariant = qApp->property("_q_accent_color");
@@ -54,7 +54,7 @@ void PaletteManager::applyPalette(QPalette &palette, bool isDark) const
                      palette.color(QPalette::Disabled, QPalette::Accent));
 #endif
 
-    // Example项目
+    // Gallery项目
     // WidgetBgMode::Pixmap需要Base和Window有透明度，不然看不见背景
     //无此需求屏蔽以下代码
     if (qApp->property("_q_widget_mode").toInt() >= 1)

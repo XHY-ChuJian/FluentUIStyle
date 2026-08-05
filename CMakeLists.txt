@@ -57,7 +57,7 @@ endforeach()
 
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
-option(BUILD_EXAMPLE "Build example application" ON)
+option(BUILD_GALLERY "Build the Gallery application" ON)
 option(BUILD_AUDIOMATIC_MINI "Build Audiomatic mini player" ON)
 option(BUILD_WIN11_CLOCK "Build the Win11 Clock sample application" ON)
 
@@ -75,21 +75,8 @@ if(BUILD_PLUGIN)
     add_subdirectory(fluentui3style/plugin)
 endif()
 
-if(BUILD_EXAMPLE OR BUILD_AUDIOMATIC_MINI)
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        find_package(Qt6 REQUIRED COMPONENTS Multimedia Network)
-        add_subdirectory(AudiomaticMini)
-    elseif(BUILD_AUDIOMATIC_MINI)
-        message(WARNING "AudiomaticMini requires Qt 6; BUILD_AUDIOMATIC_MINI ignored.")
-    endif()
-endif()
-
-if(BUILD_EXAMPLE)
-    add_subdirectory(Example)
-endif()
-
-if(BUILD_WIN11_CLOCK)
-    add_subdirectory(Win11Clock)
+if(BUILD_GALLERY OR BUILD_AUDIOMATIC_MINI OR BUILD_WIN11_CLOCK)
+    add_subdirectory(Examples)
 endif()
 
 # --- Install (DLL / import lib / headers / CMake packages) ---

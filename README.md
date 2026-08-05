@@ -29,7 +29,7 @@ FluentUI3Style基于QProxyStyle实现，完整实现了FluentUI3 UI风格，使�
 - SwitchButton
 - TabBar实现"Pivot"和"Segmented"控件
 
-为了让 "Example" 展示更完整，会在 ExWidgets 下实现一些组件；这些组件的样式仍由 Style 统一绘制。  
+为了让 "Gallery" 展示更完整，会在 ExWidgets 下实现一些组件；这些组件的样式仍由 Style 统一绘制。
 后续可能会增加其他控件，但都会保证这些组件能独立于Style之外运行。
 
 **ExWidgets 各控件的使用说明（接入方式、API 示例、数据格式约定）见：[ExWidgets/README.md](ExWidgets/README.md)**（[English](ExWidgets/README_EN.md)）
@@ -55,8 +55,8 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 | 方式 | 状态 | 说明 |
 | ---- | ---- | ---- |
-| **CMake** | ✅ 推荐、持续维护 | 与 `Example/CMakeLists.txt` 等功能同步更新，日常开发请使用 CMake |
-| **qmake** | ⚠️ 遗留、不再同步 | 根目录 `fluentw3uistyle.pro` 仍保留，但**不再与 CMake 同步维护**，不保证与最新 Example / QWindowKit 行为一致 |
+| **CMake** | ✅ 推荐、持续维护 | 与 `examples/Gallery/CMakeLists.txt` 等功能同步更新，日常开发请使用 CMake |
+| **qmake** | ⚠️ 遗留、不再同步 | 根目录 `fluentw3uistyle.pro` 仍保留，但**不再与 CMake 同步维护**，不保证与最新 Gallery / QWindowKit 行为一致 |
 
 ### 使用说明
 
@@ -70,7 +70,7 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 ### Qt版本兼容性
 
 
-| Qt版本     | 样式库 | Example（CMake） | 窗口边框 |
+| Qt版本     | 样式库 | Gallery（CMake） | 窗口边框 |
 | -------- | ---- | -------------- | ---- |
 | Qt5.14.2 | ✅ 支持 | ✅ 支持 | **系统边框**（无 QWindowKit 无边框） |
 | Qt5.15.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
@@ -164,35 +164,35 @@ cmake --build build --config Debug
 #### 4) 运行示例
 
 ```powershell
-./build/bin/Exampled.exe   # Debug
-./build/bin/Example.exe    # Release
+./build/bin/Galleryd.exe   # Debug
+./build/bin/Gallery.exe    # Release
 ```
 
 #### 5) 关键构建选项（CMake）
 
 - `BUILD_LIBRARY`：编译样式库（默认 ON）
 - `BUILD_PLUGIN`：编译 Qt Style 插件（默认 ON）
-- `BUILD_EXAMPLE`：编译示例程序（默认 ON）
+- `BUILD_GALLERY`：编译 Gallery（默认 ON）
 - `EXWIDGETS_BUILD_FRAMELESS`：编译 `ExWidgets::Frameless` 并引入 QWindowKit（Qt ≥ 5.15.2 默认 **ON**，旧版 Qt 默认 **OFF**）
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR`：构建后将插件复制到 Qt 的 `plugins/styles`（默认 **OFF**，避免无权限写入 Qt 安装目录）
 
 例如只编译库和插件、不编译示例：
 
 ```powershell
-cmake -S . -B build -DBUILD_EXAMPLE=OFF
+cmake -S . -B build -DBUILD_GALLERY=OFF
 ```
 
 #### 6) Qt 5.14.2 说明
 
-- **样式库 / 插件 / Example 均可通过 CMake 正常构建**
-- Example **不使用 QWindowKit**，窗口为 **系统边框 + 系统标题栏**
+- **样式库 / 插件 / Gallery 均可通过 CMake 正常构建**
+- Gallery **不使用 QWindowKit**，窗口为 **系统边框 + 系统标题栏**
 - 无需初始化 `3rd/qwindowkit` 子模块（若不编译依赖 QWindowKit 的目标）
 
 ---
 
 ### 三、qmake 编译（遗留，不再同步更新）
 
-根目录仍保留 `fluentw3uistyle.pro`，便于旧工程参考，但 **不再与 CMake 同步更新**，不保证包含最新 Example 功能（如 QWindowKit 无边框、AudiomaticMini 等）。
+根目录仍保留 `fluentw3uistyle.pro`，便于旧工程参考，但 **不再与 CMake 同步更新**，不保证包含最新 Gallery 功能（如 QWindowKit 无边框、AudiomaticMini 等）。
 
 若仍需尝试：
 
@@ -337,7 +337,7 @@ FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
 
 ## 使用方法
 
-### 控件属性设置示例（来自 Example/MainWindow）
+### 控件属性设置示例（来自 examples/Gallery/MainWindow）
 
 建议优先使用 `fluentui3styleproperties.h` 里的属性名常量和枚举值，而不是直接写数字。
 
@@ -436,7 +436,7 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 
 - **BUILD_LIBRARY**：编译为静态库（默认ON）
 - **BUILD_PLUGIN**：编译为Qt插件（默认OFF）
-- **BUILD_EXAMPLE**：编译示例应用（默认ON）
+- **BUILD_GALLERY**：编译 Gallery（默认ON）
 
 ## 示例效果
 

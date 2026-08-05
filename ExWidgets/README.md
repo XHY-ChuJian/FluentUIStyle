@@ -5,7 +5,7 @@
 ExWidgets 是本仓库在 **FluentUI3Style 样式库之外** 提供的一组 WinUI3 / CommunityToolkit 风格 **Qt Widgets 扩展控件**。  
 它们可以独立编译链接，但 **推荐与 `app.setStyle("FluentUI3")` 一起使用**，以获得一致的 Fluent 视觉与交互。
 
-Example 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可作为活文档参考。
+Gallery 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可作为活文档参考。
 
 ---
 
@@ -48,7 +48,7 @@ target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
 ### qmake
 
 ```qmake
-include($$PWD/ExWidgets/ExWidgets.pri)   # 若项目提供；或参考 Example/Example.pro
+include($$PWD/ExWidgets/ExWidgets.pri)   # 若项目提供；或参考 examples/Gallery/Gallery.pro
 LIBS += -lExWidgets
 ```
 
@@ -62,7 +62,7 @@ LIBS += -lExWidgets
 
 ## 控件一览
 
-| 控件 | 头文件 | 说明 | Example 演示 |
+| 控件 | 头文件 | 说明 | Gallery 演示 |
 |------|--------|------|--------------|
 | `ExRangeSlider` | `exrangeslider.h` | WinUI3 双端范围滑块 | ExWidgets → ExRangeSlider |
 | `ExColorPicker` | `excolorpicker.h` | CommunityToolkit 取色器 | ExWidgets → ExColorPicker |
@@ -75,7 +75,7 @@ LIBS += -lExWidgets
 | `ExStackedWidget` | `exstackedwidget.h` | 带动画的 `QStackedWidget` | MainWindow 中央区域 |
 | `ExTabWidget` | `extabwidget.h` | 带动画的 `QTabWidget` | Tab 演示 |
 | `ColorGradientSlider` | `colorgradientslider.h` | 渐变轨道滑条（ExColorPicker 内部） | ExColorPicker 内部 |
-| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | 可选 QWindowKit 无边框窗口组件 | Example / AudiomaticMini |
+| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | 可选 QWindowKit 无边框窗口组件 | Gallery / AudiomaticMini |
 
 ---
 
@@ -164,7 +164,7 @@ const auto ret = ExMessageBox::question(
     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 ```
 
-可像普通 `QMessageBox` 一样设置 `setInformativeText`、`setCheckBox` 等（参见 Example → Dialogs）。
+可像普通 `QMessageBox` 一样设置 `setInformativeText`、`setCheckBox` 等（参见 Gallery → Dialogs）。
 
 ---
 
@@ -231,15 +231,15 @@ spectrum->clear();
 
 ### 演示数据来源
 
-- **Example（Qt 5）**：`SineWaveGenerator` 合成动画 PCM → `pushAudioData`
-- **Example（Qt 6）**：Audiomatic Mini 播放器解码后推送
-- **独立程序**：`SpectrumDemo`（Qt 6，见 `AudiomaticMini/`）
+- **Gallery（Qt 5）**：`SineWaveGenerator` 合成动画 PCM → `pushAudioData`
+- **Gallery（Qt 6）**：Audiomatic Mini 播放器解码后推送
+- **独立程序**：`SpectrumDemo`（Qt 6，见 `examples/AudiomaticMini/`）
 
 ---
 
 ## ExWinUINavigationView / ExNavTreeWidget
 
-Example 主窗口左侧 **WinUI3 导航窗格**：主菜单 + 分隔线 + 页脚项，配合 `QStackedWidget` 切页。
+Gallery 主窗口左侧 **WinUI3 导航窗格**：主菜单 + 分隔线 + 页脚项，配合 `QStackedWidget` 切页。
 
 ```cpp
 #include "exwinuinavigationview.h"
@@ -260,7 +260,7 @@ nav->setNavigationExpanded(true, /*animated=*/true);
 
 ## ExStackedWidget / ExTabWidget
 
-在 `QStackedWidget` / `QTabWidget` 基础上增加 **滑动切换动画**（Example 中央 `stackedWidget` 使用）。
+在 `QStackedWidget` / `QTabWidget` 基础上增加 **滑动切换动画**（Gallery 中央 `stackedWidget` 使用）。
 
 ```cpp
 #include "exstackedwidget.h"
@@ -307,13 +307,13 @@ s->setImageBuilder([](QSize size) {
 | 能力 | Qt 5 | Qt 6 |
 |------|------|------|
 | ExWidgets 全部控件 | ✅ | ✅ |
-| Example → Audiomatic Mini 播放器 | ❌ | ✅（需 Multimedia） |
-| Example → ExSpectrumWidget 模拟频谱 | ✅ | ✅（Qt6 为完整播放器页） |
+| Gallery → Audiomatic Mini 播放器 | ❌ | ✅（需 Multimedia） |
+| Gallery → ExSpectrumWidget 模拟频谱 | ✅ | ✅（Qt6 为完整播放器页） |
 
 ---
 
 ## 更多信息
 
 - 构建与插件部署：根目录 [README.md](../README.md)
-- 交互演示：编译并运行 `Example`，打开左侧 **ExWidgets** 分组
-- 变更记录：`Example/changelog.txt`
+- 交互演示：编译并运行 `Gallery`，打开左侧 **ExWidgets** 分组
+- 变更记录：`examples/Gallery/changelog.txt`

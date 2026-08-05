@@ -3,7 +3,7 @@ CONFIG += ordered
 
 CONFIG += build_library
 CONFIG += build_plugin
-CONFIG += build_example
+CONFIG += build_gallery
 
 SUBDIRS += ExWidgets
 
@@ -21,8 +21,9 @@ build_plugin {
     }
 }
 
-build_example {
-    SUBDIRS += Example
-    Example.depends = ExWidgets
-    build_library: Example.depends += FluentUI3Style
+build_gallery {
+    gallery.subdir = examples/Gallery
+    SUBDIRS += gallery
+    gallery.depends = ExWidgets
+    build_library: gallery.depends += FluentUI3Style
 }
