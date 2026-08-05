@@ -1377,7 +1377,7 @@ void ExColorPicker::showPopup(QWidget *anchor)
 
     adjustSize();
     const QPoint anchorTopLeft = anchor->mapToGlobal(QPoint(0, 0));
-    move(anchorTopLeft.x() - 6, anchorTopLeft.y() - height());
+    move(anchorTopLeft.x() - kShadowMargin, anchorTopLeft.y() - height());
     show();
     raise();
     activateWindow();
@@ -1626,7 +1626,16 @@ void ExColorPicker::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     QRect cardRect = rect();
-    cardRect.adjust(kShadowMargin, kShadowMargin, -kShadowMargin, -kShadowMargin);
+    cardRect.adjust(kShadowMargin - 1, kShadowMargin, -kShadowMargin, -kShadowMargin);
+
+
+    QStyleOption opt;
+    opt.initFrom(this);
+    opt.rect = cardRect;
+    style()->drawPrimitive(QStyle::PrimitiveElement(QStyle::PE_CustomBase + 1), &opt, &painter, this);
+    return;
+
+
     const bool dark = isDarkMode();
 
     painter.setPen(Qt::NoPen);

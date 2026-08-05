@@ -96,9 +96,26 @@ public:
                  &QMenu::aboutToShow,
                  this,
                  [ this ] { prepareForShow( true ); } );
+        connect( menu,
+                 &QObject::destroyed,
+                 this,
+                 [ this ] { abandonMenuState(); } );
     }
 
-    ~MenuPopupAnimatorImpl() override { stop( false ); }
+    ~MenuPopupAnimatorImpl() override
+    {
+        if ( m_menu )
+        {
+            // Animator may have a different owner and be destroyed while the
+            // menu is still alive.  In that case all temporary menu state must
+            // be restored before this event filter disappears.
+            stop();
+        }
+        else
+        {
+            abandonMenuState();
+        }
+    }
 
     void setDuration( int duration ) { m_duration = qMax( 0, duration ); }
 
@@ -110,6 +127,7 @@ public:
 
         if ( m_animation )
         {
+            QObject::disconnect( m_animation, nullptr, this, nullptr );
             m_animation->stop();
             m_animation->deleteLater();
             m_animation = nullptr;
@@ -121,11 +139,12 @@ public:
 protected:
     bool eventFilter( QObject* watched, QEvent* event ) override
     {
-        if ( watched != m_menu )
+        if ( watched != m_menu || !m_menu )
         {
             return QObject::eventFilter( watched, event );
         }
 
+        // 阴影偏移与动画开关无关，Show 时始终校正。
         if ( event->type() == QEvent::Show )
         {
             // QMenu 在发送 Show 前已经完成 UI_AnimateMenu 判断，此时可以
@@ -134,16 +153,20 @@ protected:
             offsetMenuForShadow();
         }
 
-        if ( menuContainsWidgetAction( m_menu ) )
+        // 动画关闭 / 含 QWidgetAction：不做展开动画。
+        if ( !menuPopupAnimationEnabled( m_menu ) )
         {
+            if ( m_isOpening || m_animation || m_overlay || m_revealMaskActive || m_preparedForShow
+                 || !m_hiddenChildren.isEmpty() )
+            {
+                stop( false );
+            }
             return QObject::eventFilter( watched, event );
         }
 
         if ( event->type() == QEvent::Show )
         {
-            if ( m_preparedForShow
-                 || ( menuPopupAnimationEnabled( m_menu )
-                      && m_menu->windowType() == Qt::Popup ) )
+            if ( m_preparedForShow || m_menu->windowType() == Qt::Popup )
             {
                 if ( !m_preparedForShow )
                 {
@@ -184,6 +207,29 @@ protected:
     }
 
 private:
+    void abandonMenuState()
+    {
+        // QMenu emits destroyed() before deleting its children.  The overlay
+        // and animation are owned by the menu, so do not hide, stop or defer-
+        // delete them while QWidget destruction is already in progress.
+        restoreNativeMenuEffect();
+        if ( m_animation )
+        {
+            QObject::disconnect( m_animation, nullptr, this, nullptr );
+        }
+
+        m_menu                = nullptr;
+        m_overlay             = nullptr;
+        m_animation           = nullptr;
+        m_hiddenChildren.clear();
+        m_originalMenuMask    = QRegion();
+        m_startSnapshotY      = 0;
+        m_isOpening           = false;
+        m_preparedForShow     = false;
+        m_hadOriginalMenuMask = false;
+        m_revealMaskActive    = false;
+    }
+
     void offsetMenuForShadow()
     {
         if ( !m_menu || !m_menu->geometry().isValid() )

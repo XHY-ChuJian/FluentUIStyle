@@ -27,6 +27,7 @@
 #include <QMouseEvent>
 #include <QObject>
 #include <QPointer>
+#include <QProgressBar>
 #include <QScreen>
 #include <QScrollBar>
 #include <QWindow>
@@ -34,6 +35,7 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QString>
+#include <QStyleFactory>
 #include <QStyleHints>
 #include <QStyleOptionFrame>
 #include <QStyleOptionSlider>
@@ -43,6 +45,7 @@
 #include <QTableView>
 #include <QTextEdit>
 #include <QTextLayout>
+#include <QTimer>
 #include <QToolButton>
 #include <QTreeView>
 #include <QVariant>
@@ -90,6 +93,7 @@ static constexpr int cBRoundingRadius                  = 4;
 static constexpr const char* cBPopupAnimatorProperty   = "_q_fluent_combo_popup_animator";
 static constexpr int menuPopupAnimationDuration        = 400;
 static constexpr const char* menuPopupAnimatorProperty = "_q_fluent_menu_popup_animator";
+static constexpr const int sliderShadowBorderWidth     = cBShadowBorderWidth;
 
 static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 {
@@ -197,7 +201,20 @@ static void showSliderValueTip( QSlider* slider, int value )
         }
     }
 
-    tip->setText( QString::number( value ) );
+    QVariant scale     = slider->property( "scale" );
+    QVariant precision = slider->property( "precision" );
+    if ( scale.isValid() )
+    {
+        double realVal = value / scale.toDouble();
+        int prec       = precision.isValid() ? precision.toInt() : 2;
+
+        QString formattedStr = QString::number( realVal, 'f', prec );
+        tip->setText( formattedStr );
+    }
+    else
+    {
+        tip->setText( QString::number( value ) );
+    }
     tip->adjustSize();
 
     QStyleOptionSlider opt;
@@ -1170,6 +1187,18 @@ static void drawRoundedBorderSurface( QPainter* painter,
         return;
     }
 
+    // {
+    //     PainterStateGuard guard( painter );
+    //     painter->setRenderHint( QPainter::Antialiasing );
+    //     painter->setPen( QPen(border, borderWidth) );
+    //     painter->setBrush(background);
+    //     painter->drawRoundedRect(rect, radius, radius);
+
+    //     // drawRoundedRect(painter, rect, QPen(border, borderWidth), background);
+
+    //     return;
+    // }
+
     PainterStateGuard guard( painter );
     painter->setRenderHint( QPainter::Antialiasing );
     painter->setPen( Qt::NoPen );
@@ -1602,8 +1631,7 @@ inline bool isHighContrastTheme()
 #endif
 }
 
-FluentUI3Style::FluentUI3Style( QStyle* style )
-    : QProxyStyle( style )
+FluentUI3Style::FluentUI3Style( QStyle* style ) /*: QProxyStyle(QStyleFactory::create("windows"))*/
 {
     static bool resourceInit = false;
     static int fontId        = -1;
@@ -1723,6 +1751,9 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 QObject* styleObject = option->styleObject;  // Can be widget or qquickitem
 
                 QRectF thumbRect = proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget );
+                thumbRect        = thumbRect.marginsRemoved(
+                    QMargins { sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth } );
+
                 const qreal outerRadius =
                     qMin( 10.0, ( slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0 ) - 1 );
                 bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
@@ -1938,7 +1969,11 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             {
                 const auto& slrect      = slider->rect;
                 const bool isHorizontal = slider->orientation == Qt::Horizontal;
-                const QRectF handleRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                QRectF handleOriginRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                QRectF handleRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
+                handleRect = handleRect.marginsRemoved(
+                    QMargins { sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth } );
+
                 const QPointF handleCenter( handleRect.center() );
 
                 if ( sub & SC_SliderGroove )
@@ -2067,7 +2102,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                             innerRadius         = outerRadius * sliderInnerRadius( state, isInsideHandle );
                         }
                     }
-                    // drawSliderHandleShadow(painter, handleCenter, outerRadius);
+                    drawSliderHandleShadow( painter, handleCenter, outerRadius );
 
                     painter->setPen( Qt::NoPen );
                     painter->setBrush( winUI3Color( controlFillSolid ) );
@@ -2766,14 +2801,35 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             painter->setCompositionMode( QPainter::CompositionMode_SourceOver );
             painter->setRenderHint( QPainter::Antialiasing );
 
-            drawPopupShadow( painter, QRectF( panelRect ), secondLevelRoundingRadius, toolTipShadowBorderWidth );
-
-            const QColor fillColor   = highContrastTheme ? option->palette.toolTipBase().color() : winUI3Color( acrylicInAppFillFallback );
-            const QBrush borderBrush = highContrastTheme ? option->palette.toolTipText() : QBrush( winUI3Color( surfaceStrokeFlyout ) );
-            drawRoundedBorderSurface(
-                painter, QRectF( panelRect ), secondLevelRoundingRadius, fillColor, borderBrush, highContrastTheme ? 2.0 : 1.0, true );
+            QStyleOption tipOpt( *option );
+            tipOpt.rect = panelRect;
+            if ( highContrastTheme )
+            {
+                tipOpt.palette.setBrush( QPalette::Window, option->palette.toolTipBase() );
+                tipOpt.palette.setBrush( QPalette::WindowText, option->palette.toolTipText() );
+            }
+            proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &tipOpt, painter, widget );
 
             painter->restore();
+            break;
+        }
+        case PrimitiveElement( PE_FluentFlyoutSurface ) :
+        {
+            // option->rect：阴影内侧可见面板。阴影画在其外侧透明区。
+            const QRectF panelRect( option->rect );
+            if ( !panelRect.isValid() )
+            {
+                break;
+            }
+
+            drawPopupShadow( painter, panelRect, cBRoundingRadius, FlyoutShadowBorderWidth );
+            drawRoundedBorderSurface( painter,
+                                      panelRect,
+                                      cBRoundingRadius,
+                                      highContrastTheme ? option->palette.window() : QBrush( winUI3Color( acrylicInAppFillFallback ) ),
+                                      highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
+                                      highContrastTheme ? 2.0 : 1.0,
+                                      true );
             break;
         }
         case PE_FrameTabWidget :
@@ -3009,18 +3065,10 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 break;
             }
-            const QRectF rect =
-                QRectF( option->rect )
-                    .marginsRemoved(
-                        QMargins( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth ) );
-            drawPopupShadow( painter, rect, cBRoundingRadius, FlyoutShadowBorderWidth );
-            drawRoundedBorderSurface( painter,
-                                      rect,
-                                      cBRoundingRadius,
-                                      highContrastTheme ? option->palette.window() : QBrush( winUI3Color( acrylicInAppFillFallback ) ),
-                                      highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                                      highContrastTheme ? 2.0 : 1.0,
-                                      true );
+            QStyleOption menuOpt( *option );
+            menuOpt.rect = option->rect.marginsRemoved(
+                QMargins( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth ) );
+            proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &menuOpt, painter, widget );
             break;
         }
         case PE_PanelLineEdit :
@@ -3069,7 +3117,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         case PE_FrameLineEdit :
         {
             const auto frameRect = QRectF( option->rect ).marginsRemoved( QMarginsF( 1.5, 1.5, 1.5, 1.5 ) );
-            drawLineEditFrame( painter, frameRect, option, !( option->state & State_ReadOnly ) );
+            drawLineEditFrame( painter, frameRect, option, !( option->state & State_ReadOnly ), secondLevelRoundingRadius );
             if ( state & State_KeyboardFocusChange && state & State_HasFocus )
             {
                 QStyleOptionFocusRect fropt;
@@ -3091,16 +3139,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 bool noRoundedCorners = widget && widget->property( NoRoundedCorners ).toBool();
                 if ( isComboPopup )
                 {
-                    auto pRect = QRectF( rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
-                    drawRoundedBorderSurface(
-                        painter,
-                        pRect,
-                        cBRoundingRadius,
-                        winUI3Color( acrylicInAppFillFallback ),
-                        highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                        highContrastTheme ? 2.0 : 1.0,
-                        true );
+                    QStyleOption popupOpt( *option );
+                    popupOpt.rect = rect.marginsRemoved( comboBoxPopupPanelMargins( widget ) ).toRect();
+                    proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &popupOpt, painter, widget );
                     break;
                 }
                 else
@@ -3140,7 +3181,8 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
                 else
                 {
-                    drawLineEditFrame( painter, borderRect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr );
+                    drawLineEditFrame(
+                        painter, borderRect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr, secondLevelRoundingRadius );
                 }
             }
             break;
@@ -3325,7 +3367,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     const QColor blendBase = opaqueBlendBase( option->palette, colorSchemeIndex == 1 );
                     brColor                = resolveOpaque( cardColor, blendBase );
 
-                    // Example项目:
+                    // Gallery项目:
                     // WidgetBgMode::Pixmap 会把 Base/Window 设为透明，这里保留最低透明度避免 card 过深或过透。
                     // 不需要的话，直接使用cardColor即可
                     const bool wallpaperMode = qApp && qApp->property( "_q_widget_mode" ).toInt() >= 1;
@@ -3903,11 +3945,11 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
                         const int shadow = FlyoutShadowBorderWidth;
                         // ComboBox 主体用居中 1px QPen：Qt5 外缘会多扩约 1px，
                         // popup 内描边从几何边开始，故 Qt5 多补 1px。
-#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
                         constexpr int panelHorizontalExpansion = 2;
-#else
-                        constexpr int panelHorizontalExpansion = 1;
-#endif
+#    else
+                        constexpr int panelHorizontalExpansion = 2;
+#    endif
 
                         const QRect outer     = option->rect;
                         const int frameWidth  = outer.width() - 2 * inset;
@@ -3984,6 +4026,10 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 #endif  // QT_CONFIG(toolbutton)
         case CC_Slider :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
+            if ( subControl == SC_SliderHandle )
+            {
+                ret.adjust( -sliderShadowBorderWidth, -sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth );
+            }
             break;
         default :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
@@ -4550,8 +4596,12 @@ void FluentUI3Style::drawPillTab( const QStyleOptionTab* tab, QPainter* painter,
     const bool isSelected                 = tab->state.testFlag( QStyle::State_Selected );
     const bool isHover                    = tab->state.testFlag( QStyle::State_MouseOver );
     [[maybe_unused]] const bool isEnabled = tab->state.testFlag( QStyle::State_Enabled );
-    const QRectF tabRect                  = tab->rect.marginsRemoved( QMargins( 2, 2, 2, 2 ) );
-    const qreal radius                    = 2;
+
+    const bool isFirstSegment = tab->position == QStyleOptionTab::Beginning || tab->position == QStyleOptionTab::OnlyOneTab;
+    const bool isLastSegment  = tab->position == QStyleOptionTab::End || tab->position == QStyleOptionTab::OnlyOneTab;
+
+    const QRectF tabRect = tab->rect.marginsRemoved( QMargins( isFirstSegment ? 1 : 2, 2, isLastSegment ? 1 : 2, 2 ) );
+    const qreal radius   = 2;
 
     QColor hoverColor    = winUI3Color( tabBarHoverBackground );
     QColor selectedColor = winUI3Color( tabBarSelectedBackground );
@@ -5489,30 +5539,46 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
         return;
     }
 
-    qreal thickness = ProgressBarThickness + 2;
-    // 暂时不需要了，后续如果需要调整进度环的粗细，可以再加上这个功能
-    //  if ( widget && widget->property( ProgressBarThicknessProperty ).isValid() )
-    //  {
-    //      const int t = widget->property( ProgressBarThicknessProperty ).toInt();
-    //      if ( t > 0 )
-    //      {
-    //          thickness = t;
-    //      }
-    //  }
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing, true );
+
+    auto positiveRealProperty = [ widget ]( const char* name, qreal fallback )
+    {
+        if ( !widget )
+        {
+            return fallback;
+        }
+
+        bool ok           = false;
+        const qreal value = widget->property( name ).toDouble( &ok );
+        return ok && qIsFinite( value ) && value > 0.0 ? value : fallback;
+    };
+
+    const qreal defaultThickness = ProgressBarRingDefaultThickness;
+    qreal thickness              = positiveRealProperty( ProgressBarThicknessProperty, defaultThickness );
+
     const QRectF rect    = option->rect;
     const qreal diameter = qMin( rect.width(), rect.height() );
-    if ( diameter <= 0.0 )
+    if ( diameter <= 5.0 )
     {
         return;
     }
 
+    const qreal maximumThickness = qMax( 1.0, diameter - 5.0 );
+    thickness                    = qMin( thickness, maximumThickness );
+
     QRectF ringRect( 0, 0, diameter, diameter );
     ringRect.moveCenter( rect.center() );
-    ringRect = ringRect.marginsRemoved( QMarginsF( thickness / 2.0 + 2, thickness / 2.0 + 2, thickness / 2.0 + 2, thickness / 2.0 + 2 ) );
+    const qreal outerInset = thickness / 2.0 + 2.0;
+    ringRect               = ringRect.marginsRemoved( QMarginsF( outerInset, outerInset, outerInset, outerInset ) );
+    if ( ringRect.width() <= 0.0 || ringRect.height() <= 0.0 )
+    {
+        return;
+    }
 
     if ( drawTrack )
     {
-        QPen pen( Qt::gray, thickness, Qt::SolidLine, Qt::RoundCap );
+        QPen pen( option->palette.color( QPalette::Mid ), thickness, Qt::SolidLine, Qt::SquareCap );
         painter->setPen( pen );
         painter->setBrush( Qt::NoBrush );
         painter->drawEllipse( ringRect );
@@ -5525,7 +5591,7 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     qreal spanAngle                 = 0.0;
     if ( isIndeterminate )
     {
-        constexpr auto loopDurationMSec = 800;
+        const int loopDurationMSec      = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
         const auto elapsedTime          = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
         const auto elapsed              = elapsedTime.time_since_epoch().count();
         const qreal t                   = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
@@ -5541,7 +5607,21 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     }
     spanAngle = -spanAngle;
 
-    QPen pen( accentColor( option ), thickness, Qt::SolidLine, Qt::RoundCap );
+    QColor ringColor;
+    if ( StyleOptionHelper::isDisabled(option) )
+    {
+        ringColor = winUI3Color( fillAccentDisabled );
+    }
+    else
+    {
+        ringColor = accentColor( option );
+#if QT_VERSION < QT_VERSION_CHECK( 6, 6, 0 )
+        // QPalette::Accent was introduced in Qt 6.6; Highlight is its equivalent
+        // customization point for the older Gallery builds.
+        ringColor = option->palette.highlight().color();
+#endif
+    }
+    QPen pen( ringColor, thickness, Qt::SolidLine, Qt::RoundCap );
     painter->setPen( pen );
     painter->setBrush( Qt::NoBrush );
     painter->drawArc( ringRect, int( ( startAngle + angleZeroOffset ) * 16 ), int( spanAngle * 16 ) );
@@ -5889,17 +5969,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 const bool isComboPopup = widget && widget->inherits( "QComboBoxPrivateContainer" );
                 if ( isComboPopup )
                 {
-                    auto pRect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) );
-                    drawPopupShadow( painter, pRect, cBRoundingRadius, FlyoutShadowBorderWidth );
-                    drawRoundedRect(painter, pRect, QPen(winUI3Color( surfaceStrokeFlyout )), QBrush(winUI3Color(acrylicInAppFillFallback)));
-                    // drawRoundedBorderSurface(
-                    //     painter,
-                    //     pRect,
-                    //     cBRoundingRadius,
-                    //     winUI3Color( acrylicInAppFillFallback ),
-                    //     highContrastTheme ? option->palette.windowText() : QBrush( winUI3Color( surfaceStrokeFlyout ) ),
-                    //     highContrastTheme ? 2.0 : 1.0,
-                    //     true );
+                    QStyleOption popupOpt( *option );
+                    popupOpt.rect = QRectF( option->rect ).marginsRemoved( comboBoxPopupPanelMargins( widget ) ).toRect();
+                    proxy()->drawPrimitive( PrimitiveElement( PE_FluentFlyoutSurface ), &popupOpt, painter, widget );
                     break;
                 }
 
@@ -6616,7 +6688,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         s = s.left( t );
                     }
                     QFont font = menuitem->font;
-                    font.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+                    font.setHintingPreference( QFont::HintingPreference::PreferNoHinting );
                     if ( menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem )
                     {
                         font.setBold( true );
@@ -7737,6 +7809,29 @@ void FluentUI3Style::polish( QWidget* widget )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::polish( widget );
 
+#if QT_CONFIG( progressbar )
+    if ( auto* progressBar = qobject_cast<QProgressBar*>( widget );
+         progressBar && progressBar->property( ProgressBarStyleProperty ).toInt() == ProgressBarRing )
+    {
+        const QVariant duration = progressBar->property( ProgressBarRingIndeterminateDurationProperty );
+        if ( !duration.isValid() || duration.toInt() <= 0 )
+        {
+            progressBar->setProperty( ProgressBarRingIndeterminateDurationProperty,
+                                      ProgressBarRingDefaultIndeterminateDuration );
+        }
+
+        QPalette palette = progressBar->palette();
+        const bool hasCustomTrackColor = palette.isBrushSet( QPalette::Active, QPalette::Mid )
+                                         || palette.isBrushSet( QPalette::Inactive, QPalette::Mid )
+                                         || palette.isBrushSet( QPalette::Disabled, QPalette::Mid );
+        if ( !hasCustomTrackColor )
+        {
+            palette.setColor( QPalette::All, QPalette::Mid, Qt::gray );
+            progressBar->setPalette( palette );
+        }
+    }
+#endif
+
     if ( widget->inherits( "QRollEffect" ) )
     {
         widget->setAttribute( Qt::WA_TranslucentBackground );
@@ -7752,8 +7847,13 @@ void FluentUI3Style::polish( QWidget* widget )
             cb->setAutoFillBackground( true );
         }
 
+        const bool useQtCenteredPopup = qApp && qApp->property( "_q_scrollHint_center" ).toBool();
+
+        // 居中 popup 的优先级高于所有自定义动画属性。
+        // 居中模式的 polish 阶段不安装 Animator，popup 显示时
+        // 仅由 Style 校正包含透明阴影的视觉中心。
         QObject* animatorObject = cb->property( cBPopupAnimatorProperty ).value<QObject*>();
-        if ( !cb->inherits( "ExComboBox" ) && !animatorObject )
+        if ( !useQtCenteredPopup && !cb->inherits( "ExComboBox" ) && !animatorObject )
         {
             auto* animator = new ComboBoxPopupAnimator( cb, cb );
             cb->setProperty( cBPopupAnimatorProperty, QVariant::fromValue<QObject*>( animator ) );
@@ -8253,8 +8353,11 @@ void FluentUI3Style::drawCheckBox( const QStyleOption* option, QPainter* painter
         }
 
         clipRect.moveCenter( center );
-        clipRect.setLeft( rect.x() + ( rect.width() - clipRect.width() ) / 2.0 + 0.5 );
-        clipRect.setWidth( clipWidth * clipRect.width() );
+        // clipRect.setLeft( rect.x() + ( rect.width() - clipRect.width() ) / 2.0 + 0.5 );
+        // clipRect.setWidth( clipWidth * clipRect.width() );
+        const qreal fullWidth = clipRect.width();
+        clipRect.setWidth(clipWidth * fullWidth);
+
         painter->drawText( clipRect, Qt::AlignVCenter | Qt::AlignLeft, AcceptMedium );
     }
     else if ( isPartial )
@@ -8672,15 +8775,34 @@ bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
     {
         if ( event->type() == QEvent::Show )
         {
-            // This path also covers custom/animation-disabled ComboBoxes.  A
-            // per-show guard makes the result independent of event-filter
-            // ordering while allowing the animator to capture the corrected
-            // geometry.
+            // This path also covers ComboBoxes without an Animator. In centered
+            // mode the helper only corrects the visual center for the transparent
+            // shadow; it never starts an animation.
             ComboBoxPopupAnimator::positionPopupForShadow( popup );
+
+            if ( qApp && qApp->property( "_q_scrollHint_center" ).toBool() )
+            {
+                // QComboBox::showPopup() 在 Show 事件之后还会执行
+                // scrollTo(PositionAtCenter)，并可能因滚动条再次设置几何。
+                // 在本轮事件结束后按最终布局再校正一次；这仍然只是
+                // 一次定位，不会创建 Animator 或任何过渡动画。
+                QTimer::singleShot(
+                    0,
+                    popup,
+                    [ popup ]
+                    {
+                        if ( !popup->isVisible() || !qApp || !qApp->property( "_q_scrollHint_center" ).toBool() )
+                        {
+                            return;
+                        }
+
+                        ComboBoxPopupAnimator::positionPopupForShadow( popup );
+                    } );
+            }
         }
         else
         {
-            popup->setProperty( ComboBoxPopupShadowPositionedProperty, false );
+            popup->setProperty( ComboBoxPopupShadowPositionedProperty, QVariant() );
         }
     }
     else if ( auto dial = qobject_cast<QDial*>( watched ) )

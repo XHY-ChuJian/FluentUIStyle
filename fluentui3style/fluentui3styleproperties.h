@@ -25,6 +25,13 @@ enum TabBarStyle
 
 [[maybe_unused]] constexpr const char *ProgressBarThicknessProperty = "progressBarThickness";
 [[maybe_unused]] constexpr const char *ProgressBarStyleProperty = "progressBarStyle";
+// ProgressBarRing only: ProgressBarThicknessProperty controls both ring widths.
+// The progress color uses QPalette::Accent (Highlight before Qt 6.6), while the
+// track uses QPalette::Mid. Missing or invalid widths preserve the current 6 px appearance.
+[[maybe_unused]] constexpr int ProgressBarRingDefaultThickness = 6;
+// Positive duration in milliseconds for one indeterminate rotation.
+[[maybe_unused]] constexpr const char *ProgressBarRingIndeterminateDurationProperty = "progressBarRingIndeterminateDuration";
+[[maybe_unused]] constexpr int ProgressBarRingDefaultIndeterminateDuration = 800;
 enum ProgressBarStyle
 {
     ProgressBarThin = 0,

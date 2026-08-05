@@ -18,6 +18,12 @@ enum class ControlType
     ControlAlt
 };
 
+// FluentUI3 自定义 Primitive；option->rect 为阴影内侧的可见面板区域。
+enum FluentUI3PrimitiveElement
+{
+    PE_FluentFlyoutSurface = QStyle::PE_CustomBase + 1
+};
+
 class FLUENTUI3STYLE_EXPORT FluentUI3Style : public QProxyStyle
 {
     Q_OBJECT

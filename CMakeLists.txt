@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 project(fluentw3uistyle VERSION 0.1 LANGUAGES CXX C)
 
-include(GNUInstallDirs)
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Install prefix" FORCE)
-endif()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -28,6 +22,71 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Svg
 )
 
+# Install into the Qt selected by the current Kit unless the caller explicitly
+# supplied CMAKE_INSTALL_PREFIX. qmake is authoritative for both native Qt 5
+# and Qt 6 layouts; the package directory is a fallback for unusual packages
+# that do not expose the qmake target.
+set(_qt_install_prefix "")
+set(_qt_install_plugins "")
+set(_qt_qmake_target "Qt${QT_VERSION_MAJOR}::qmake")
+if(TARGET ${_qt_qmake_target})
+    get_target_property(_qt_qmake_executable ${_qt_qmake_target} IMPORTED_LOCATION)
+    if(_qt_qmake_executable AND EXISTS "${_qt_qmake_executable}")
+        execute_process(
+            COMMAND "${_qt_qmake_executable}" -query QT_INSTALL_PREFIX
+            OUTPUT_VARIABLE _qt_install_prefix
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        execute_process(
+            COMMAND "${_qt_qmake_executable}" -query QT_INSTALL_PLUGINS
+            OUTPUT_VARIABLE _qt_install_plugins
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+    endif()
+endif()
+
+if(NOT _qt_install_prefix)
+    set(_qt_package_dir_variable "Qt${QT_VERSION_MAJOR}_DIR")
+    set(_qt_package_dir "${${_qt_package_dir_variable}}")
+    if(_qt_package_dir)
+        get_filename_component(_qt_install_prefix "${_qt_package_dir}/../../.." ABSOLUTE)
+    endif()
+endif()
+
+set(_legacy_default_install_prefix "${CMAKE_CURRENT_SOURCE_DIR}/install")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+   OR "${CMAKE_INSTALL_PREFIX}" STREQUAL "${_legacy_default_install_prefix}")
+    if(_qt_install_prefix)
+        set(CMAKE_INSTALL_PREFIX "${_qt_install_prefix}" CACHE PATH "Install prefix" FORCE)
+        set(_install_prefix_source "current Qt Kit")
+    else()
+        set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Install prefix" FORCE)
+        set(_install_prefix_source "fallback project directory")
+        message(WARNING "Unable to determine the Qt install prefix; using ${CMAKE_INSTALL_PREFIX}")
+    endif()
+else()
+    set(_install_prefix_source "user or CMake cache")
+endif()
+
+set(_qt_plugins_install_dir "plugins")
+if(_qt_install_prefix AND _qt_install_plugins)
+    file(RELATIVE_PATH _qt_plugins_relative "${_qt_install_prefix}" "${_qt_install_plugins}")
+    if(NOT _qt_plugins_relative MATCHES "^\\.\\.")
+        set(_qt_plugins_install_dir "${_qt_plugins_relative}")
+    endif()
+endif()
+
+include(GNUInstallDirs)
+
+message(STATUS "Qt install prefix       : ${_qt_install_prefix}")
+message(STATUS "CMake install prefix    : ${CMAKE_INSTALL_PREFIX} (${_install_prefix_source})")
+message(STATUS "Install runtime binaries: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+message(STATUS "Install libraries       : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "Install headers         : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+message(STATUS "Qt style plugin install : ${CMAKE_INSTALL_PREFIX}/${_qt_plugins_install_dir}/styles")
+
 # Qt 6.10+ private CMake packages are required when using <private/...> headers.
 # Older Qt 6.x installs (e.g. 6.6) often omit them; do not require globally.
 set(FLUENT_QT_PRIVATE_LIBS "")
@@ -41,8 +100,7 @@ if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION VERSION_GREATER_EQUAL "6.10.0")
 endif()
 
 # Local runs: keep all configs in the same output dir (Windows/MSVC convenience).
-# Must be set before add_subdirectory(3rd/qwindowkit); otherwise QWK DLLs land in
-# qmsetup's out-*-*/bin instead of ${CMAKE_BINARY_DIR}/bin.
+# Optional components such as ExWidgetsFrameless also inherit these paths.
 set(_out_bin "${CMAKE_BINARY_DIR}/bin")
 set(_out_lib "${CMAKE_BINARY_DIR}/lib")
 
@@ -56,52 +114,15 @@ foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
 endforeach()
 
-# QWindowKit: Qt 5.12+ only (QWindowKit officially supports Qt 5.12 or later)
-if(QT_VERSION VERSION_LESS "5.12.0")
-    set(FLUENT_ENABLE_QWINDOWKIT OFF)
-    message(STATUS "QWindowKit disabled: Qt ${QT_VERSION} < 5.12")
-else()
-    set(FLUENT_ENABLE_QWINDOWKIT ON)
-endif()
-
-if(FLUENT_ENABLE_QWINDOWKIT)
-
-    set(QWINDOWKIT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_QUICK OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_WIDGETS ON CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_BUILD_DOCUMENTATIONS OFF CACHE BOOL "" FORCE)
-    set(QWINDOWKIT_INSTALL ON CACHE BOOL "" FORCE)
-    add_subdirectory(3rd/qwindowkit)
-
-    # qmsetup may override per-directory output paths; align QWK targets with the tree above.
-    foreach(_qwk_target IN ITEMS QWKCore QWKWidgets)
-        if(TARGET ${_qwk_target})
-            set_target_properties(${_qwk_target} PROPERTIES
-                RUNTIME_OUTPUT_DIRECTORY "${_out_bin}"
-                LIBRARY_OUTPUT_DIRECTORY "${_out_lib}"
-                ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}"
-            )
-            foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
-                set_target_properties(${_qwk_target} PROPERTIES
-                    RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}"
-                    LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
-                    ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}"
-                )
-            endforeach()
-        endif()
-    endforeach()
-endif()
-
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
-option(BUILD_EXAMPLE "Build example application" ON)
+option(BUILD_GALLERY "Build the Gallery application" ON)
 option(BUILD_AUDIOMATIC_MINI "Build Audiomatic mini player" ON)
+option(BUILD_WIN11_CLOCK "Build the Win11 Clock sample application" ON)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
 endif()
-
-add_subdirectory(3rd/kissfft)
 
 add_subdirectory(ExWidgets)
 
@@ -113,17 +134,8 @@ if(BUILD_PLUGIN)
     add_subdirectory(fluentui3style/plugin)
 endif()
 
-if(BUILD_EXAMPLE OR BUILD_AUDIOMATIC_MINI)
-    if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-        find_package(Qt6 REQUIRED COMPONENTS Multimedia Network)
-        add_subdirectory(AudiomaticMini)
-    elseif(BUILD_AUDIOMATIC_MINI)
-        message(WARNING "AudiomaticMini requires Qt 6; BUILD_AUDIOMATIC_MINI ignored.")
-    endif()
-endif()
-
-if(BUILD_EXAMPLE)
-    add_subdirectory(Example)
+if(BUILD_GALLERY OR BUILD_AUDIOMATIC_MINI OR BUILD_WIN11_CLOCK)
+    add_subdirectory(Examples)
 endif()
 
 # --- Install (DLL / import lib / headers / CMake packages) ---
@@ -134,11 +146,26 @@ install(TARGETS ExWidgets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+if(TARGET ExWidgetsFrameless)
+    install(TARGETS ExWidgetsFrameless
+        EXPORT ExWidgetsTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
+
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:ExWidgets>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
         OPTIONAL
     )
+    if(TARGET ExWidgetsFrameless)
+        install(FILES $<TARGET_PDB_FILE:ExWidgetsFrameless>
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            OPTIONAL
+        )
+    endif()
 endif()
 
 if(BUILD_LIBRARY)
@@ -231,7 +258,7 @@ endif()
 
 if(BUILD_PLUGIN)
     install(TARGETS FluentUI3StylePlugin
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins/styles
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins/styles
+        RUNTIME DESTINATION ${_qt_plugins_install_dir}/styles
+        LIBRARY DESTINATION ${_qt_plugins_install_dir}/styles
     )
 endif()

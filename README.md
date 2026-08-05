@@ -29,7 +29,7 @@ FluentUI3Style基于QProxyStyle实现，完整实现了FluentUI3 UI风格，使�
 - SwitchButton
 - TabBar实现"Pivot"和"Segmented"控件
 
-为了让 "Example" 展示更完整，会在 ExWidgets 下实现一些组件；这些组件的样式仍由 Style 统一绘制。  
+为了让 "Gallery" 展示更完整，会在 ExWidgets 下实现一些组件；这些组件的样式仍由 Style 统一绘制。
 后续可能会增加其他控件，但都会保证这些组件能独立于Style之外运行。
 
 **ExWidgets 各控件的使用说明（接入方式、API 示例、数据格式约定）见：[ExWidgets/README.md](ExWidgets/README.md)**（[English](ExWidgets/README_EN.md)）
@@ -55,13 +55,13 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 | 方式 | 状态 | 说明 |
 | ---- | ---- | ---- |
-| **CMake** | ✅ 推荐、持续维护 | 与 `Example/CMakeLists.txt` 等功能同步更新，日常开发请使用 CMake |
-| **qmake** | ⚠️ 遗留、不再同步 | 根目录 `fluentw3uistyle.pro` 仍保留，但**不再与 CMake 同步维护**，不保证与最新 Example / QWindowKit 行为一致 |
+| **CMake** | ✅ 推荐、持续维护 | 与 `examples/Gallery/CMakeLists.txt` 等功能同步更新，日常开发请使用 CMake |
+| **qmake** | ⚠️ 遗留、不再同步 | 根目录 `fluentw3uistyle.pro` 仍保留，但**不再与 CMake 同步维护**，不保证与最新 Gallery / QWindowKit 行为一致 |
 
 ### 使用说明
 
 - **版本兼容性**：样式库在 Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC 环境）下测试正常
-- **Example 无边框窗口（QWindowKit）**：CMake 构建且 **Qt ≥ 5.12** 时启用（需初始化子模块）；低于 5.12 使用系统标题栏/系统边框
+- **可选无边框组件**：Qt ≥ 5.12 时默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）；旧版 Qt 自动关闭。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
 - **Qt 6.8+ 已知问题**：`QMenu`、`QComboBox` 下拉等 **Popup 弹窗的外阴影** 在 Qt **6.8 及以上** 可能显示异常（缺失、裁切、发脏或位置不对）。原因是：本样式对菜单/下拉弹层关闭了系统阴影（`Qt::NoDropShadowWindowHint`），并配合 `WA_TranslucentBackground` 在 `QStyle` 里 **自绘多层阴影**；而 Qt 6.8 起 Windows 平台对 **半透明 Popup 窗口的合成与绘制区域** 做了调整，弹窗实际可绘制区域、Alpha 混合与层叠顺序与旧版不一致，导致 Style 里手工绘制的阴影层无法像 Qt 6.6 及以前那样正确显示。该问题来自 **Qt 平台层 + 自绘阴影方案** 的叠加，并非单一控件逻辑错误；后续会在新版本 Qt 上继续适配。
 - **MinGW注意**：在MinGW环境下，菜单弹出可能需要特殊处理
 - **版本差异**：不同Qt版本间的差异主要体现在右键菜单的显示效果上，可能存在渲染或布局的细微差别
@@ -70,11 +70,12 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 ### Qt版本兼容性
 
 
-| Qt版本     | 样式库 | Example（CMake） | 窗口边框 |
+| Qt版本     | 样式库 | Gallery（CMake） | 窗口边框 |
 | -------- | ---- | -------------- | ---- |
-| Qt5.14.2 | ✅ 支持 | ✅ 支持 | QWindowKit 无边框 |
-| Qt5.15.2 | ✅ 支持 | ✅ 支持 | QWindowKit 无边框 + DWM 背景 |
-| Qt6.6.3  | ✅ 支持 | ✅ 支持 | QWindowKit 无边框 + DWM 背景 |
+| Qt5.12.12 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框（`EXWIDGETS_BUILD_FRAMELESS=ON`） |
+| Qt5.14.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
+| Qt5.15.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
+| Qt6.6.3  | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.8+   | ⚠️ 部分 | ⚠️ 部分 | Popup 菜单/下拉 **外阴影** 可能有 Bug（见上文说明） |
 | Qt6.10   | ⚠️ 部分 | ⚠️ 部分 | 同上；样式代码基于 Qt 6.10 Win11 样式移植 |
 
@@ -83,10 +84,10 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 ### 零、获取源码（含子模块）
 
-Example 在 **Qt ≥ 5.12** 下的无边框窗口与 DWM 背景依赖 **[QWindowKit](https://github.com/stdware/qwindowkit)**，以 Git **子模块** 形式放在 `3rd/qwindowkit/`。  
-**Qt < 5.12 不启用 QWindowKit**，Example 使用系统标题栏，可跳过子模块（仅编译样式库/插件时甚至不需要子模块）。
+`ExWidgets::Frameless` 的无边框窗口与 DWM 背景依赖 **[QWindowKit](https://github.com/stdware/qwindowkit)**，子模块位于 `3rd/qwindowkit/`。
+Qt ≥ 5.12 时该组件默认开启；设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 可跳过 QWindowKit 子模块。
 
-若使用 **Qt 5.12 及以上** 且需编译 Example 无边框功能，`git clone` 后须初始化子模块，否则 CMake 配置会失败。注意 `3rd/qwindowkit` 内含嵌套子模块（`qmsetup` → `syscmdline`），必须用 `--recursive` 拉全。
+若要启用无边框组件，`git clone` 后须初始化子模块，否则 CMake 会尝试查找系统安装的 QWindowKit package。注意 `3rd/qwindowkit` 内含嵌套子模块（`qmsetup` → `syscmdline`），必须用 `--recursive` 拉全。
 
 #### 首次克隆（推荐）
 
@@ -102,7 +103,7 @@ git pull
 git submodule update --init --recursive
 ```
 
-> **注意：** 日常 `git pull` **不会**自动更新子模块。仅在 Qt ≥ 5.12 且需要 QWindowKit 时，拉代码后若报找不到 `3rd/qwindowkit`，请执行 `git submodule update --init --recursive`。
+> **注意：** 日常 `git pull` **不会**自动更新子模块。仅在 `EXWIDGETS_BUILD_FRAMELESS=ON` 时需要 QWindowKit；找不到 `3rd/qwindowkit` 时请执行 `git submodule update --init --recursive`。
 
 其他第三方依赖（如 `3rd/kissfft`）已直接提交在仓库中，无需额外步骤。
 
@@ -113,7 +114,7 @@ git submodule update --init --recursive
 - 操作系统：建议 Windows 10/11
 - 编译器：MSVC（与 Qt 套件保持一致）
 - Qt：建议使用已测试版本（如 Qt 6.6.3）
-- CMake：建议 3.16+
+- CMake：基础组件建议 3.16+；无边框组件需 3.19+
 
 > 说明：请确保 `cmake`、`ninja`（如使用）和 Qt 对应工具链在同一套环境中，避免出现“头文件版本与 moc 版本不一致”问题。
 
@@ -164,34 +165,35 @@ cmake --build build --config Debug
 #### 4) 运行示例
 
 ```powershell
-./build/bin/Exampled.exe   # Debug
-./build/bin/Example.exe    # Release
+./build/bin/Galleryd.exe   # Debug
+./build/bin/Gallery.exe    # Release
 ```
 
 #### 5) 关键构建选项（CMake）
 
 - `BUILD_LIBRARY`：编译样式库（默认 ON）
 - `BUILD_PLUGIN`：编译 Qt Style 插件（默认 ON）
-- `BUILD_EXAMPLE`：编译示例程序（默认 ON）
+- `BUILD_GALLERY`：编译 Gallery（默认 ON）
+- `EXWIDGETS_BUILD_FRAMELESS`：编译 `ExWidgets::Frameless` 并引入 QWindowKit（Qt ≥ 5.15.2 默认 **ON**，旧版 Qt 默认 **OFF**）
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR`：构建后将插件复制到 Qt 的 `plugins/styles`（默认 **OFF**，避免无权限写入 Qt 安装目录）
 
 例如只编译库和插件、不编译示例：
 
 ```powershell
-cmake -S . -B build -DBUILD_EXAMPLE=OFF
+cmake -S . -B build -DBUILD_GALLERY=OFF
 ```
 
 #### 6) Qt 5.14.2 说明
 
-- **样式库 / 插件 / Example 均可通过 CMake 正常构建**
-- Example **不使用 QWindowKit**，窗口为 **系统边框 + 系统标题栏**
+- **样式库 / 插件 / Gallery 均可通过 CMake 正常构建**
+- Gallery **不使用 QWindowKit**，窗口为 **系统边框 + 系统标题栏**
 - 无需初始化 `3rd/qwindowkit` 子模块（若不编译依赖 QWindowKit 的目标）
 
 ---
 
 ### 三、qmake 编译（遗留，不再同步更新）
 
-根目录仍保留 `fluentw3uistyle.pro`，便于旧工程参考，但 **不再与 CMake 同步更新**，不保证包含最新 Example 功能（如 QWindowKit 无边框、AudiomaticMini 等）。
+根目录仍保留 `fluentw3uistyle.pro`，便于旧工程参考，但 **不再与 CMake 同步更新**，不保证包含最新 Gallery 功能（如 QWindowKit 无边框、AudiomaticMini 等）。
 
 若仍需尝试：
 
@@ -336,7 +338,7 @@ FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
 
 ## 使用方法
 
-### 控件属性设置示例（来自 Example/MainWindow）
+### 控件属性设置示例（来自 examples/Gallery/MainWindow）
 
 建议优先使用 `fluentui3styleproperties.h` 里的属性名常量和枚举值，而不是直接写数字。
 
@@ -435,7 +437,7 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 
 - **BUILD_LIBRARY**：编译为静态库（默认ON）
 - **BUILD_PLUGIN**：编译为Qt插件（默认OFF）
-- **BUILD_EXAMPLE**：编译示例应用（默认ON）
+- **BUILD_GALLERY**：编译 Gallery（默认ON）
 
 ## 示例效果
 

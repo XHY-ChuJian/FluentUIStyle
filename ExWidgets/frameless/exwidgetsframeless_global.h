@@ -1,0 +1,9 @@
+#pragma once
+
+#include <QtGlobal>
+
+#if defined(EXWIDGETS_FRAMELESS_LIBRARY)
+#  define EXWIDGETS_FRAMELESS_EXPORT Q_DECL_EXPORT
+#else
+#  define EXWIDGETS_FRAMELESS_EXPORT Q_DECL_IMPORT
+#endif

@@ -4,15 +4,25 @@
 
 ExWidgets are **WinUI3 / CommunityToolkit–style Qt Widget extensions** shipped alongside FluentUI3Style. They can be used standalone, but **`app.setStyle("FluentUI3")` is recommended** for a consistent look.
 
-The **Example** app includes live demos under the **ExWidgets** navigation group.
+The **Gallery** app includes live demos under the **ExWidgets** navigation group.
 
 ---
 
 ## Linking (CMake)
 
 ```cmake
-target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::ExWidgets Qt6::Widgets)
 ```
+
+For the optional QWindowKit-based window chrome:
+
+```cmake
+set(EXWIDGETS_BUILD_FRAMELESS ON CACHE BOOL "" FORCE)
+add_subdirectory(path/to/Window11Style/ExWidgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
+```
+
+Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)`. The option defaults to ON with Qt ≥ 5.15.2 and OFF with older Qt; explicitly setting it OFF keeps base `ExWidgets` free of QWindowKit.
 
 ```cpp
 #include "exspectrumwidget.h"
@@ -30,12 +40,16 @@ target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
 | `ExColorPickerButton` | `excolorpickerbutton.h` | Tool button + flyout picker |
 | `ExMessageBox` | `exmessagebox.h` | Fluent-styled `QMessageBox` |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog |
+| `ExTimerDial` | `extimerdial.h` | Remaining time, circular progress, and optional finish time |
+| `ExLiquidGauge` | `exliquidgauge.h` | Ant Design-inspired liquid gauge with four shapes, layered waves, and centered text |
+| `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | Interactive radial gauge with configurable angles, ticks, needle, and colored ranges |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | Real-time spectrum (push mono int16 PCM) |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | Navigation pane + footer |
 | `ExNavTreeWidget` | `exnavtreewidget.h` | Collapsible nav tree |
 | `ExStackedWidget` | `exstackedwidget.h` | Animated stacked pages |
 | `ExTabWidget` | `extabwidget.h` | Animated tab widget |
 | `ColorGradientSlider` | `colorgradientslider.h` | Gradient groove slider |
+| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | Optional QWindowKit window chrome |
 
 See [README.md](README.md) for detailed API examples (Chinese).
 
@@ -61,7 +75,7 @@ spectrum->clear();  // on stop
 | Feature | Qt 5 | Qt 6 |
 |---------|------|------|
 | All ExWidgets | Yes | Yes |
-| Example Audiomatic Mini player | No | Yes |
-| Example spectrum (simulated PCM) | Yes | Yes |
+| Gallery Audiomatic Mini player | No | Yes |
+| Gallery spectrum (simulated PCM) | Yes | Yes |
 
 Build instructions: [README_EN.md](../README_EN.md)

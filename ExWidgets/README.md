@@ -5,7 +5,7 @@
 ExWidgets 是本仓库在 **FluentUI3Style 样式库之外** 提供的一组 WinUI3 / CommunityToolkit 风格 **Qt Widgets 扩展控件**。  
 它们可以独立编译链接，但 **推荐与 `app.setStyle("FluentUI3")` 一起使用**，以获得一致的 Fluent 视觉与交互。
 
-Example 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可作为活文档参考。
+Gallery 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可作为活文档参考。
 
 ---
 
@@ -17,7 +17,25 @@ Example 程序中 **ExWidgets** 导航分组下有各控件的交互演示，可
 add_subdirectory(path/to/Window11Style/ExWidgets)  # 或通过本仓库顶层工程
 
 add_executable(MyApp main.cpp)
-target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
+target_link_libraries(MyApp PRIVATE ExWidgets::ExWidgets Qt6::Widgets)
+```
+
+安装后可使用 `find_package(ExWidgets CONFIG REQUIRED)` 和同名 target。
+
+### 可选无边框组件
+
+```cmake
+set(EXWIDGETS_BUILD_FRAMELESS ON CACHE BOOL "" FORCE)
+add_subdirectory(path/to/Window11Style/ExWidgets)
+
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
+```
+
+`ExWidgets::Frameless` 提供 `FluentTitleBar` / `FluentWindowFrame`，并会传递 QWindowKit 依赖。Qt ≥ 5.15.2 时该 option 默认 ON，旧版 Qt 自动关闭；显式设为 OFF 时不影响基础 `ExWidgets` DLL。安装后也可显式请求组件：
+
+```cmake
+find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)
+target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
 ```
 
 头文件示例：
@@ -30,7 +48,7 @@ target_link_libraries(MyApp PRIVATE ExWidgets Qt6::Widgets)
 ### qmake
 
 ```qmake
-include($$PWD/ExWidgets/ExWidgets.pri)   # 若项目提供；或参考 Example/Example.pro
+include($$PWD/ExWidgets/ExWidgets.pri)   # 若项目提供；或参考 examples/Gallery/Gallery.pro
 LIBS += -lExWidgets
 ```
 
@@ -44,19 +62,23 @@ LIBS += -lExWidgets
 
 ## 控件一览
 
-| 控件 | 头文件 | 说明 | Example 演示 |
+| 控件 | 头文件 | 说明 | Gallery 演示 |
 |------|--------|------|--------------|
 | `ExRangeSlider` | `exrangeslider.h` | WinUI3 双端范围滑块 | ExWidgets → ExRangeSlider |
 | `ExColorPicker` | `excolorpicker.h` | CommunityToolkit 取色器 | ExWidgets → ExColorPicker |
 | `ExColorPickerButton` | `excolorpickerbutton.h` | 带 Flyout 的取色按钮 | ExColorPicker 页内 |
 | `ExMessageBox` | `exmessagebox.h` | Fluent 风格 `QMessageBox` | Dialogs 页 |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog | Dialogs 页 |
+| `ExTimerDial` | `extimerdial.h` | 剩余时间、环形进度与预计完成时刻 | Win11Clock 计时器 |
+| `ExLiquidGauge` | `exliquidgauge.h` | Ant Design 风格水波图，支持四种形状、双层波浪和中心文本 | ExWidgets → ExLiquidGauge |
+| `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | 可交互的径向仪表盘，支持自定义角度、刻度、指针和彩色区间 | ExWidgets → ExRadialGauge |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | 实时音频频谱（Push PCM） | Qt5: ExSpectrumWidget；Qt6: Audiomatic Mini |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | 主导航 + 页脚导航 | MainWindow 左侧导航 |
 | `ExNavTreeWidget` | `exnavtreewidget.h` | 可折叠导航树 | 由 NavigationView 内部使用 |
 | `ExStackedWidget` | `exstackedwidget.h` | 带动画的 `QStackedWidget` | MainWindow 中央区域 |
 | `ExTabWidget` | `extabwidget.h` | 带动画的 `QTabWidget` | Tab 演示 |
 | `ColorGradientSlider` | `colorgradientslider.h` | 渐变轨道滑条（ExColorPicker 内部） | ExColorPicker 内部 |
+| `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | 可选 QWindowKit 无边框窗口组件 | Gallery / AudiomaticMini |
 
 ---
 
@@ -90,6 +112,63 @@ connect(slider, &ExRangeSlider::upperValueChanged, this, [](int v) { /* ... */ }
 | `tickPosition` / `tickInterval` | 刻度线 |
 | `tracking` | 拖动过程是否持续触发 value 变化 |
 | `first()` / `second()` | 对应 QML 的 first/second 节点对象 |
+
+---
+
+## ExLiquidGauge
+
+`ExLiquidGauge` 继承 `QProgressBar`，直接复用范围、数值、格式和文本可见性 API。水位由当前进度决定，双层水波仅负责动态表现。
+
+```cpp
+#include "exliquidgauge.h"
+
+auto *gauge = new ExLiquidGauge(this);
+gauge->setRange(0, 100);
+gauge->setValue(68);
+gauge->setShape(ExLiquidGauge::CircleShape);
+gauge->setWaveAmplitude(6.0);
+gauge->setWaveCount(3);
+gauge->setWaveAnimationDuration(2400);
+```
+
+`shape` 支持 `CircleShape`、`RectShape`、`PinShape` 和 `TriangleShape`。`waveColor`、`backgroundColor`、`outlineColor`、`textColor` 与 `submergedTextColor` 传入无效 `QColor` 时会自动读取调色板，主题切换后无需重新设置。控件隐藏、禁用或关闭 `animationEnabled` 时会停止动画计时器。
+
+---
+
+## ExRadialGauge
+
+`ExRadialGauge` 继承 `QDial`，因此可直接使用 `setRange()`、`setValue()`、`valueChanged()`、键盘、滚轮和无障碍能力；它只接管径向仪表盘的绘制和鼠标角度映射。
+
+```cpp
+#include "exradialgauge.h"
+
+auto *gauge = new ExRadialGauge(this);
+gauge->setRange(0, 240);
+gauge->setValue(210);
+gauge->setValueAnimationDuration(180);
+gauge->setMinimumAngle(-135.0);
+gauge->setMaximumAngle(135.0);
+gauge->setMajorTickCount(11);
+gauge->setMinorTickCount(4);
+gauge->setTickLength(4.0);
+gauge->setMajorTickLength(8.0);
+gauge->setLabelsVisible(true);
+gauge->setNeedleStyle(ExRadialGauge::TriangleNeedle);
+```
+
+角度以正上方为 `0°`、顺时针为正；起止角度相同表示完整的 `360°`。`majorTickCount` 是整段圆弧上的主刻度总数（包含首尾），`minorTickCount` 是每两个主刻度之间的次刻度数量，数字标签与主刻度一一对应。`needleLength` 是相对刻度环半径的比例，其余宽度、长度和边距属性使用逻辑像素。强调色和 Track 色分别读取 `QPalette::Accent`（Qt 6.6 以前使用 `Highlight`）与 `QPalette::Mid`。
+
+`scaleMode` 提供三种通用结构：`TrackScale` 只绘制 Track，`ProgressScale` 绘制当前数值进度，`RangeScale` 使用彩色区间。彩色区间通过独立对象配置：
+
+```cpp
+gauge->setScaleMode(ExRadialGauge::RangeScale);
+gauge->addRange(0, 60, QColor("#21BCE2"));
+gauge->addRange(60, 80, QColor("#FFB900"));
+gauge->addRange(80, 100, QColor("#FF6475"));
+gauge->setUnit(QStringLiteral("km/h"));
+```
+
+`setValue()` 会在 `valueAnimationDuration` 内逐帧改变真实 `value()`，因此 `valueChanged`、进度环、指针和数值文本同步变化；时长为 `0` 时关闭动画。Track 与前景环的端点分别由 `trackCapStyle`、`ringCapStyle` 控制，默认都是 `Qt::FlatCap`；非完整圆的整体起止端各向外延伸 `1°`，让首尾主刻度完整落在圆弧范围内。彩色区间如果需要严格对齐，建议保持 `ringCapStyle` 为 `Qt::FlatCap`。`needleStyle` 可选 `NoNeedle`、`LineNeedle` 和 `TriangleNeedle`，两种可见指针都支持圆形轴心；数值可通过 `valuePosition` 放在中心或底部，并可配合 `title`、`unit`、刻度标签与自定义颜色组成不同仪表外观。
 
 ---
 
@@ -145,7 +224,7 @@ const auto ret = ExMessageBox::question(
     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 ```
 
-可像普通 `QMessageBox` 一样设置 `setInformativeText`、`setCheckBox` 等（参见 Example → Dialogs）。
+可像普通 `QMessageBox` 一样设置 `setInformativeText`、`setCheckBox` 等（参见 Gallery → Dialogs）。
 
 ---
 
@@ -212,15 +291,15 @@ spectrum->clear();
 
 ### 演示数据来源
 
-- **Example（Qt 5）**：`SineWaveGenerator` 合成动画 PCM → `pushAudioData`
-- **Example（Qt 6）**：Audiomatic Mini 播放器解码后推送
-- **独立程序**：`SpectrumDemo`（Qt 6，见 `AudiomaticMini/`）
+- **Gallery（Qt 5）**：`SineWaveGenerator` 合成动画 PCM → `pushAudioData`
+- **Gallery（Qt 6）**：Audiomatic Mini 播放器解码后推送
+- **独立程序**：`SpectrumDemo`（Qt 6，见 `examples/AudiomaticMini/`）
 
 ---
 
 ## ExWinUINavigationView / ExNavTreeWidget
 
-Example 主窗口左侧 **WinUI3 导航窗格**：主菜单 + 分隔线 + 页脚项，配合 `QStackedWidget` 切页。
+Gallery 主窗口左侧 **WinUI3 导航窗格**：主菜单 + 分隔线 + 页脚项，配合 `QStackedWidget` 切页。
 
 ```cpp
 #include "exwinuinavigationview.h"
@@ -241,7 +320,7 @@ nav->setNavigationExpanded(true, /*animated=*/true);
 
 ## ExStackedWidget / ExTabWidget
 
-在 `QStackedWidget` / `QTabWidget` 基础上增加 **滑动切换动画**（Example 中央 `stackedWidget` 使用）。
+在 `QStackedWidget` / `QTabWidget` 基础上增加 **滑动切换动画**（Gallery 中央 `stackedWidget` 使用）。
 
 ```cpp
 #include "exstackedwidget.h"
@@ -288,13 +367,13 @@ s->setImageBuilder([](QSize size) {
 | 能力 | Qt 5 | Qt 6 |
 |------|------|------|
 | ExWidgets 全部控件 | ✅ | ✅ |
-| Example → Audiomatic Mini 播放器 | ❌ | ✅（需 Multimedia） |
-| Example → ExSpectrumWidget 模拟频谱 | ✅ | ✅（Qt6 为完整播放器页） |
+| Gallery → Audiomatic Mini 播放器 | ❌ | ✅（需 Multimedia） |
+| Gallery → ExSpectrumWidget 模拟频谱 | ✅ | ✅（Qt6 为完整播放器页） |
 
 ---
 
 ## 更多信息
 
 - 构建与插件部署：根目录 [README.md](../README.md)
-- 交互演示：编译并运行 `Example`，打开左侧 **ExWidgets** 分组
-- 变更记录：`Example/changelog.txt`
+- 交互演示：编译并运行 `Gallery`，打开左侧 **ExWidgets** 分组
+- 变更记录：`examples/Gallery/changelog.txt`

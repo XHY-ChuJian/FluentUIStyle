@@ -1,0 +1,159 @@
+#pragma once
+
+#include <QMainWindow>
+#include <QTabBar>
+#include <QVector>
+
+#include "qboxlayout.h"
+#include "qsvgrenderer.h"
+#include "qtreewidget.h"
+
+class QTabBar;
+class ExNavTreeWidget;
+class ExWinUINavigationView;
+class ExStackedWidget;
+class ExComboBox;
+class QTreeWidgetItem;
+class TabShowcaseWidget;
+class InstalledSoftwareTableWidget;
+#ifdef GALLERY_ENABLE_FRAMELESS
+class FluentWindowFrame;
+#endif
+
+QT_BEGIN_NAMESPACE
+
+namespace Ui
+{
+    class MainWindow;
+} // namespace Ui
+
+QT_END_NAMESPACE
+
+enum class WidgetBgMode
+{
+    None,
+    Pixmap,
+    DwmBlur
+};
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+    // QWidget interface
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private slots:
+    void on_checkBox_4_clicked(bool checked);
+    void on_checkBox_5_stateChanged(int arg1);
+    void on_radioButton_7_clicked();
+    void on_radioButton_4_clicked();
+    void on_radioButton_5_clicked();
+    void on_radioButton_6_clicked();
+
+    void on_rBLightTheme_clicked(bool checked);
+    void on_rBDarkTheme_clicked(bool checked);
+
+    void on_rBWidgtModeNormal_clicked(bool checked);
+    void on_rBWidgetModePixmap_clicked(bool checked);
+    void on_rBWidgetModeDwmBlur_clicked(bool checked);
+
+    void on_rBOnlyIcon_clicked(bool checked);
+    void on_rBIconAndText_clicked(bool checked);
+
+    void on_rBLangZh_CN_clicked(bool checked);
+    void on_rBLangEn_US_clicked(bool checked);
+    void on_rBLangSystem_clicked(bool checked);
+
+private:
+    void initializeFluentBorderWidgets();
+    void initializeComponents();
+    void setupComboBox();
+    void initializeNavigationView();
+    void rebuildMenuAndToolBar();
+    void buildMainMenus();
+    void setupTabs();
+    void setupButtonsAndIcons();
+    void setupAccentColorWidget();
+    void setupMdiArea();
+    void setupSegoeIconGalleryPage();
+    void setupProgressRingPage();
+    void setupAboutPage();
+    void setupDialogsPage();
+    void setupColorPickerPage();
+    void setupExWidgetsPages();
+    void setupAudiomaticPlayerPage();
+    void addExWidgetsNavigation();
+
+    void updateActionIcons();
+    void loadChangelog();
+
+    // Menu and Toolbar helpers
+    QAction *addToolBarAction(QToolBar *toolBar,
+                              const QString &iconCode,
+                              const QString &text,
+                              const QKeySequence &shortcut = QKeySequence());
+    void setupToolBarControls(QToolBar *toolBar);
+    void setupTitleBarChrome();
+    void applyThemeIndex(int index);
+    void setupThemeSelector(QToolBar *toolBar);
+    void setupColorSchemeSelector(QToolBar *toolBar);
+    void setupStyleSelector(QToolBar *toolBar);
+    void setupWidgetBackgroundSelector(QToolBar *toolBar);
+    void applyWidgetBgMode(WidgetBgMode mode);
+
+    // Navigation View helpers
+    void addTestNavigationTree();
+
+    // Button helpers
+    void setupToolButtonWithMenu();
+
+    // Icon update helpers
+    void updateButtonIcons();
+    void updateMenuActionIcons();
+    void updateMenuIcons();
+    void updateNavigationItemIcons();
+
+    void syncLanguageRadios();
+    void promptRestartAfterLanguageChange();
+
+private:
+    Ui::MainWindow *ui;
+
+    QMenuBar *m_menuBar{nullptr};
+    QToolBar *m_toolBar{nullptr};
+#ifdef GALLERY_ENABLE_FRAMELESS
+    FluentWindowFrame *m_windowFrame{nullptr};
+#endif
+
+    TabShowcaseWidget *m_tabShowcaseWidget{nullptr};
+    InstalledSoftwareTableWidget *m_installedSoftwareTable{nullptr};
+    QFrame *m_audiomaticPlayerPage{nullptr};
+    ExNavTreeWidget *m_navView{nullptr};
+    ExWinUINavigationView *m_winUINavigationView{nullptr};
+    QAction *m_searchAction{nullptr};
+
+    QTabBar *m_tabBarWidgetBg{nullptr};
+    WidgetBgMode m_widgetBgMode{WidgetBgMode::None};
+    QAction *m_navigationToggleAction{nullptr};
+
+    ExComboBox *themeComboBox{nullptr};
+    ExComboBox *m_colorSchemeCombo{nullptr};
+    ExComboBox *m_styleComboBox{nullptr};
+
+    QVector<QTreeWidgetItem *> m_mainNavItems;
+    QTreeWidgetItem *m_navExWidgetsRoot{nullptr};
+    QTreeWidgetItem *m_navTestRoot{nullptr};
+    QTreeWidgetItem *m_navAboutItem{nullptr};
+    QTreeWidgetItem *m_navSettingsItem{nullptr};
+
+private:
+    QPixmap m_bgLight;
+    QPixmap m_bgDark;
+};

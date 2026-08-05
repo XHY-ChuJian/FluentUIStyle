@@ -7,6 +7,9 @@ SOURCES += \
     $$PWD/excolorpickerbutton.cpp \
     $$PWD/excombobox.cpp \
     $$PWD/exmessagebox.cpp \
+    $$PWD/extimerdial.cpp \
+    $$PWD/exliquidgauge.cpp \
+    $$PWD/exradialgauge.cpp \
     $$PWD/exnavtreewidget.cpp \
     $$PWD/exwinuinavigationview.cpp \
     $$PWD/exstackedwidget.cpp \
@@ -15,12 +18,16 @@ SOURCES += \
     $$PWD/exspectrumwidget.cpp
 
 HEADERS += \
+    $$PWD/exwidgetsmacros.h \
     $$PWD/colorgradientslider.h \
     $$PWD/exrangeslider.h \
     $$PWD/excolorpicker.h \
     $$PWD/excolorpickerbutton.h \
     $$PWD/excombobox.h \
     $$PWD/exmessagebox.h \
+    $$PWD/extimerdial.h \
+    $$PWD/exliquidgauge.h \
+    $$PWD/exradialgauge.h \
     $$PWD/exnavtreewidget.h \
     $$PWD/exwinuinavigationview.h \
     $$PWD/exstackedwidget.h \

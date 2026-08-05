@@ -53,6 +53,8 @@ compile_commands.json
 
 *_qmlcache.qrc
 /build
+**/build/
+**/.qtcreator/
 /install
 /cmake
 .vscode/settings.json

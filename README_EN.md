@@ -34,7 +34,7 @@ Because of Qt’s widget model, not every WinUI control can be reproduced exactl
 - Switch-style `QCheckBox` (“SwitchButton”)
 - `QTabBar` variants such as **Pivot** and **Segmented**
 
-The **Example** app may include extra widgets under **ExWidgets** for demonstration; those widgets are still drawn using the same style engine. More samples may be added over time, and those widgets are intended to remain usable without the style if needed.
+The **Gallery** app may include extra widgets under **ExWidgets** for demonstration; those widgets are still drawn using the same style engine. More samples may be added over time, and those widgets are intended to remain usable without the style if needed.
 
 **ExWidgets usage guide (linking, APIs, PCM format for ExSpectrumWidget):** [ExWidgets/README_EN.md](ExWidgets/README_EN.md) ([中文](ExWidgets/README.md))
 
@@ -56,13 +56,13 @@ Happy coding.
 
 | Method | Status | Notes |
 | ------ | ------ | ----- |
-| **CMake** | Recommended, actively maintained | Kept in sync with `Example/CMakeLists.txt` and new features—use this for daily development |
-| **qmake** | Legacy, **not synced** | `fluentw3uistyle.pro` remains for reference but is **no longer updated with CMake**; Example / QWindowKit behavior may differ |
+| **CMake** | Recommended, actively maintained | Kept in sync with `examples/Gallery/CMakeLists.txt` and new features—use this for daily development |
+| **qmake** | Legacy, **not synced** | `fluentw3uistyle.pro` remains for reference but is **no longer updated with CMake**; Gallery / QWindowKit behavior may differ |
 
 ### Notes
 
 - **Tested versions:** Style library on Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
-- **Example frameless window (QWindowKit):** Enabled for **CMake builds with Qt ≥ 5.12** (requires initialized submodules). Below Qt 5.12 the system title bar and system window frame are used.
+- **Optional frameless component:** `ExWidgets::Frameless` is ON by default with Qt ≥ 5.12 (and requires CMake ≥ 3.19); older Qt versions disable it automatically. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to keep base `ExWidgets` free of QWindowKit.
 - **Qt 6.8+ known issue:** **Drop shadows** on **Popup** surfaces such as `QMenu` and `QComboBox` lists may look wrong on Qt **6.8 and newer** (missing, clipped, dirty edges, or misaligned). FluentUI3Style turns off the native shadow (`Qt::NoDropShadowWindowHint`) and uses `WA_TranslucentBackground` so the style can **paint multi-layer shadows in `QStyle`**. From Qt 6.8 onward, the Windows platform changed how **translucent popup windows** are composited (paintable region, alpha blending, stacking). That no longer matches the assumptions of the hand-drawn shadow path, so shadows that looked correct on Qt 6.6 and earlier can break. This is a **Qt platform + custom shadow** interaction, not a single-widget logic bug; adaptation for newer Qt releases is ongoing.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
@@ -70,11 +70,12 @@ Happy coding.
 
 ### Qt compatibility matrix
 
-| Qt version | Style library | Example (CMake) | Window chrome |
+| Qt version | Style library | Gallery (CMake) | Window chrome |
 | ---------- | ------------- | --------------- | ------------- |
-| Qt 5.14.2  | Supported | Supported | QWindowKit frameless |
-| Qt 5.15.2  | Supported | Supported | QWindowKit frameless + DWM backdrop |
-| Qt 6.6.3   | Supported | Supported | QWindowKit frameless + DWM backdrop |
+| Qt 5.12.12 | Supported | Supported | Optional QWindowKit frameless (`EXWIDGETS_BUILD_FRAMELESS=ON`) |
+| Qt 5.14.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
+| Qt 5.15.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
+| Qt 6.6.3   | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 6.8+    | Partial | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
 | Qt 6.10    | Partial | Partial | Same shadow issue; style sources are ported from Qt 6.10 Win11 style |
 
@@ -82,10 +83,10 @@ Happy coding.
 
 ### Get the source (including submodules)
 
-The Example app’s frameless window and DWM backdrop (via **[QWindowKit](https://github.com/stdware/qwindowkit)**) are enabled for **CMake builds with Qt ≥ 5.12**. The submodule lives at `3rd/qwindowkit/`.  
-**Below Qt 5.12** the system window frame is used—QWindowKit is not integrated; you can skip the submodule if you only build the style library/plugin.
+The optional `ExWidgets::Frameless` component uses **[QWindowKit](https://github.com/stdware/qwindowkit)** for frameless windows and DWM backdrops. The submodule lives at `3rd/qwindowkit/`.
+It is enabled by default with Qt ≥ 5.12. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
 
-For **Qt 5.12+** with Example frameless features, initialize submodules after clone or CMake will fail to find `3rd/qwindowkit`. Note `3rd/qwindowkit` contains nested submodules (`qmsetup` → `syscmdline`), so `--recursive` is required.
+To enable the frameless component, initialize the submodule after cloning; otherwise CMake falls back to finding an installed QWindowKit package. Note `3rd/qwindowkit` contains nested submodules (`qmsetup` → `syscmdline`), so `--recursive` is required.
 
 #### First-time clone (recommended)
 
@@ -101,7 +102,7 @@ git pull
 git submodule update --init --recursive
 ```
 
-> **Note:** `git pull` alone does **not** update submodules. Only when using Qt ≥ 5.12 with QWindowKit, run `git submodule update --init --recursive` if CMake cannot find `3rd/qwindowkit`.
+> **Note:** `git pull` alone does **not** update submodules. QWindowKit is needed only with `EXWIDGETS_BUILD_FRAMELESS=ON`; run `git submodule update --init --recursive` if `3rd/qwindowkit` is missing.
 
 Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 
@@ -112,7 +113,7 @@ Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 - OS: Windows 10/11 recommended.
 - Compiler: MSVC matching your Qt kit.
 - Qt: a tested version (e.g. Qt 6.6.3) is recommended.
-- CMake: 3.16+.
+- CMake: 3.16+ for base components; 3.19+ for `ExWidgets::Frameless`.
 
 > Keep `cmake`, `ninja` (if used), and the Qt toolchain in one consistent environment to avoid “moc vs headers version mismatch” issues.
 
@@ -163,34 +164,35 @@ cmake --build build --config Debug
 #### 4) Run the example
 
 ```powershell
-./build/bin/Exampled.exe   # Debug
-./build/bin/Example.exe    # Release
+./build/bin/Galleryd.exe   # Debug
+./build/bin/Gallery.exe    # Release
 ```
 
 #### 5) Main CMake options
 
 - `BUILD_LIBRARY` — build the style library (default **ON**).
 - `BUILD_PLUGIN` — build the Qt style plugin (default **ON**).
-- `BUILD_EXAMPLE` — build the demo app (default **ON**).
+- `BUILD_GALLERY` — build Gallery (default **ON**).
+- `EXWIDGETS_BUILD_FRAMELESS` — build `ExWidgets::Frameless` and bring in QWindowKit (default **ON** with Qt ≥ 5.15.2; **OFF** with older Qt).
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR` — copy the plugin into Qt’s `plugins/styles` after build (default **OFF**, avoids writing into a protected Qt install).
 
-Example: library + plugin only, no demo:
+For example, to build only the library and plugin:
 
 ```powershell
-cmake -S . -B build -DBUILD_EXAMPLE=OFF
+cmake -S . -B build -DBUILD_GALLERY=OFF
 ```
 
 #### 6) Qt 5.14.2 notes
 
-- **Style library, plugin, and Example all build with CMake**
-- Example uses **QWindowKit frameless** (Qt ≥ 5.12), same as other supported Qt 5 versions
-- Init the `3rd/qwindowkit` submodule (`--recursive`) before building Example
+- **Style library, plugin, and Gallery all build with CMake**
+- Gallery uses **QWindowKit frameless** (Qt ≥ 5.12, `EXWIDGETS_BUILD_FRAMELESS` default ON)
+- Init the `3rd/qwindowkit` submodule (`--recursive`) before building Gallery
 
 ---
 
 ### qmake (legacy—not synced with CMake)
 
-`fluentw3uistyle.pro` is kept for older workflows but **is not updated together with CMake**. It may lack recent Example features (QWindowKit frameless, AudiomaticMini, etc.).
+`fluentw3uistyle.pro` is kept for older workflows but **is not updated together with CMake**. It may lack recent Gallery features (QWindowKit frameless, AudiomaticMini, etc.).
 
 If you still want to try:
 
@@ -329,7 +331,7 @@ FluentUI3 styling is driven mainly by **dynamic properties** on standard widgets
 
 ## Usage examples
 
-### Property examples (from Example / MainWindow)
+### Property examples (from examples/Gallery/MainWindow)
 
 Prefer constants from `fluentui3styleproperties.h` instead of magic numbers.
 
@@ -424,7 +426,7 @@ The style can follow the OS theme on Windows 11 via system APIs; on other platfo
 
 - **`BUILD_LIBRARY`** — build the static style library (default **ON**).
 - **`BUILD_PLUGIN`** — build the Qt style plugin (default **ON**).
-- **`BUILD_EXAMPLE`** — build the demo application (default **ON**).
+- **`BUILD_GALLERY`** — build Gallery (default **ON**).
 
 ## Demo gallery
 
