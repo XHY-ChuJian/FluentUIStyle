@@ -813,7 +813,7 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
     const qreal needleAngle = m_minimumAngle + sweep * fraction;
     if ( m_needleStyle == LineNeedle )
     {
-        painter.setPen( QPen( needlePaintColor, m_needleWidth, Qt::SolidLine, Qt::FlatCap ) );
+        painter.setPen( QPen( needlePaintColor, m_needleWidth, Qt::SolidLine, Qt::RoundCap ) );
         painter.setBrush( Qt::NoBrush );
         painter.drawLine( center, pointAtAngle( center, radius * m_needleLength, needleAngle ) );
     }

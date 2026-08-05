@@ -371,6 +371,7 @@ RadialGaugeShowcaseWidget::RadialGaugeShowcaseWidget( QWidget* parent )
     gauge->setObjectName( QStringLiteral( "radialGaugePreview" ) );
     gauge->setRange( 0, 240 );
     gauge->setValue( 210 );
+    gauge->setNeedleWidth( 5.0 );
     gauge->setSingleStep( 1 );
     gauge->setPageStep( 10 );
     gauge->setFixedSize( 300, 300 );
@@ -864,7 +865,7 @@ RadialGaugeShowcaseWidget::RadialGaugeShowcaseWidget( QWidget* parent )
                  scaleWidthSlider->setValue( 16 );
                  minimumAngleSlider->setValue( -135 );
                  maximumAngleSlider->setValue( 135 );
-                 needleWidthSlider->setValue( 6 );
+                 needleWidthSlider->setValue( 10 );
                  needleLengthSlider->setValue( 62 );
                  tickLengthSlider->setValue( 14 );
                  tickWidthSlider->setValue( 3 );

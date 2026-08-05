@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 project(fluentw3uistyle VERSION 0.1 LANGUAGES CXX C)
 
-include(GNUInstallDirs)
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Install prefix" FORCE)
-endif()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -27,6 +21,71 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Widgets
     Svg
 )
+
+# Install into the Qt selected by the current Kit unless the caller explicitly
+# supplied CMAKE_INSTALL_PREFIX. qmake is authoritative for both native Qt 5
+# and Qt 6 layouts; the package directory is a fallback for unusual packages
+# that do not expose the qmake target.
+set(_qt_install_prefix "")
+set(_qt_install_plugins "")
+set(_qt_qmake_target "Qt${QT_VERSION_MAJOR}::qmake")
+if(TARGET ${_qt_qmake_target})
+    get_target_property(_qt_qmake_executable ${_qt_qmake_target} IMPORTED_LOCATION)
+    if(_qt_qmake_executable AND EXISTS "${_qt_qmake_executable}")
+        execute_process(
+            COMMAND "${_qt_qmake_executable}" -query QT_INSTALL_PREFIX
+            OUTPUT_VARIABLE _qt_install_prefix
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        execute_process(
+            COMMAND "${_qt_qmake_executable}" -query QT_INSTALL_PLUGINS
+            OUTPUT_VARIABLE _qt_install_plugins
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+    endif()
+endif()
+
+if(NOT _qt_install_prefix)
+    set(_qt_package_dir_variable "Qt${QT_VERSION_MAJOR}_DIR")
+    set(_qt_package_dir "${${_qt_package_dir_variable}}")
+    if(_qt_package_dir)
+        get_filename_component(_qt_install_prefix "${_qt_package_dir}/../../.." ABSOLUTE)
+    endif()
+endif()
+
+set(_legacy_default_install_prefix "${CMAKE_CURRENT_SOURCE_DIR}/install")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+   OR "${CMAKE_INSTALL_PREFIX}" STREQUAL "${_legacy_default_install_prefix}")
+    if(_qt_install_prefix)
+        set(CMAKE_INSTALL_PREFIX "${_qt_install_prefix}" CACHE PATH "Install prefix" FORCE)
+        set(_install_prefix_source "current Qt Kit")
+    else()
+        set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/install" CACHE PATH "Install prefix" FORCE)
+        set(_install_prefix_source "fallback project directory")
+        message(WARNING "Unable to determine the Qt install prefix; using ${CMAKE_INSTALL_PREFIX}")
+    endif()
+else()
+    set(_install_prefix_source "user or CMake cache")
+endif()
+
+set(_qt_plugins_install_dir "plugins")
+if(_qt_install_prefix AND _qt_install_plugins)
+    file(RELATIVE_PATH _qt_plugins_relative "${_qt_install_prefix}" "${_qt_install_plugins}")
+    if(NOT _qt_plugins_relative MATCHES "^\\.\\.")
+        set(_qt_plugins_install_dir "${_qt_plugins_relative}")
+    endif()
+endif()
+
+include(GNUInstallDirs)
+
+message(STATUS "Qt install prefix       : ${_qt_install_prefix}")
+message(STATUS "CMake install prefix    : ${CMAKE_INSTALL_PREFIX} (${_install_prefix_source})")
+message(STATUS "Install runtime binaries: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+message(STATUS "Install libraries       : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+message(STATUS "Install headers         : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+message(STATUS "Qt style plugin install : ${CMAKE_INSTALL_PREFIX}/${_qt_plugins_install_dir}/styles")
 
 # Qt 6.10+ private CMake packages are required when using <private/...> headers.
 # Older Qt 6.x installs (e.g. 6.6) often omit them; do not require globally.
@@ -199,7 +258,7 @@ endif()
 
 if(BUILD_PLUGIN)
     install(TARGETS FluentUI3StylePlugin
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins/styles
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins/styles
+        RUNTIME DESTINATION ${_qt_plugins_install_dir}/styles
+        LIBRARY DESTINATION ${_qt_plugins_install_dir}/styles
     )
 endif()
