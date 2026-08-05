@@ -10,6 +10,7 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QVariant>
 #include <QTimeZone>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -265,7 +266,7 @@ void WorldClockPage::addCity(QVBoxLayout* layout,
 
     auto* cityLabel = ClockUi::createSectionTitle(city, card);
     auto* dateLabel = new QLabel(card);
-    dateLabel->setProperty("subtitle", true);
+    dateLabel->setProperty("subtitle", QVariant(true));
     auto* timeLabel = new QLabel(card);
     QFont timeFont(QStringLiteral("Segoe UI Variable Display"));
     timeFont.setPixelSize(34);

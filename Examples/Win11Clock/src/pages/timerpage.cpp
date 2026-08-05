@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <QVariant>
 #include <exmessagebox.h>
 
 TimerPage::TimerPage(QWidget* parent)
@@ -21,7 +22,7 @@ TimerPage::TimerPage(QWidget* parent)
     headerLayout->addWidget(ClockUi::createPageTitle(tr("计时器"), this));
     headerLayout->addStretch();
     auto* addButton = new QPushButton(tr("＋  新建计时器"), this);
-    addButton->setProperty("accent", true);
+    addButton->setProperty("accent", QVariant(true));
     headerLayout->addWidget(addButton);
     pageLayout->addLayout(headerLayout);
 

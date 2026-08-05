@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QDateTime>
 #include <QHBoxLayout>
+#include <QVariant>
 #include <QLabel>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -48,7 +49,7 @@ AlarmCard::AlarmCard(const QTime& time,
     actionLayout->addWidget(m_deleteButton);
 
     m_enabledSwitch = new QCheckBox(this);
-    m_enabledSwitch->setProperty("isSwitchButton", true);
+    m_enabledSwitch->setProperty("isSwitchButton", QVariant(true));
     m_enabledSwitch->setChecked(enabled);
     m_enabledSwitch->setToolTip(tr("启用闹钟"));
 
@@ -58,7 +59,7 @@ AlarmCard::AlarmCard(const QTime& time,
     topLayout->addWidget(m_enabledSwitch);
 
     m_nextLabel = new QLabel(this);
-    m_nextLabel->setProperty("subtitle", true);
+    m_nextLabel->setProperty("subtitle", QVariant(true));
     m_nameLabel = new QLabel(this);
     QFont nameFont = m_nameLabel->font();
     nameFont.setPixelSize(22);

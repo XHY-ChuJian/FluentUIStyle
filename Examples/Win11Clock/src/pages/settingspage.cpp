@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QVariant>
 #include <QScrollArea>
 #include <QSettings>
 #include <QUrl>
@@ -43,7 +44,7 @@ CardWidget* createSettingsRow(const QString& glyph,
     QFont descriptionFont = descriptionLabel->font();
     descriptionFont.setPixelSize(12);
     descriptionLabel->setFont(descriptionFont);
-    descriptionLabel->setProperty("subtitle", true);
+    descriptionLabel->setProperty("subtitle", QVariant(true));
 
     auto* textLayout = new QVBoxLayout;
     textLayout->setSpacing(2);
@@ -60,7 +61,7 @@ CardWidget* createSettingsRow(const QString& glyph,
 QCheckBox* createSwitch(bool checked, QWidget* parent)
 {
     auto* checkBox = new QCheckBox(parent);
-    checkBox->setProperty("isSwitchButton", true);
+    checkBox->setProperty("isSwitchButton", QVariant(true));
     checkBox->setChecked(checked);
     return checkBox;
 }
