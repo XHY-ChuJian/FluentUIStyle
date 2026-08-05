@@ -69,6 +69,9 @@ LIBS += -lExWidgets
 | `ExColorPickerButton` | `excolorpickerbutton.h` | 带 Flyout 的取色按钮 | ExColorPicker 页内 |
 | `ExMessageBox` | `exmessagebox.h` | Fluent 风格 `QMessageBox` | Dialogs 页 |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog | Dialogs 页 |
+| `ExTimerDial` | `extimerdial.h` | 剩余时间、环形进度与预计完成时刻 | Win11Clock 计时器 |
+| `ExLiquidGauge` | `exliquidgauge.h` | Ant Design 风格水波图，支持四种形状、双层波浪和中心文本 | ExWidgets → ExLiquidGauge |
+| `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | 可交互的径向仪表盘，支持自定义角度、刻度、指针和彩色区间 | ExWidgets → ExRadialGauge |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | 实时音频频谱（Push PCM） | Qt5: ExSpectrumWidget；Qt6: Audiomatic Mini |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | 主导航 + 页脚导航 | MainWindow 左侧导航 |
 | `ExNavTreeWidget` | `exnavtreewidget.h` | 可折叠导航树 | 由 NavigationView 内部使用 |
@@ -109,6 +112,63 @@ connect(slider, &ExRangeSlider::upperValueChanged, this, [](int v) { /* ... */ }
 | `tickPosition` / `tickInterval` | 刻度线 |
 | `tracking` | 拖动过程是否持续触发 value 变化 |
 | `first()` / `second()` | 对应 QML 的 first/second 节点对象 |
+
+---
+
+## ExLiquidGauge
+
+`ExLiquidGauge` 继承 `QProgressBar`，直接复用范围、数值、格式和文本可见性 API。水位由当前进度决定，双层水波仅负责动态表现。
+
+```cpp
+#include "exliquidgauge.h"
+
+auto *gauge = new ExLiquidGauge(this);
+gauge->setRange(0, 100);
+gauge->setValue(68);
+gauge->setShape(ExLiquidGauge::CircleShape);
+gauge->setWaveAmplitude(6.0);
+gauge->setWaveCount(3);
+gauge->setWaveAnimationDuration(2400);
+```
+
+`shape` 支持 `CircleShape`、`RectShape`、`PinShape` 和 `TriangleShape`。`waveColor`、`backgroundColor`、`outlineColor`、`textColor` 与 `submergedTextColor` 传入无效 `QColor` 时会自动读取调色板，主题切换后无需重新设置。控件隐藏、禁用或关闭 `animationEnabled` 时会停止动画计时器。
+
+---
+
+## ExRadialGauge
+
+`ExRadialGauge` 继承 `QDial`，因此可直接使用 `setRange()`、`setValue()`、`valueChanged()`、键盘、滚轮和无障碍能力；它只接管径向仪表盘的绘制和鼠标角度映射。
+
+```cpp
+#include "exradialgauge.h"
+
+auto *gauge = new ExRadialGauge(this);
+gauge->setRange(0, 240);
+gauge->setValue(210);
+gauge->setValueAnimationDuration(180);
+gauge->setMinimumAngle(-135.0);
+gauge->setMaximumAngle(135.0);
+gauge->setMajorTickCount(11);
+gauge->setMinorTickCount(4);
+gauge->setTickLength(4.0);
+gauge->setMajorTickLength(8.0);
+gauge->setLabelsVisible(true);
+gauge->setNeedleStyle(ExRadialGauge::TriangleNeedle);
+```
+
+角度以正上方为 `0°`、顺时针为正；起止角度相同表示完整的 `360°`。`majorTickCount` 是整段圆弧上的主刻度总数（包含首尾），`minorTickCount` 是每两个主刻度之间的次刻度数量，数字标签与主刻度一一对应。`needleLength` 是相对刻度环半径的比例，其余宽度、长度和边距属性使用逻辑像素。强调色和 Track 色分别读取 `QPalette::Accent`（Qt 6.6 以前使用 `Highlight`）与 `QPalette::Mid`。
+
+`scaleMode` 提供三种通用结构：`TrackScale` 只绘制 Track，`ProgressScale` 绘制当前数值进度，`RangeScale` 使用彩色区间。彩色区间通过独立对象配置：
+
+```cpp
+gauge->setScaleMode(ExRadialGauge::RangeScale);
+gauge->addRange(0, 60, QColor("#21BCE2"));
+gauge->addRange(60, 80, QColor("#FFB900"));
+gauge->addRange(80, 100, QColor("#FF6475"));
+gauge->setUnit(QStringLiteral("km/h"));
+```
+
+`setValue()` 会在 `valueAnimationDuration` 内逐帧改变真实 `value()`，因此 `valueChanged`、进度环、指针和数值文本同步变化；时长为 `0` 时关闭动画。Track 与前景环的端点分别由 `trackCapStyle`、`ringCapStyle` 控制，默认都是 `Qt::FlatCap`；非完整圆的整体起止端各向外延伸 `1°`，让首尾主刻度完整落在圆弧范围内。彩色区间如果需要严格对齐，建议保持 `ringCapStyle` 为 `Qt::FlatCap`。`needleStyle` 可选 `NoNeedle`、`LineNeedle` 和 `TriangleNeedle`，两种可见指针都支持圆形轴心；数值可通过 `valuePosition` 放在中心或底部，并可配合 `title`、`unit`、刻度标签与自定义颜色组成不同仪表外观。
 
 ---
 

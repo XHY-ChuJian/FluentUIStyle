@@ -27,6 +27,7 @@
 #include <QMouseEvent>
 #include <QObject>
 #include <QPointer>
+#include <QProgressBar>
 #include <QScreen>
 #include <QScrollBar>
 #include <QSettings>
@@ -5527,30 +5528,46 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
         return;
     }
 
-    qreal thickness = ProgressBarThickness + 2;
-    // 暂时不需要了，后续如果需要调整进度环的粗细，可以再加上这个功能
-    //  if ( widget && widget->property( ProgressBarThicknessProperty ).isValid() )
-    //  {
-    //      const int t = widget->property( ProgressBarThicknessProperty ).toInt();
-    //      if ( t > 0 )
-    //      {
-    //          thickness = t;
-    //      }
-    //  }
+    PainterStateGuard guard( painter );
+    painter->setRenderHint( QPainter::Antialiasing, true );
+
+    auto positiveRealProperty = [ widget ]( const char* name, qreal fallback )
+    {
+        if ( !widget )
+        {
+            return fallback;
+        }
+
+        bool ok           = false;
+        const qreal value = widget->property( name ).toDouble( &ok );
+        return ok && qIsFinite( value ) && value > 0.0 ? value : fallback;
+    };
+
+    const qreal defaultThickness = ProgressBarRingDefaultThickness;
+    qreal thickness              = positiveRealProperty( ProgressBarThicknessProperty, defaultThickness );
+
     const QRectF rect    = option->rect;
     const qreal diameter = qMin( rect.width(), rect.height() );
-    if ( diameter <= 0.0 )
+    if ( diameter <= 5.0 )
     {
         return;
     }
 
+    const qreal maximumThickness = qMax( 1.0, diameter - 5.0 );
+    thickness                    = qMin( thickness, maximumThickness );
+
     QRectF ringRect( 0, 0, diameter, diameter );
     ringRect.moveCenter( rect.center() );
-    ringRect = ringRect.marginsRemoved( QMarginsF( thickness / 2.0 + 2, thickness / 2.0 + 2, thickness / 2.0 + 2, thickness / 2.0 + 2 ) );
+    const qreal outerInset = thickness / 2.0 + 2.0;
+    ringRect               = ringRect.marginsRemoved( QMarginsF( outerInset, outerInset, outerInset, outerInset ) );
+    if ( ringRect.width() <= 0.0 || ringRect.height() <= 0.0 )
+    {
+        return;
+    }
 
     if ( drawTrack )
     {
-        QPen pen( Qt::gray, thickness, Qt::SolidLine, Qt::RoundCap );
+        QPen pen( option->palette.color( QPalette::Mid ), thickness, Qt::SolidLine, Qt::SquareCap );
         painter->setPen( pen );
         painter->setBrush( Qt::NoBrush );
         painter->drawEllipse( ringRect );
@@ -5563,7 +5580,7 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     qreal spanAngle                 = 0.0;
     if ( isIndeterminate )
     {
-        constexpr auto loopDurationMSec = 800;
+        const int loopDurationMSec      = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
         const auto elapsedTime          = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
         const auto elapsed              = elapsedTime.time_since_epoch().count();
         const qreal t                   = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
@@ -5579,7 +5596,21 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     }
     spanAngle = -spanAngle;
 
-    QPen pen( accentColor( option ), thickness, Qt::SolidLine, Qt::RoundCap );
+    QColor ringColor;
+    if ( StyleOptionHelper::isDisabled(option) )
+    {
+        ringColor = winUI3Color( fillAccentDisabled );
+    }
+    else
+    {
+        ringColor = accentColor( option );
+#if QT_VERSION < QT_VERSION_CHECK( 6, 6, 0 )
+        // QPalette::Accent was introduced in Qt 6.6; Highlight is its equivalent
+        // customization point for the older Gallery builds.
+        ringColor = option->palette.highlight().color();
+#endif
+    }
+    QPen pen( ringColor, thickness, Qt::SolidLine, Qt::RoundCap );
     painter->setPen( pen );
     painter->setBrush( Qt::NoBrush );
     painter->drawArc( ringRect, int( ( startAngle + angleZeroOffset ) * 16 ), int( spanAngle * 16 ) );
@@ -7762,6 +7793,29 @@ void FluentUI3Style::polish( QWidget* widget )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::polish( widget );
 
+#if QT_CONFIG( progressbar )
+    if ( auto* progressBar = qobject_cast<QProgressBar*>( widget );
+         progressBar && progressBar->property( ProgressBarStyleProperty ).toInt() == ProgressBarRing )
+    {
+        const QVariant duration = progressBar->property( ProgressBarRingIndeterminateDurationProperty );
+        if ( !duration.isValid() || duration.toInt() <= 0 )
+        {
+            progressBar->setProperty( ProgressBarRingIndeterminateDurationProperty,
+                                      ProgressBarRingDefaultIndeterminateDuration );
+        }
+
+        QPalette palette = progressBar->palette();
+        const bool hasCustomTrackColor = palette.isBrushSet( QPalette::Active, QPalette::Mid )
+                                         || palette.isBrushSet( QPalette::Inactive, QPalette::Mid )
+                                         || palette.isBrushSet( QPalette::Disabled, QPalette::Mid );
+        if ( !hasCustomTrackColor )
+        {
+            palette.setColor( QPalette::All, QPalette::Mid, Qt::gray );
+            progressBar->setPalette( palette );
+        }
+    }
+#endif
+
     if ( widget->inherits( "QRollEffect" ) )
     {
         widget->setAttribute( Qt::WA_TranslucentBackground );
@@ -8283,8 +8337,11 @@ void FluentUI3Style::drawCheckBox( const QStyleOption* option, QPainter* painter
         }
 
         clipRect.moveCenter( center );
-        clipRect.setLeft( rect.x() + ( rect.width() - clipRect.width() ) / 2.0 + 0.5 );
-        clipRect.setWidth( clipWidth * clipRect.width() );
+        // clipRect.setLeft( rect.x() + ( rect.width() - clipRect.width() ) / 2.0 + 0.5 );
+        // clipRect.setWidth( clipWidth * clipRect.width() );
+        const qreal fullWidth = clipRect.width();
+        clipRect.setWidth(clipWidth * fullWidth);
+
         painter->drawText( clipRect, Qt::AlignVCenter | Qt::AlignLeft, AcceptMedium );
     }
     else if ( isPartial )

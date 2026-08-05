@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     application.setOrganizationName(QStringLiteral("Window11Style"));
 
     QFont font(QStringLiteral("Microsoft YaHei UI"));
-    font.setPixelSize(14);
+    font.setPixelSize(13);
     font.setHintingPreference(QFont::PreferNoHinting);
     application.setFont(font);
 

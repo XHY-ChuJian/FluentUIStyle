@@ -35,8 +35,6 @@ set(WIN11_CLOCK_SOURCES
     src/common/fluenthelpers.h
     src/widgets/cardwidget.cpp
     src/widgets/cardwidget.h
-    src/widgets/timerdial.cpp
-    src/widgets/timerdial.h
     src/widgets/timercard.cpp
     src/widgets/timercard.h
     src/widgets/alarmcard.cpp
@@ -56,7 +54,8 @@ set(WIN11_CLOCK_SOURCES
 )
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
-    qt_add_executable(Win11Clock MANUAL_FINALIZATION ${WIN11_CLOCK_SOURCES})
+    qt_add_executable(Win11Clock MANUAL_FINALIZATION ${WIN11_CLOCK_SOURCES}
+        res.qrc)
 else()
     add_executable(Win11Clock ${WIN11_CLOCK_SOURCES})
 endif()

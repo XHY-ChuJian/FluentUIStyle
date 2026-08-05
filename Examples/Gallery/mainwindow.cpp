@@ -4,6 +4,9 @@
 //=============================================================================
 
 #include "mainwindow.h"
+#include "liquidgaugeshowcasewidget.h"
+#include "progressringshowcasewidget.h"
+#include "radialgaugeshowcasewidget.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "audiomaticplayerwidget.h"
@@ -449,6 +452,7 @@ void MainWindow::initializeComponents()
     setupColorPickerPage();
     setupExWidgetsPages();
     setupAudiomaticPlayerPage();
+    setupProgressRingPage();
 
     // Configure stacked widget
     ui->stackedWidget->setVerticalMode(true);
@@ -462,8 +466,6 @@ void MainWindow::initializeComponents()
     m_installedSoftwareTable->initialize();
 
     // Configure background properties
-    setProperty("MainBackground", true);
-    ui->centralwidget->setProperty("MainBackground", true);
     ui->centralwidget->setAttribute(Qt::WA_TranslucentBackground, true);
     ui->centralwidget->setAttribute(Qt::WA_StyledBackground, true);
     m_menuBar->setAttribute(Qt::WA_TranslucentBackground, true);
@@ -1048,7 +1050,19 @@ void MainWindow::initializeNavigationView()
     m_navView = m_winUINavigationView->mainNavView();
 
     m_mainNavItems.clear();
-    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("基础控件"), 0, QStringLiteral("\uE80F")));
+    QTreeWidgetItem *basicControlsItem =
+        m_winUINavigationView->addNavigationItem(tr("基础控件"), 0, QStringLiteral("\uE80F"));
+    m_mainNavItems.push_back(basicControlsItem);
+    if (QWidget *progressRingPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageProgressRing")))
+    {
+        const int pageIndex = ui->stackedWidget->indexOf(progressRingPage);
+        if (pageIndex >= 0 && basicControlsItem)
+        {
+            auto *progressRingItem = new QTreeWidgetItem(basicControlsItem);
+            m_navView->configureNavigationItem(progressRingItem, tr("进度环"), pageIndex, QStringLiteral("\uF16A"));
+            basicControlsItem->setExpanded(true);
+        }
+    }
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("表格控件"), 1, QStringLiteral("\uE99A")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("列表控件"), 2, QStringLiteral("\uE71D")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("树形控件"), 3, QStringLiteral("\uED28")));
@@ -1068,7 +1082,7 @@ void MainWindow::initializeNavigationView()
 
     m_winUINavigationView->setStackedWidget(ui->stackedWidget);
 
-    m_winUINavigationView->setNavigationExpanded(false, false);
+    m_winUINavigationView->setNavigationExpanded(true, false);
 
     m_winUINavigationView->clearFooterSelection();
 }
@@ -1210,6 +1224,18 @@ void MainWindow::setupSegoeIconGalleryPage()
     ui->stackedWidget->addWidget(galleryWidget);
 }
 
+void MainWindow::setupProgressRingPage()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+
+    auto *page = new ProgressRingShowcaseWidget(ui->stackedWidget);
+    page->setObjectName(QStringLiteral("pageProgressRing"));
+    ui->stackedWidget->addWidget(page);
+}
+
 void MainWindow::setupAboutPage()
 {
     if (!ui->stackedWidget)
@@ -1251,9 +1277,17 @@ void MainWindow::setupExWidgetsPages()
         return;
     }
 
-    auto *page = new RangeSliderShowcaseWidget(ui->stackedWidget);
-    page->setObjectName(QStringLiteral("pageExRangeSlider"));
-    ui->stackedWidget->addWidget(page);
+    auto *rangeSliderPage = new RangeSliderShowcaseWidget(ui->stackedWidget);
+    rangeSliderPage->setObjectName(QStringLiteral("pageExRangeSlider"));
+    ui->stackedWidget->addWidget(rangeSliderPage);
+
+    auto *radialGaugePage = new RadialGaugeShowcaseWidget(ui->stackedWidget);
+    radialGaugePage->setObjectName(QStringLiteral("pageExRadialGauge"));
+    ui->stackedWidget->addWidget(radialGaugePage);
+
+    auto *liquidGaugePage = new LiquidGaugeShowcaseWidget(ui->stackedWidget);
+    liquidGaugePage->setObjectName(QStringLiteral("pageExLiquidGauge"));
+    ui->stackedWidget->addWidget(liquidGaugePage);
 }
 
 void MainWindow::setupAudiomaticPlayerPage()
@@ -1295,11 +1329,15 @@ void MainWindow::addExWidgetsNavigation()
 
     QWidget *colorPickerPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageColorPicker"));
     const int colorPickerPageIndex = colorPickerPage ? ui->stackedWidget->indexOf(colorPickerPage) : -1;
+    QWidget *radialGaugePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExRadialGauge"));
+    const int radialGaugePageIndex = radialGaugePage ? ui->stackedWidget->indexOf(radialGaugePage) : -1;
+    QWidget *liquidGaugePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExLiquidGauge"));
+    const int liquidGaugePageIndex = liquidGaugePage ? ui->stackedWidget->indexOf(liquidGaugePage) : -1;
     const int audiomaticPageIndex = m_audiomaticPlayerPage ? ui->stackedWidget->indexOf(m_audiomaticPlayerPage) : -1;
 
     m_navExWidgetsRoot = new QTreeWidgetItem();
     m_navView->configureNavigationItem(m_navExWidgetsRoot, tr("ExWidgets"), rangeSliderPageIndex, QStringLiteral("\uE8F1"));
-    m_navView->insertTopLevelItem(5, m_navExWidgetsRoot);
+    m_navView->addTopLevelItem(m_navExWidgetsRoot);
 
     auto addExWidgetItem = [this](const QString &text, int pageIndex, const QString &iconCode = QString()) {
         auto *item = new QTreeWidgetItem(m_navExWidgetsRoot);
@@ -1308,6 +1346,14 @@ void MainWindow::addExWidgetsNavigation()
     };
 
     addExWidgetItem(QStringLiteral("ExRangeSlider"), rangeSliderPageIndex);
+    if (radialGaugePageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExRadialGauge"), radialGaugePageIndex, QStringLiteral("\uE9D9"));
+    }
+    if (liquidGaugePageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExLiquidGauge"), liquidGaugePageIndex);
+    }
     if (colorPickerPageIndex >= 0)
     {
         addExWidgetItem(QStringLiteral("ExColorPicker"), colorPickerPageIndex, QStringLiteral("\uE790"));

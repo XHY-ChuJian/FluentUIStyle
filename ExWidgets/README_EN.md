@@ -40,6 +40,9 @@ Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Fr
 | `ExColorPickerButton` | `excolorpickerbutton.h` | Tool button + flyout picker |
 | `ExMessageBox` | `exmessagebox.h` | Fluent-styled `QMessageBox` |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog |
+| `ExTimerDial` | `extimerdial.h` | Remaining time, circular progress, and optional finish time |
+| `ExLiquidGauge` | `exliquidgauge.h` | Ant Design-inspired liquid gauge with four shapes, layered waves, and centered text |
+| `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | Interactive radial gauge with configurable angles, ticks, needle, and colored ranges |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | Real-time spectrum (push mono int16 PCM) |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | Navigation pane + footer |
 | `ExNavTreeWidget` | `exnavtreewidget.h` | Collapsible nav tree |

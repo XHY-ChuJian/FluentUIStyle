@@ -5,10 +5,10 @@
 #include <QElapsedTimer>
 
 class FluentRoundButton;
+class ExTimerDial;
 class QLabel;
 class QTimer;
 class QToolButton;
-class TimerDial;
 
 class TimerCard final : public CardWidget
 {
@@ -39,7 +39,7 @@ private:
     QLabel* m_nameLabel{nullptr};
     QToolButton* m_editButton{nullptr};
     QToolButton* m_deleteButton{nullptr};
-    TimerDial* m_dial{nullptr};
+    ExTimerDial* m_dial{nullptr};
     FluentRoundButton* m_startButton{nullptr};
     FluentRoundButton* m_resetButton{nullptr};
     QTimer* m_tickTimer{nullptr};

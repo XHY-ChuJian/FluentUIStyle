@@ -124,6 +124,7 @@ On|On
 窗口背景：|Window background:
 无|None
 基础控件|Basic controls
+进度环|Progress ring
 表格控件|Table controls
 列表控件|List controls
 树形控件|Tree controls
@@ -146,6 +147,115 @@ On|On
 切换视图模式|Toggle view mode
 无法打开changelog.txt, %1|Could not open changelog.txt: %1
 恢复默认|Restore default
+ProgressRing|ProgressRing
+使用标准 QProgressBar 的范围、数值和文本能力，仅通过 progressBarStyle 属性切换为环形外观。|Uses the standard QProgressBar range, value, and text API, switching only its appearance through the progressBarStyle property.
+基本状态|Basic states
+不确定|Indeterminate
+属性|Properties
+进度|Progress
+不确定动画周期|Indeterminate animation period
+环与 Track 宽度|Ring and track thickness
+进度环颜色|Progress ring color
+Track 颜色|Track color
+不确定进度|Indeterminate progress
+显示百分比|Show percentage
+禁用状态|Disabled state
+恢复默认属性|Reset properties
+ExLiquidGauge|ExLiquidGauge
+参考 Ant Design Charts Liquid 的水波图控件，继承 QProgressBar，并提供圆形、矩形、水滴和三角形裁剪、双层水波与中心文本。|An Ant Design Charts Liquid-inspired widget derived from QProgressBar, with circle, rectangle, pin, and triangle clipping, layered waves, and centered text.
+内置形状|Built-in shapes
+圆形|Circle
+矩形|Rectangle
+水滴|Pin
+三角形|Triangle
+外观|Appearance
+播放水波动画|Animate waves
+显示中心文本|Show centered text
+形状|Shape
+文本格式|Text format
+文本字号|Text font size
+波幅|Wave amplitude
+波形数量|Wave count
+动画周期|Animation period
+后层水波透明度|Rear wave opacity
+轮廓宽度|Outline width
+轮廓间距|Outline distance
+水波颜色|Wave color
+背景颜色|Background color
+轮廓颜色|Outline color
+液面上文字颜色|Text color above liquid
+液面下文字颜色|Text color below liquid
+ExRadialGauge|ExRadialGauge
+基于 QDial 的径向仪表盘，保留范围、数值和交互能力；同一控件可组合 Track、Progress、Ranges 刻度环、数字标签和不同指针样式。|A QDial-based radial gauge that retains range, value, and interaction support while combining Track, Progress, or Ranges scales with labels and different needle styles.
+实时属性|Live properties
+同一控件的三种配置|Three configurations of the same control
+经典指针|Classic needle
+进度指针|Progress needle
+彩色区间|Colored ranges
+公共数值|Shared value
+基础|Basic
+刻度与标签|Scale and labels
+指针与文本|Needle and text
+Scale 模式|Scale mode
+Track（纯轨道）|Track (track only)
+Progress（数值进度）|Progress (value progress)
+Ranges（彩色区间）|Ranges (colored ranges)
+允许鼠标、键盘和滚轮交互|Allow mouse, keyboard, and wheel interaction
+显示数值|Show value
+数值|Value
+数值动画时长|Value animation duration
+数值位置|Value position
+中心|Center
+底部|Bottom
+标题|Title
+单位|Unit
+数值字号|Value font size
+数值颜色|Value color
+刻度间隔|Tick spacing
+主刻度数量|Major tick count
+每段次刻度数量|Minor ticks per interval
+次刻度长度|Minor tick length
+次刻度宽度|Minor tick width
+主刻度长度|Major tick length
+主刻度宽度|Major tick width
+刻度环宽度|Scale width
+起始角度|Minimum angle
+结束角度|Maximum angle
+指针宽度|Needle width
+指针长度比例|Needle length ratio
+刻度长度|Tick length
+刻度宽度|Tick width
+外圈边距|Scale padding
+刻度边距|Tick padding
+刻线颜色|Tick color
+显示刻度数值|Show scale labels
+标签间隔|Label spacing
+标签边距|Label padding
+标签字号|Label font size
+标签颜色|Label color
+Track 端点|Track cap
+环端点|Ring cap
+平直|Flat
+方形|Square
+圆形|Round
+指针样式|Needle style
+无指针|No needle
+线形指针|Line needle
+三角指针|Triangle needle
+指针颜色|Needle color
+显示指针轴心|Show needle hub
+轴心半径|Hub radius
+区间 1 起点|Range 1 start
+区间 1 终点|Range 1 end
+区间 1 颜色|Range 1 color
+区间 2 起点|Range 2 start
+区间 2 终点|Range 2 end
+区间 2 颜色|Range 2 color
+区间 3 起点|Range 3 start
+区间 3 终点|Range 3 end
+区间 3 颜色|Range 3 color
+强调色|Accent color
+角度以正上方为 0°，顺时针为正；起止角度相同表示完整的 360°。|Angles start at 0° at the top and increase clockwise; equal start and end angles represent a full 360° sweep.
 新建项目|New Project
 常用基础控件展示|Common basic controls
 TableView 示例|TableView sample

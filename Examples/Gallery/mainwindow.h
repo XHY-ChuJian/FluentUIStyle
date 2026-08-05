@@ -83,6 +83,7 @@ private:
     void setupAccentColorWidget();
     void setupMdiArea();
     void setupSegoeIconGalleryPage();
+    void setupProgressRingPage();
     void setupAboutPage();
     void setupDialogsPage();
     void setupColorPickerPage();

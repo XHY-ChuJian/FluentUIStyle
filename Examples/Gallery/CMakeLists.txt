@@ -13,6 +13,12 @@ set(GALLERY_SOURCES
     colorshowcasewidget.h
     rangeslidershowcasewidget.cpp
     rangeslidershowcasewidget.h
+    liquidgaugeshowcasewidget.cpp
+    liquidgaugeshowcasewidget.h
+    radialgaugeshowcasewidget.cpp
+    radialgaugeshowcasewidget.h
+    progressringshowcasewidget.cpp
+    progressringshowcasewidget.h
     aboutprojectwidget.cpp
     aboutprojectwidget.h
     segoeicongallerywidget.cpp
@@ -123,6 +129,9 @@ if(WIN32 AND GALLERY_LUPDATE)
             "${CMAKE_CURRENT_SOURCE_DIR}/dialogshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/colorshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/rangeslidershowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/liquidgaugeshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/radialgaugeshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/progressringshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/applanguage.cpp"
             -ts

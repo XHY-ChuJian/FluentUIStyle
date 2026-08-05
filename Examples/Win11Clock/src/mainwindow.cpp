@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     setWindowTitle(tr("时钟"));
+    setWindowIcon(QIcon(":/appicon.ico"));
     resize(1460, 900);
     setMinimumSize(1050, 680);
 #ifdef WIN11CLOCK_ENABLE_FRAMELESS
@@ -56,7 +57,6 @@ void MainWindow::setupUi()
 {
     auto* centralWidget = new QWidget(this);
     centralWidget->setBackgroundRole(QPalette::Window);
-    centralWidget->setProperty("MainBackground", true);
     setCentralWidget(centralWidget);
 
     auto* rootLayout = new QHBoxLayout(centralWidget);

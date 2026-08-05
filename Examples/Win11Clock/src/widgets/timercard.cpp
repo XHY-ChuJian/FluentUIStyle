@@ -1,7 +1,8 @@
 #include "widgets/timercard.h"
 
 #include "common/fluenthelpers.h"
-#include "widgets/timerdial.h"
+
+#include <extimerdial.h>
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -48,7 +49,7 @@ TimerCard::TimerCard(const QString& name,
     headerLayout->addWidget(m_editButton);
     headerLayout->addWidget(m_deleteButton);
 
-    m_dial = new TimerDial(this);
+    m_dial = new ExTimerDial(this);
 
     auto* controlsLayout = new QHBoxLayout;
     controlsLayout->setAlignment(Qt::AlignCenter);

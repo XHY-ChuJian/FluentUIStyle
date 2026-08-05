@@ -1,4 +1,5 @@
 set(EXWIDGETS_SOURCES
+    exwidgetsmacros.h
     colorgradientslider.cpp
     colorgradientslider.h
     exrangeslider.cpp
@@ -11,6 +12,12 @@ set(EXWIDGETS_SOURCES
     excombobox.h
     exmessagebox.cpp
     exmessagebox.h
+    extimerdial.cpp
+    extimerdial.h
+    exliquidgauge.cpp
+    exliquidgauge.h
+    exradialgauge.cpp
+    exradialgauge.h
     exspectrumwidget.cpp
     exspectrumwidget.h
     excontentdialog.cpp
