@@ -61,7 +61,7 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 ### 使用说明
 
 - **版本兼容性**：样式库在 Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC 环境）下测试正常
-- **可选无边框组件**：Qt ≥ 5.15.2 时默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）；旧版 Qt 自动关闭。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
+- **可选无边框组件**：Qt ≥ 5.12 时默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）；旧版 Qt 自动关闭。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
 - **Qt 6.8+ 已知问题**：`QMenu`、`QComboBox` 下拉等 **Popup 弹窗的外阴影** 在 Qt **6.8 及以上** 可能显示异常（缺失、裁切、发脏或位置不对）。原因是：本样式对菜单/下拉弹层关闭了系统阴影（`Qt::NoDropShadowWindowHint`），并配合 `WA_TranslucentBackground` 在 `QStyle` 里 **自绘多层阴影**；而 Qt 6.8 起 Windows 平台对 **半透明 Popup 窗口的合成与绘制区域** 做了调整，弹窗实际可绘制区域、Alpha 混合与层叠顺序与旧版不一致，导致 Style 里手工绘制的阴影层无法像 Qt 6.6 及以前那样正确显示。该问题来自 **Qt 平台层 + 自绘阴影方案** 的叠加，并非单一控件逻辑错误；后续会在新版本 Qt 上继续适配。
 - **MinGW注意**：在MinGW环境下，菜单弹出可能需要特殊处理
 - **版本差异**：不同Qt版本间的差异主要体现在右键菜单的显示效果上，可能存在渲染或布局的细微差别
@@ -72,7 +72,8 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 | Qt版本     | 样式库 | Gallery（CMake） | 窗口边框 |
 | -------- | ---- | -------------- | ---- |
-| Qt5.14.2 | ✅ 支持 | ✅ 支持 | **系统边框**（无 QWindowKit 无边框） |
+| Qt5.12.12 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框（`EXWIDGETS_BUILD_FRAMELESS=ON`） |
+| Qt5.14.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt5.15.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.6.3  | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.8+   | ⚠️ 部分 | ⚠️ 部分 | Popup 菜单/下拉 **外阴影** 可能有 Bug（见上文说明） |
@@ -84,9 +85,9 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 ### 零、获取源码（含子模块）
 
 `ExWidgets::Frameless` 的无边框窗口与 DWM 背景依赖 **[QWindowKit](https://github.com/stdware/qwindowkit)**，子模块位于 `3rd/qwindowkit/`。
-Qt ≥ 5.15.2 时该组件默认开启；设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 可跳过 QWindowKit 子模块。
+Qt ≥ 5.12 时该组件默认开启；设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 可跳过 QWindowKit 子模块。
 
-若要启用无边框组件，`git clone` 后须初始化子模块，否则 CMake 会尝试查找系统安装的 QWindowKit package。
+若要启用无边框组件，`git clone` 后须初始化子模块，否则 CMake 会尝试查找系统安装的 QWindowKit package。注意 `3rd/qwindowkit` 内含嵌套子模块（`qmsetup` → `syscmdline`），必须用 `--recursive` 拉全。
 
 #### 首次克隆（推荐）
 

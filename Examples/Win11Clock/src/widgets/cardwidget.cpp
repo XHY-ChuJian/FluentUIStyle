@@ -7,7 +7,7 @@
 CardWidget::CardWidget(QWidget* parent)
     : QWidget(parent)
 {
-    setProperty("isCard", true);
+    setProperty("isCard", QVariant(true));
     setAttribute(Qt::WA_StyledBackground, true);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }

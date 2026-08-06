@@ -30,6 +30,7 @@
 #include <QProgressBar>
 #include <QScreen>
 #include <QScrollBar>
+#include <QWindow>
 #include <QSettings>
 #include <QSlider>
 #include <QSpinBox>
@@ -1520,10 +1521,20 @@ static QScreen* screenOf( const QWidget* w )
 {
     if ( w )
     {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
         if ( auto screen = w->screen() )
         {
             return screen;
         }
+#else
+        if ( auto handle = w->windowHandle() )
+        {
+            if ( auto screen = handle->screen() )
+            {
+                return screen;
+            }
+        }
+#endif
     }
     return QGuiApplication::primaryScreen();
 }
@@ -6641,7 +6652,12 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     QRect textRect( tl, br );
                     QRect vRect( visualMenuRect( textRect ) );
 
-                    qsizetype t    = s.indexOf( u'\t' );
+                    qsizetype t = -1;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+                    t = s.indexOf( u'\t' );
+#else
+                    t = s.toString().indexOf( u'\t' );
+#endif
                     int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                     if ( !proxy()->styleHint( SH_UnderlineShortcut, menuitem, widget ) )
                     {

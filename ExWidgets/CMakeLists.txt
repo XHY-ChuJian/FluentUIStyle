@@ -40,8 +40,10 @@ set(EXWIDGETS_SOURCES
     extabwidget.h
 )
 
+# QWindowKit officially supports Qt 5.12 or later; keep the frameless
+# component enabled from Qt 5.12 up (verified on Qt 5.12.12 MSVC2017).
 set(_exwidgets_frameless_default ON)
-if(QT_VERSION VERSION_LESS "5.15.2")
+if(QT_VERSION VERSION_LESS "5.12.0")
     set(_exwidgets_frameless_default OFF)
 endif()
 
@@ -50,9 +52,9 @@ option(EXWIDGETS_BUILD_FRAMELESS
     ${_exwidgets_frameless_default}
 )
 
-if(EXWIDGETS_BUILD_FRAMELESS AND QT_VERSION VERSION_LESS "5.15.2")
+if(EXWIDGETS_BUILD_FRAMELESS AND QT_VERSION VERSION_LESS "5.12.0")
     message(STATUS
-        "ExWidgets frameless component disabled: Qt ${QT_VERSION} < 5.15.2."
+        "ExWidgets frameless component disabled: Qt ${QT_VERSION} < 5.12."
     )
     set(EXWIDGETS_BUILD_FRAMELESS OFF CACHE BOOL
         "Build the optional QWindowKit-based frameless window component"

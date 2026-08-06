@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTime>
+#include <QVariant>
 #include <QVBoxLayout>
 
 #include "common/fluenthelpers.h"
@@ -22,7 +23,7 @@ AlarmPage::AlarmPage( QWidget* parent )
     headerLayout->addWidget( ClockUi::createPageTitle( tr( "闹钟" ), this ) );
     headerLayout->addStretch();
     auto* addButton = new QPushButton( tr( "＋  新建闹钟" ), this );
-    addButton->setProperty( "accent", true );
+    addButton->setProperty( "accent", QVariant( true ) );
     headerLayout->addWidget( addButton );
     pageLayout->addLayout( headerLayout );
 

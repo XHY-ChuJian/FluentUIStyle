@@ -62,7 +62,7 @@ Happy coding.
 ### Notes
 
 - **Tested versions:** Style library on Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
-- **Optional frameless component:** `ExWidgets::Frameless` is ON by default with Qt ≥ 5.15.2 (and requires CMake ≥ 3.19); older Qt versions disable it automatically. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to keep base `ExWidgets` free of QWindowKit.
+- **Optional frameless component:** `ExWidgets::Frameless` is ON by default with Qt ≥ 5.12 (and requires CMake ≥ 3.19); older Qt versions disable it automatically. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to keep base `ExWidgets` free of QWindowKit.
 - **Qt 6.8+ known issue:** **Drop shadows** on **Popup** surfaces such as `QMenu` and `QComboBox` lists may look wrong on Qt **6.8 and newer** (missing, clipped, dirty edges, or misaligned). FluentUI3Style turns off the native shadow (`Qt::NoDropShadowWindowHint`) and uses `WA_TranslucentBackground` so the style can **paint multi-layer shadows in `QStyle`**. From Qt 6.8 onward, the Windows platform changed how **translucent popup windows** are composited (paintable region, alpha blending, stacking). That no longer matches the assumptions of the hand-drawn shadow path, so shadows that looked correct on Qt 6.6 and earlier can break. This is a **Qt platform + custom shadow** interaction, not a single-widget logic bug; adaptation for newer Qt releases is ongoing.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
@@ -72,7 +72,8 @@ Happy coding.
 
 | Qt version | Style library | Gallery (CMake) | Window chrome |
 | ---------- | ------------- | --------------- | ------------- |
-| Qt 5.14.2  | Supported | Supported | **System frame** (no QWindowKit frameless) |
+| Qt 5.12.12 | Supported | Supported | Optional QWindowKit frameless (`EXWIDGETS_BUILD_FRAMELESS=ON`) |
+| Qt 5.14.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 5.15.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 6.6.3   | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 6.8+    | Partial | Partial | Popup menu/dropdown **shadows** may be wrong (see note above) |
@@ -83,9 +84,9 @@ Happy coding.
 ### Get the source (including submodules)
 
 The optional `ExWidgets::Frameless` component uses **[QWindowKit](https://github.com/stdware/qwindowkit)** for frameless windows and DWM backdrops. The submodule lives at `3rd/qwindowkit/`.
-It is enabled by default with Qt ≥ 5.15.2. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
+It is enabled by default with Qt ≥ 5.12. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
 
-To enable the frameless component, initialize the submodule after cloning; otherwise CMake falls back to finding an installed QWindowKit package.
+To enable the frameless component, initialize the submodule after cloning; otherwise CMake falls back to finding an installed QWindowKit package. Note `3rd/qwindowkit` contains nested submodules (`qmsetup` → `syscmdline`), so `--recursive` is required.
 
 #### First-time clone (recommended)
 
@@ -184,8 +185,8 @@ cmake -S . -B build -DBUILD_GALLERY=OFF
 #### 6) Qt 5.14.2 notes
 
 - **Style library, plugin, and Gallery all build with CMake**
-- Gallery uses the **system title bar and system window frame** (no QWindowKit)
-- No need to init the `3rd/qwindowkit` submodule unless you build QWindowKit-dependent targets on Qt ≥ 5.15.2
+- Gallery uses **QWindowKit frameless** (Qt ≥ 5.12, `EXWIDGETS_BUILD_FRAMELESS` default ON)
+- Init the `3rd/qwindowkit` submodule (`--recursive`) before building Gallery
 
 ---
 

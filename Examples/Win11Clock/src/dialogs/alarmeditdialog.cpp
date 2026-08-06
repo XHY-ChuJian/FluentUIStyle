@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QVariant>
 #include <QVBoxLayout>
 
 AlarmEditDialog::AlarmEditDialog(QWidget* parent)
@@ -26,7 +27,7 @@ AlarmEditDialog::AlarmEditDialog(QWidget* parent)
     titleLayout->addWidget(ClockUi::createSectionTitle(tr("编辑闹钟"), this));
     titleLayout->addStretch();
     m_enabledSwitch = new QCheckBox(this);
-    m_enabledSwitch->setProperty("isSwitchButton", true);
+    m_enabledSwitch->setProperty("isSwitchButton", QVariant(true));
     m_enabledSwitch->setChecked(true);
     titleLayout->addWidget(m_enabledSwitch);
     rootLayout->addLayout(titleLayout);

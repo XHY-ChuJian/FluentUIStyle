@@ -59,13 +59,16 @@ if(WIN32)
     find_program(GALLERY_LUPDATE NAMES lupdate lupdate-qt6 lupdate-qt5 HINTS "${_gallery_qt_bin}" "${_gallery_qt_bin}/..")
 
     if(GALLERY_LRELEASE)
-        add_custom_command(
-            OUTPUT "${_gallery_qm}"
+        # OBJECT_DEPENDS on the source-dir .qm is not honored reliably by
+        # MSBuild, so rcc can run before lrelease and fail the build on a
+        # clean checkout. A dedicated ALL target with an explicit dependency
+        # on Gallery guarantees the .qm exists before resource compilation.
+        add_custom_target(gallery-lrelease ALL
             COMMAND "${GALLERY_LRELEASE}" "${_gallery_ts}" -qm "${_gallery_qm}"
             DEPENDS "${_gallery_ts}"
             COMMENT "lrelease: Gallery_en_US.ts -> Gallery_en_US.qm"
             VERBATIM)
-        set_source_files_properties("${_gallery_i18n_qrc}" PROPERTIES OBJECT_DEPENDS "${_gallery_qm}")
+        set(GALLERY_NEEDS_LRELEASE_DEP ON)
     else()
         if(NOT EXISTS "${_gallery_qm}")
             message(FATAL_ERROR "Gallery: 'lrelease' not found and translations/Gallery_en_US.qm is missing. Install Qt Linguist tools.")
@@ -82,6 +85,10 @@ else()
     add_executable(Gallery
         ${GALLERY_SOURCES}
     )
+endif()
+
+if(GALLERY_NEEDS_LRELEASE_DEP)
+    add_dependencies(Gallery gallery-lrelease)
 endif()
 
 if(WIN32)

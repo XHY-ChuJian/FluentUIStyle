@@ -1,6 +1,6 @@
 include(../../common.pri)
 
-QT += gui-private core-private widgets-private svg
+QT += svg
 greaterThan(QT_MAJOR_VERSION, 5): QT += multimedia network
 
 TEMPLATE = app

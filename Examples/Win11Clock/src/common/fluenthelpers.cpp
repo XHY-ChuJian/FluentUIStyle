@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QStyleOption>
+#include <QVariant>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -82,7 +83,7 @@ QWidget* createEmptyState(const QString& icon,
     auto* descriptionLabel = new QLabel(description, container);
     descriptionLabel->setWordWrap(true);
     descriptionLabel->setAlignment(Qt::AlignCenter);
-    descriptionLabel->setProperty("subtitle", true);
+    descriptionLabel->setProperty("subtitle", QVariant(true));
 
     layout->addWidget(iconLabel);
     layout->addWidget(titleLabel);
