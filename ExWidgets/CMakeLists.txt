@@ -14,8 +14,16 @@ set(EXWIDGETS_SOURCES
     exmessagebox.h
     extimerdial.cpp
     extimerdial.h
+    extimeline.cpp
+    extimeline.h
     exliquidgauge.cpp
     exliquidgauge.h
+    exmultiprogressring.cpp
+    exmultiprogressring.h
+    exmultiradialgauge.cpp
+    exmultiradialgauge.h
+    exprogressring.cpp
+    exprogressring.h
     exradialgauge.cpp
     exradialgauge.h
     exspectrumwidget.cpp

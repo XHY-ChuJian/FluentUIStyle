@@ -4,9 +4,12 @@
 //=============================================================================
 
 #include "mainwindow.h"
+#include "changelogtimelinewidget.h"
 #include "liquidgaugeshowcasewidget.h"
 #include "progressringshowcasewidget.h"
 #include "radialgaugeshowcasewidget.h"
+#include "systemresourceswidget.h"
+#include "timelineshowcasewidget.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "audiomaticplayerwidget.h"
@@ -448,11 +451,13 @@ void MainWindow::initializeComponents()
 
     setupSegoeIconGalleryPage();
     setupAboutPage();
+    setupChangelogTimelinePage();
     setupDialogsPage();
     setupColorPickerPage();
     setupExWidgetsPages();
     setupAudiomaticPlayerPage();
     setupProgressRingPage();
+    setupSystemResourcesPage();
 
     // Configure stacked widget
     ui->stackedWidget->setVerticalMode(true);
@@ -1053,16 +1058,6 @@ void MainWindow::initializeNavigationView()
     QTreeWidgetItem *basicControlsItem =
         m_winUINavigationView->addNavigationItem(tr("基础控件"), 0, QStringLiteral("\uE80F"));
     m_mainNavItems.push_back(basicControlsItem);
-    if (QWidget *progressRingPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageProgressRing")))
-    {
-        const int pageIndex = ui->stackedWidget->indexOf(progressRingPage);
-        if (pageIndex >= 0 && basicControlsItem)
-        {
-            auto *progressRingItem = new QTreeWidgetItem(basicControlsItem);
-            m_navView->configureNavigationItem(progressRingItem, tr("进度环"), pageIndex, QStringLiteral("\uF16A"));
-            basicControlsItem->setExpanded(true);
-        }
-    }
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("表格控件"), 1, QStringLiteral("\uE99A")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("列表控件"), 2, QStringLiteral("\uE71D")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("树形控件"), 3, QStringLiteral("\uED28")));
@@ -1070,9 +1065,23 @@ void MainWindow::initializeNavigationView()
     addExWidgetsNavigation();
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(QStringLiteral("Mdi"), 5, QStringLiteral("\uE9D9")));
     m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("图标库"), 7, QStringLiteral("\uE8FD")));
-    m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("对话框"), 9, QStringLiteral("\uE8F2")));
+    if (QWidget *dialogsPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageDialogs")))
+    {
+        const int pageIndex = ui->stackedWidget->indexOf(dialogsPage);
+        m_mainNavItems.push_back(m_winUINavigationView->addNavigationItem(tr("对话框"), pageIndex, QStringLiteral("\uE8F2")));
+    }
     addTestNavigationTree();
 
+    if (QWidget *systemResourcesPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageSystemResources")))
+    {
+        const int pageIndex = ui->stackedWidget->indexOf(systemResourcesPage);
+        m_winUINavigationView->addFooterNavigationItem(tr("系统监视"), pageIndex, QStringLiteral("\uE9D2"));
+    }
+    if (QWidget *changelogPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageChangelogTimeline")))
+    {
+        const int pageIndex = ui->stackedWidget->indexOf(changelogPage);
+        m_winUINavigationView->addFooterNavigationItem(tr("更新日志"), pageIndex, QStringLiteral("\uE823"));
+    }
     m_navAboutItem = m_winUINavigationView->addFooterNavigationItem(tr("关于"), 8, QStringLiteral("\uE77B"));
     if (QTreeWidgetItem *settingsItem = m_winUINavigationView->addFooterNavigationItem(tr("设置"), 6, QStringLiteral("\uE713")))
     {
@@ -1259,6 +1268,28 @@ void MainWindow::setupDialogsPage()
     ui->stackedWidget->addWidget(page);
 }
 
+void MainWindow::setupChangelogTimelinePage()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+    auto *page = new ChangelogTimelineWidget(ui->stackedWidget);
+    page->setObjectName(QStringLiteral("pageChangelogTimeline"));
+    ui->stackedWidget->addWidget(page);
+}
+
+void MainWindow::setupSystemResourcesPage()
+{
+    if (!ui->stackedWidget)
+    {
+        return;
+    }
+    auto *page = new SystemResourcesWidget(ui->stackedWidget);
+    page->setObjectName(QStringLiteral("pageSystemResources"));
+    ui->stackedWidget->addWidget(page);
+}
+
 void MainWindow::setupColorPickerPage()
 {
     if (!ui->stackedWidget)
@@ -1288,6 +1319,10 @@ void MainWindow::setupExWidgetsPages()
     auto *liquidGaugePage = new LiquidGaugeShowcaseWidget(ui->stackedWidget);
     liquidGaugePage->setObjectName(QStringLiteral("pageExLiquidGauge"));
     ui->stackedWidget->addWidget(liquidGaugePage);
+
+    auto *timelinePage = new TimelineShowcaseWidget(ui->stackedWidget);
+    timelinePage->setObjectName(QStringLiteral("pageExTimeline"));
+    ui->stackedWidget->addWidget(timelinePage);
 }
 
 void MainWindow::setupAudiomaticPlayerPage()
@@ -1333,6 +1368,10 @@ void MainWindow::addExWidgetsNavigation()
     const int radialGaugePageIndex = radialGaugePage ? ui->stackedWidget->indexOf(radialGaugePage) : -1;
     QWidget *liquidGaugePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExLiquidGauge"));
     const int liquidGaugePageIndex = liquidGaugePage ? ui->stackedWidget->indexOf(liquidGaugePage) : -1;
+    QWidget *progressRingPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageProgressRing"));
+    const int progressRingPageIndex = progressRingPage ? ui->stackedWidget->indexOf(progressRingPage) : -1;
+    QWidget *timelinePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExTimeline"));
+    const int timelinePageIndex = timelinePage ? ui->stackedWidget->indexOf(timelinePage) : -1;
     const int audiomaticPageIndex = m_audiomaticPlayerPage ? ui->stackedWidget->indexOf(m_audiomaticPlayerPage) : -1;
 
     m_navExWidgetsRoot = new QTreeWidgetItem();
@@ -1348,11 +1387,19 @@ void MainWindow::addExWidgetsNavigation()
     addExWidgetItem(QStringLiteral("ExRangeSlider"), rangeSliderPageIndex);
     if (radialGaugePageIndex >= 0)
     {
-        addExWidgetItem(QStringLiteral("ExRadialGauge"), radialGaugePageIndex, QStringLiteral("\uE9D9"));
+        addExWidgetItem(QStringLiteral("ExRadialGauge"), radialGaugePageIndex);
     }
     if (liquidGaugePageIndex >= 0)
     {
         addExWidgetItem(QStringLiteral("ExLiquidGauge"), liquidGaugePageIndex);
+    }
+    if (progressRingPageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExProgressRing"), progressRingPageIndex);
+    }
+    if (timelinePageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExTimeline"), timelinePageIndex);
     }
     if (colorPickerPageIndex >= 0)
     {

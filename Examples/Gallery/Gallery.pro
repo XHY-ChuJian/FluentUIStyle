@@ -42,7 +42,11 @@ SOURCES += $$PWD/main.cpp \
            $$PWD/rangeslidershowcasewidget.cpp \
            $$PWD/liquidgaugeshowcasewidget.cpp \
            $$PWD/radialgaugeshowcasewidget.cpp \
-           $$PWD/progressringshowcasewidget.cpp
+           $$PWD/progressringshowcasewidget.cpp \
+           $$PWD/timelineshowcasewidget.cpp \
+           $$PWD/changelogtimelinewidget.cpp \
+           $$PWD/systemresourceswidget.cpp \
+           $$PWD/systemresources/systemresourceprovider.cpp
 HEADERS += $$PWD/mainwindow.h \
            $$PWD/installedsoftwaretablewidget.h \
            $$PWD/tabshowcasewidget.h \
@@ -54,10 +58,16 @@ HEADERS += $$PWD/mainwindow.h \
            $$PWD/rangeslidershowcasewidget.h \
            $$PWD/liquidgaugeshowcasewidget.h \
            $$PWD/radialgaugeshowcasewidget.h \
-           $$PWD/progressringshowcasewidget.h
+           $$PWD/progressringshowcasewidget.h \
+           $$PWD/timelineshowcasewidget.h \
+           $$PWD/changelogtimelinewidget.h \
+           $$PWD/systemresourceswidget.h \
+           $$PWD/systemresources/systemresourceprovider.h \
+           $$PWD/systemresources/systemresourcesnapshot.h
 FORMS   += $$PWD/mainwindow.ui
 
 win32 {
+    LIBS += -liphlpapi -lpdh
     SOURCES += $$PWD/applanguage.cpp
     HEADERS += $$PWD/applanguage.h
 

@@ -1,3 +1,14 @@
+【更新内容2026-8-6】
+1.新增支持水平/垂直布局的 ExTimeline 时间轴控件
+2.扩展 ExRadialGauge 仪表盘功能
+3.新增多数据仪表盘与进度环控件
+4.新增 ExLiquidGauge 水波图控件
+5.ExTimerDial 改为继承 QProgressBar
+6.Gallery 新增控件展示、更新日志与系统监视页
+7.示例工程统一迁移到 Examples 目录
+8.完善 ExWidgets 无边框组件与安装配置
+9.修复弹窗定位及页面切换问题
+
 【更新内容2026-7-29】
 1.新增 ExComboBox 控件（自带下拉展开/收起动画，不受 Style 全局 ComboBox 动画属性控制）
 2.QComboBox 新增下拉展开动画（comboBoxPopupDropDownAnimationEnabled，支持 qApp 总开关与单控件局部控制）
@@ -63,4 +74,4 @@
 【更新内容2026-03-06】
 1. 新增主题切换（亮色和暗色）
 2. 适配Qt5.15.2
-3. 修复其他问题 
+3. 修复其他问题

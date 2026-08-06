@@ -41,7 +41,11 @@ Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Fr
 | `ExMessageBox` | `exmessagebox.h` | Fluent-styled `QMessageBox` |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog |
 | `ExTimerDial` | `extimerdial.h` | Remaining time, circular progress, and optional finish time |
+| `ExTimeline` / `ExTimelineEvent` | `extimeline.h` | Horizontal/vertical event timeline with one-sided/alternating layouts, status nodes, reverse order, and animation |
 | `ExLiquidGauge` | `exliquidgauge.h` | Ant Design-inspired liquid gauge with four shapes, layered waves, and centered text |
+| `ExMultiProgressRing` / `ExMultiProgressRingItem` | `exmultiprogressring.h` | Lightweight multi-ring progress chart with per-item values, colors, center details, and animation |
+| `ExMultiRadialGauge` / `ExMultiRadialGaugeItem` | `exmultiradialgauge.h` | Multi-value radial gauge with a shared scale, overlapping progress, multiple pointers, details, and animation |
+| `ExProgressRing` | `exprogressring.h` | QProgressBar-based ring with a title, independently styled value text, and optional custom center widget |
 | `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | Interactive radial gauge with configurable angles, ticks, needle, and colored ranges |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | Real-time spectrum (push mono int16 PCM) |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | Navigation pane + footer |

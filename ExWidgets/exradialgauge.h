@@ -91,14 +91,29 @@ public:
     // 刻度环与控件外边缘之间的间距
     EXWIDGETS_DECLARE_PROPERTY( qreal, scalePadding, scalePadding, setScalePadding, 12.0 )
 
-    // Track 圆弧的端点样式。
-    EXWIDGETS_DECLARE_PROPERTY( Qt::PenCapStyle, trackCapStyle, trackCapStyle, setTrackCapStyle, Qt::FlatCap )
+    // Track 圆弧的端点样式；Progress 模式默认使用圆头，其他模式默认使用平头。
+    EXWIDGETS_DECLARE_PROPERTY( Qt::PenCapStyle, trackCapStyle, trackCapStyle, setTrackCapStyle, Qt::RoundCap )
 
-    // 进度环和彩色区间圆弧的端点样式。
-    EXWIDGETS_DECLARE_PROPERTY( Qt::PenCapStyle, ringCapStyle, ringCapStyle, setRingCapStyle, Qt::FlatCap )
+    // 进度环和彩色区间圆弧的端点样式；Progress 模式默认使用圆头，其他模式默认使用平头。
+    EXWIDGETS_DECLARE_PROPERTY( Qt::PenCapStyle, ringCapStyle, ringCapStyle, setRingCapStyle, Qt::RoundCap )
+
+    // Progress 模式下，已扫过的圆弧是否沿扫描方向使用渐变色。
+    EXWIDGETS_DECLARE_PROPERTY( bool, progressGradientEnabled, isProgressGradientEnabled, setProgressGradientEnabled, false )
+
+    // Progress 模式下，是否显示从起点到当前指针位置的渐变扇形。
+    EXWIDGETS_DECLARE_PROPERTY( bool, sweepAreaVisible, isSweepAreaVisible, setSweepAreaVisible, false )
+
+    // 指针扫过扇形的不透明度，取值范围为 [0.0, 1.0]。
+    EXWIDGETS_DECLARE_PROPERTY( qreal, sweepAreaOpacity, sweepAreaOpacity, setSweepAreaOpacity, 0.16 )
+
+    // 进度环及扫过扇形的渐变起点颜色，无效颜色表示使用较亮的调色板强调色。
+    EXWIDGETS_DECLARE_PROPERTY( QColor, progressGradientStartColor, progressGradientStartColor, setProgressGradientStartColor, QColor() )
+
+    // 进度环及扫过扇形的渐变终点颜色，无效颜色表示使用调色板强调色。
+    EXWIDGETS_DECLARE_PROPERTY( QColor, progressGradientEndColor, progressGradientEndColor, setProgressGradientEndColor, QColor() )
 
     // 指针的线宽
-    EXWIDGETS_DECLARE_PROPERTY( qreal, needleWidth, needleWidth, setNeedleWidth, 3.0 )
+    EXWIDGETS_DECLARE_PROPERTY( qreal, needleWidth, needleWidth, setNeedleWidth, 10.0 )
 
     // 指针的绘制样式：隐藏、线形或三角形。
     EXWIDGETS_DECLARE_PROPERTY( NeedleStyle, needleStyle, needleStyle, setNeedleStyle, LineNeedle )
@@ -125,7 +140,7 @@ public:
     EXWIDGETS_DECLARE_PROPERTY( bool, labelsVisible, areLabelsVisible, setLabelsVisible, false )
 
     // 数值标签与刻度环内边缘之间的距离。
-    EXWIDGETS_DECLARE_PROPERTY( qreal, labelPadding, labelPadding, setLabelPadding, 14.0 )
+    EXWIDGETS_DECLARE_PROPERTY( qreal, labelPadding, labelPadding, setLabelPadding, 28.0 )
 
     // 数值标签的字体像素大小。
     EXWIDGETS_DECLARE_PROPERTY( int, labelFontPixelSize, labelFontPixelSize, setLabelFontPixelSize, 11 )
@@ -134,7 +149,7 @@ public:
     EXWIDGETS_DECLARE_PROPERTY( bool, hubVisible, isHubVisible, setHubVisible, false )
 
     // 指针轴心的半径。
-    EXWIDGETS_DECLARE_PROPERTY( qreal, hubRadius, hubRadius, setHubRadius, 5.0 )
+    EXWIDGETS_DECLARE_PROPERTY( qreal, hubRadius, hubRadius, setHubRadius, 11.0 )
 
     // 是否在仪表盘底部显示当前数值。
     EXWIDGETS_DECLARE_PROPERTY( bool, valueVisible, isValueVisible, setValueVisible, true )

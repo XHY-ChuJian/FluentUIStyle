@@ -70,7 +70,11 @@ LIBS += -lExWidgets
 | `ExMessageBox` | `exmessagebox.h` | Fluent 风格 `QMessageBox` | Dialogs 页 |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog | Dialogs 页 |
 | `ExTimerDial` | `extimerdial.h` | 剩余时间、环形进度与预计完成时刻 | Win11Clock 计时器 |
+| `ExTimeline` / `ExTimelineEvent` | `extimeline.h` | 事件时间轴，支持水平/垂直、单侧/交错布局、状态节点和动画 | ExWidgets → ExTimeline |
 | `ExLiquidGauge` | `exliquidgauge.h` | Ant Design 风格水波图，支持四种形状、双层波浪和中心文本 | ExWidgets → ExLiquidGauge |
+| `ExMultiProgressRing` / `ExMultiProgressRingItem` | `exmultiprogressring.h` | 轻量多环进度图，支持独立数值、颜色、中央详情和动画 | ExWidgets → ExRadialGauge |
+| `ExMultiRadialGauge` / `ExMultiRadialGaugeItem` | `exmultiradialgauge.h` | 多数据项径向仪表盘，共享刻度并支持重叠进度、多指针、标题详情和动画 | ExWidgets → ExRadialGauge |
+| `ExProgressRing` | `exprogressring.h` | 基于 QProgressBar Ring 的单环进度控件，支持标题、独立文本样式和自定义中心控件 | ExWidgets → ProgressRing |
 | `ExRadialGauge` / `ExRadialGaugeRange` | `exradialgauge.h` | 可交互的径向仪表盘，支持自定义角度、刻度、指针和彩色区间 | ExWidgets → ExRadialGauge |
 | `ExSpectrumWidget` | `exspectrumwidget.h` | 实时音频频谱（Push PCM） | Qt5: ExSpectrumWidget；Qt6: Audiomatic Mini |
 | `ExWinUINavigationView` | `exwinuinavigationview.h` | 主导航 + 页脚导航 | MainWindow 左侧导航 |
@@ -115,6 +119,27 @@ connect(slider, &ExRangeSlider::upperValueChanged, this, [](int v) { /* ... */ }
 
 ---
 
+## ExProgressRing
+
+`ExProgressRing` 继承 `QProgressBar`，继续使用 FluentUI3Style 的 `ProgressBarRing` 绘制环和 Track。继承的 `format`、`textVisible`、范围和数值 API 保持不变，并增加标题、两套文本样式以及可选的自定义中心控件。
+
+```cpp
+#include "exprogressring.h"
+
+auto *ring = new ExProgressRing(this);
+ring->setRange(0, 100);
+ring->setValue(65);
+ring->setTitle(tr("已完成"));
+ring->setFormat(QStringLiteral("%p%"));
+
+// 需要任意中心内容时，控件会接管 customWidget 的所有权。
+ring->setCenterWidget(customWidget);
+```
+
+设置 `centerWidget` 后不再绘制默认标题和数值；`takeCenterWidget()` 可解除并取回其所有权。`textVisible` 同时控制默认文字或自定义中心控件的可见性。
+
+---
+
 ## ExLiquidGauge
 
 `ExLiquidGauge` 继承 `QProgressBar`，直接复用范围、数值、格式和文本可见性 API。水位由当前进度决定，双层水波仅负责动态表现。
@@ -132,6 +157,65 @@ gauge->setWaveAnimationDuration(2400);
 ```
 
 `shape` 支持 `CircleShape`、`RectShape`、`PinShape` 和 `TriangleShape`。`waveColor`、`backgroundColor`、`outlineColor`、`textColor` 与 `submergedTextColor` 传入无效 `QColor` 时会自动读取调色板，主题切换后无需重新设置。控件隐藏、禁用或关闭 `animationEnabled` 时会停止动画计时器。
+
+---
+
+## ExMultiRadialGauge
+
+`ExMultiRadialGauge` 面向 ECharts Multi Title Gauge 一类多数据仪表盘：控件只绘制一套范围、刻度、Track 和公共轴心，每个 `ExMultiRadialGaugeItem` 分别提供名称、数值、颜色、可见性以及标题/详情偏移，避免叠放多个完整 Gauge。
+
+```cpp
+#include "exmultiradialgauge.h"
+
+auto *gauge = new ExMultiRadialGauge(this);
+gauge->setRange(0.0, 100.0);
+gauge->setProgressOverlap(true);
+gauge->setNeedleStyle(ExMultiRadialGauge::LineNeedle);
+
+auto *good = gauge->addItem(tr("Good"), 20.0, QColor("#5470C6"));
+auto *better = gauge->addItem(tr("Better"), 40.0, QColor("#B8DE29"));
+auto *perfect = gauge->addItem(tr("Perfect"), 60.0, QColor("#555672"));
+
+good->setTitleOffset(QPointF(-0.4, 0.8));
+good->setDetailOffset(QPointF(-0.4, 0.95));
+better->setTitleOffset(QPointF(0.0, 0.8));
+better->setDetailOffset(QPointF(0.0, 0.95));
+perfect->setTitleOffset(QPointF(0.4, 0.8));
+perfect->setDetailOffset(QPointF(0.4, 0.95));
+```
+
+偏移以刻度环半径为单位，`(-0.4, 0.8)` 对应 ECharts 的 `[-40%, 80%]`。`progressOverlap=true` 时，较小数值覆盖在较大数值之上，形成连续分色进度；关闭后各数据项改为同心弧。控件持有通过 `addItem()` 加入的数据项，`removeItem()` 与 `clearItems()` 会延迟删除它们。
+
+---
+
+## ExTimeline
+
+`ExTimeline` 基于 `QListView` 的 Model/View 与自定义 Delegate，只创建和绘制可见行，适合订单流程、发布记录和系统事件。时间轴负责布局和公共视觉属性，每个 `ExTimelineEvent` 负责时间、标题、描述、状态、颜色、图标，以及交错布局下可选的左右位置。
+
+```cpp
+#include "extimeline.h"
+
+auto *timeline = new ExTimeline(this);
+timeline->setOrientation(Qt::Horizontal);
+timeline->setLayoutMode(ExTimeline::ContentOnRight);
+timeline->setHorizontalItemWidth(220);
+timeline->setTimestampFormat(QStringLiteral("HH:mm"));
+
+timeline->addEvent(QDateTime::currentDateTime(),
+                   tr("任务已创建"),
+                   tr("任务已经加入处理队列。"),
+                   ExTimelineEvent::Completed);
+
+auto *current = timeline->addEvent(QDateTime::currentDateTime(),
+                                   tr("正在处理"),
+                                   tr("正在生成结果。"),
+                                   ExTimelineEvent::Current);
+current->setIcon(QStringLiteral("\uE895"));
+```
+
+`orientation` 可切换水平/垂直时间轴。水平模式下，左侧、右侧和交错布局分别映射为上方、下方和上下交错，`horizontalItemWidth` 控制节点间距。`reverse` 只改变显示顺序，不改变 `events()` 的存储顺序。`timeText` 非空时覆盖 `timestamp` 的格式化结果，适合显示“刚刚”“昨天”等相对时间。`Current` 节点可播放呼吸动画，隐藏或禁用控件时动画会自动停止。
+
+控件接管通过 `addEvent()` 加入的事件对象；`removeEvent()` / `clearEvents()` 会延迟删除，`takeEvent()` 可在不删除的情况下转移事件所有权。
 
 ---
 
@@ -168,7 +252,7 @@ gauge->addRange(80, 100, QColor("#FF6475"));
 gauge->setUnit(QStringLiteral("km/h"));
 ```
 
-`setValue()` 会在 `valueAnimationDuration` 内逐帧改变真实 `value()`，因此 `valueChanged`、进度环、指针和数值文本同步变化；时长为 `0` 时关闭动画。Track 与前景环的端点分别由 `trackCapStyle`、`ringCapStyle` 控制，默认都是 `Qt::FlatCap`；非完整圆的整体起止端各向外延伸 `1°`，让首尾主刻度完整落在圆弧范围内。彩色区间如果需要严格对齐，建议保持 `ringCapStyle` 为 `Qt::FlatCap`。`needleStyle` 可选 `NoNeedle`、`LineNeedle` 和 `TriangleNeedle`，两种可见指针都支持圆形轴心；数值可通过 `valuePosition` 放在中心或底部，并可配合 `title`、`unit`、刻度标签与自定义颜色组成不同仪表外观。
+`setValue()` 会在 `valueAnimationDuration` 内逐帧改变真实 `value()`，因此 `valueChanged`、进度环、指针和数值文本同步变化；时长为 `0` 时关闭动画。Track 与前景环的端点分别由 `trackCapStyle`、`ringCapStyle` 控制；`ProgressScale` 默认使用 `Qt::RoundCap`，其他模式默认使用 `Qt::FlatCap`，切换模式后仍可单独修改。非完整圆的整体起止端各向外延伸 `1°`，让首尾主刻度完整落在圆弧范围内。彩色区间如果需要严格对齐，建议保持 `ringCapStyle` 为 `Qt::FlatCap`。`needleStyle` 可选 `NoNeedle`、`LineNeedle` 和 `TriangleNeedle`，两种可见指针都支持圆形轴心；数值可通过 `valuePosition` 放在中心或底部，并可配合 `title`、`unit`、刻度标签与自定义颜色组成不同仪表外观。
 
 ---
 

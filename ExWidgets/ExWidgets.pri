@@ -8,7 +8,11 @@ SOURCES += \
     $$PWD/excombobox.cpp \
     $$PWD/exmessagebox.cpp \
     $$PWD/extimerdial.cpp \
+    $$PWD/extimeline.cpp \
     $$PWD/exliquidgauge.cpp \
+    $$PWD/exmultiprogressring.cpp \
+    $$PWD/exmultiradialgauge.cpp \
+    $$PWD/exprogressring.cpp \
     $$PWD/exradialgauge.cpp \
     $$PWD/exnavtreewidget.cpp \
     $$PWD/exwinuinavigationview.cpp \
@@ -26,7 +30,11 @@ HEADERS += \
     $$PWD/excombobox.h \
     $$PWD/exmessagebox.h \
     $$PWD/extimerdial.h \
+    $$PWD/extimeline.h \
     $$PWD/exliquidgauge.h \
+    $$PWD/exmultiprogressring.h \
+    $$PWD/exmultiradialgauge.h \
+    $$PWD/exprogressring.h \
     $$PWD/exradialgauge.h \
     $$PWD/exnavtreewidget.h \
     $$PWD/exwinuinavigationview.h \

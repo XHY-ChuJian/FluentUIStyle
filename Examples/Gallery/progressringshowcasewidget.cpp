@@ -3,6 +3,7 @@
 #include "fluentui3styleproperties.h"
 
 #include <excolorpickerbutton.h>
+#include <exprogressring.h>
 
 #include <QCheckBox>
 #include <QColor>
@@ -11,10 +12,10 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QList>
 #include <QPalette>
 #include <QPlainTextEdit>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSignalBlocker>
@@ -44,10 +45,9 @@ QLabel *makeSectionTitle(const QString &text, QWidget *parent)
     return label;
 }
 
-QProgressBar *makeRing(QWidget *parent, int value, int side = 80)
+ExProgressRing *makeRing(QWidget *parent, int value, int side = 80)
 {
-    auto *ring = new QProgressBar(parent);
-    ring->setProperty(ProgressBarStyleProperty, ProgressBarRing);
+    auto *ring = new ExProgressRing(parent);
     ring->setRange(0, 100);
     ring->setValue(value);
     ring->setAlignment(Qt::AlignCenter);
@@ -113,7 +113,7 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     mainLayout->addWidget(title);
 
     auto *description = new QLabel(
-        tr("使用标准 QProgressBar 的范围、数值和文本能力，仅通过 progressBarStyle 属性切换为环形外观。"),
+        tr("ExProgressRing 继承 QProgressBar，复用范围、数值、格式和 Ring Style，并增加可独立设置的中央标题、数值样式与自定义中心控件。"),
         content);
     description->setWordWrap(true);
     mainLayout->addWidget(description);
@@ -170,7 +170,20 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     auto *previewLayout = new QHBoxLayout;
     previewLayout->setSpacing(28);
     auto *previewRing = makeRing(propertiesCard, 65, 156);
-    previewLayout->addWidget(previewRing, 0, Qt::AlignCenter);
+    previewRing->setTitle(tr("已完成"));
+    QFont previewTitleFont = previewRing->font();
+    previewTitleFont.setPixelSize(12);
+    previewRing->setTitleFont(previewTitleFont);
+    QFont previewValueFont = previewRing->font();
+    previewValueFont.setPixelSize(24);
+    previewValueFont.setWeight(QFont::DemiBold);
+    previewRing->setValueFont(previewValueFont);
+    auto *previewHost = new QWidget(propertiesCard);
+    auto *previewHostLayout = new QVBoxLayout(previewHost);
+    previewHostLayout->setContentsMargins(0, 0, 0, 0);
+    previewHostLayout->addWidget(previewRing, 0, Qt::AlignHCenter | Qt::AlignTop);
+    previewHostLayout->addStretch();
+    previewLayout->addWidget(previewHost, 1);
 
     auto *form = new QFormLayout;
     form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -200,8 +213,26 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     auto *trackColorButton = new ExColorPickerButton(propertiesCard);
     trackColorButton->setSelectedColor(QColor(Qt::gray));
 
+    auto *titleEdit = new QLineEdit(previewRing->title(), propertiesCard);
+    auto *formatEdit = new QLineEdit(previewRing->format(), propertiesCard);
+    auto *titleFontSizeSpin = new QSpinBox(propertiesCard);
+    titleFontSizeSpin->setRange(6, 72);
+    titleFontSizeSpin->setValue(previewRing->titleFont().pixelSize());
+    auto *valueFontSizeSpin = new QSpinBox(propertiesCard);
+    valueFontSizeSpin->setRange(6, 96);
+    valueFontSizeSpin->setValue(previewRing->valueFont().pixelSize());
+    auto *textSpacingSpin = new QSpinBox(propertiesCard);
+    textSpacingSpin->setRange(0, 40);
+    textSpacingSpin->setValue(previewRing->textSpacing());
+    auto *titleColorButton = new ExColorPickerButton(propertiesCard);
+    QColor defaultTitleColor = previewRing->palette().color(QPalette::Text);
+    defaultTitleColor.setAlphaF(defaultTitleColor.alphaF() * 0.72);
+    titleColorButton->setSelectedColor(defaultTitleColor);
+    auto *valueColorButton = new ExColorPickerButton(propertiesCard);
+    valueColorButton->setSelectedColor(previewRing->palette().color(QPalette::Text));
+
     auto *busyCheck = new QCheckBox(tr("不确定进度"), propertiesCard);
-    auto *textVisibleCheck = new QCheckBox(tr("显示百分比"), propertiesCard);
+    auto *textVisibleCheck = new QCheckBox(tr("显示中央文字"), propertiesCard);
     textVisibleCheck->setChecked(previewRing->isTextVisible());
     auto *disabledCheck = new QCheckBox(tr("禁用状态"), propertiesCard);
     auto *resetButton = new QPushButton(tr("恢复默认属性"), propertiesCard);
@@ -211,6 +242,13 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     form->addRow(tr("环与 Track 宽度"), progressThicknessSpin);
     form->addRow(tr("进度环颜色"), ringColorButton);
     form->addRow(tr("Track 颜色"), trackColorButton);
+    form->addRow(tr("标题"), titleEdit);
+    form->addRow(tr("数值格式"), formatEdit);
+    form->addRow(tr("标题字号"), titleFontSizeSpin);
+    form->addRow(tr("数值字号"), valueFontSizeSpin);
+    form->addRow(tr("文字间距"), textSpacingSpin);
+    form->addRow(tr("标题颜色"), titleColorButton);
+    form->addRow(tr("数值颜色"), valueColorButton);
     form->addRow(busyCheck);
     form->addRow(textVisibleCheck);
     form->addRow(disabledCheck);
@@ -256,6 +294,42 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
                 setRingTrackColor(previewRing, color);
                 refreshRing();
             });
+    connect(titleEdit, &QLineEdit::textChanged, previewRing, &ExProgressRing::setTitle);
+    connect(formatEdit, &QLineEdit::textChanged, previewRing, &QProgressBar::setFormat);
+    connect(titleFontSizeSpin,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            previewRing,
+            [previewRing](int size)
+            {
+                QFont font = previewRing->titleFont();
+                if (font == QFont())
+                    font = previewRing->font();
+                font.setPixelSize(size);
+                previewRing->setTitleFont(font);
+            });
+    connect(valueFontSizeSpin,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            previewRing,
+            [previewRing](int size)
+            {
+                QFont font = previewRing->valueFont();
+                if (font == QFont())
+                    font = previewRing->font();
+                font.setPixelSize(size);
+                previewRing->setValueFont(font);
+            });
+    connect(textSpacingSpin,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            previewRing,
+            &ExProgressRing::setTextSpacing);
+    connect(titleColorButton,
+            &ExColorPickerButton::selectedColorChanged,
+            previewRing,
+            &ExProgressRing::setTitleColor);
+    connect(valueColorButton,
+            &ExColorPickerButton::selectedColorChanged,
+            previewRing,
+            &ExProgressRing::setValueColor);
     connect(busyCheck, &QCheckBox::toggled, previewRing, [previewRing, valueSlider](bool busy)
             {
                 if (busy)
@@ -275,12 +349,31 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     connect(resetButton,
             &QPushButton::clicked,
             previewRing,
-            [previewRing, indeterminateDurationSpin, progressThicknessSpin, ringColorButton, trackColorButton, refreshRing]
+            [previewRing,
+             indeterminateDurationSpin,
+             progressThicknessSpin,
+             ringColorButton,
+             trackColorButton,
+             titleEdit,
+             formatEdit,
+             titleFontSizeSpin,
+             valueFontSizeSpin,
+             textSpacingSpin,
+             titleColorButton,
+             valueColorButton,
+             refreshRing]
             {
                 const QSignalBlocker durationBlocker(indeterminateDurationSpin);
                 const QSignalBlocker progressBlocker(progressThicknessSpin);
                 const QSignalBlocker ringColorBlocker(ringColorButton);
                 const QSignalBlocker trackColorBlocker(trackColorButton);
+                const QSignalBlocker titleBlocker(titleEdit);
+                const QSignalBlocker formatBlocker(formatEdit);
+                const QSignalBlocker titleFontBlocker(titleFontSizeSpin);
+                const QSignalBlocker valueFontBlocker(valueFontSizeSpin);
+                const QSignalBlocker spacingBlocker(textSpacingSpin);
+                const QSignalBlocker titleColorBlocker(titleColorButton);
+                const QSignalBlocker valueColorBlocker(valueColorButton);
                 indeterminateDurationSpin->setValue(ProgressBarRingDefaultIndeterminateDuration);
                 progressThicknessSpin->setValue(ProgressBarRingDefaultThickness);
                 previewRing->setProperty(ProgressBarRingIndeterminateDurationProperty,
@@ -290,6 +383,27 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
                 setRingTrackColor(previewRing, QColor(Qt::gray));
                 ringColorButton->setSelectedColor(ringAccentColor(previewRing));
                 trackColorButton->setSelectedColor(QColor(Qt::gray));
+                titleEdit->setText(ProgressRingShowcaseWidget::tr("已完成"));
+                formatEdit->setText(QStringLiteral("%p%"));
+                titleFontSizeSpin->setValue(12);
+                valueFontSizeSpin->setValue(24);
+                textSpacingSpin->setValue(4);
+                QFont titleFont = previewRing->font();
+                titleFont.setPixelSize(12);
+                previewRing->setTitleFont(titleFont);
+                QFont valueFont = previewRing->font();
+                valueFont.setPixelSize(24);
+                valueFont.setWeight(QFont::DemiBold);
+                previewRing->setValueFont(valueFont);
+                previewRing->setTitle(ProgressRingShowcaseWidget::tr("已完成"));
+                previewRing->setFormat(QStringLiteral("%p%"));
+                previewRing->setTextSpacing(4);
+                previewRing->setTitleColor(QColor());
+                previewRing->setValueColor(QColor());
+                QColor titleColor = previewRing->palette().color(QPalette::Text);
+                titleColor.setAlphaF(titleColor.alphaF() * 0.72);
+                titleColorButton->setSelectedColor(titleColor);
+                valueColorButton->setSelectedColor(previewRing->palette().color(QPalette::Text));
                 refreshRing();
             });
 
@@ -298,13 +412,13 @@ ProgressRingShowcaseWidget::ProgressRingShowcaseWidget(QWidget *parent)
     code->setMaximumHeight(128);
     code->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     code->setPlainText(QStringLiteral(
-        "bar->setProperty(ProgressBarStyleProperty, ProgressBarRing);\n"
-        "bar->setProperty(ProgressBarRingIndeterminateDurationProperty, 800);\n"
-        "bar->setProperty(ProgressBarThicknessProperty, 8.0);\n"
-        "auto palette = bar->palette();\n"
-        "palette.setColor(QPalette::Accent, QColor(\"#7F5AF0\"));\n"
-        "palette.setColor(QPalette::Mid, QColor(\"#60808080\"));\n"
-        "bar->setPalette(palette);"));
+        "auto *ring = new ExProgressRing(parent);\n"
+        "ring->setRange(0, 100);\n"
+        "ring->setValue(65);\n"
+        "ring->setTitle(tr(\"Completed\"));\n"
+        "ring->setFormat(QStringLiteral(\"%p%\"));\n"
+        "ring->setProperty(ProgressBarThicknessProperty, 8.0);\n"
+        "// Optional: ring->setCenterWidget(customWidget);"));
     propertiesLayout->addWidget(code);
     mainLayout->addWidget(propertiesCard);
     mainLayout->addStretch();

@@ -85,6 +85,8 @@ private:
     void setupSegoeIconGalleryPage();
     void setupProgressRingPage();
     void setupAboutPage();
+    void setupChangelogTimelinePage();
+    void setupSystemResourcesPage();
     void setupDialogsPage();
     void setupColorPickerPage();
     void setupExWidgetsPages();

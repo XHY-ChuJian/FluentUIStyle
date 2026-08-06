@@ -19,6 +19,15 @@ set(GALLERY_SOURCES
     radialgaugeshowcasewidget.h
     progressringshowcasewidget.cpp
     progressringshowcasewidget.h
+    timelineshowcasewidget.cpp
+    timelineshowcasewidget.h
+    changelogtimelinewidget.cpp
+    changelogtimelinewidget.h
+    systemresourceswidget.cpp
+    systemresourceswidget.h
+    systemresources/systemresourceprovider.cpp
+    systemresources/systemresourceprovider.h
+    systemresources/systemresourcesnapshot.h
     aboutprojectwidget.cpp
     aboutprojectwidget.h
     segoeicongallerywidget.cpp
@@ -77,6 +86,7 @@ endif()
 
 if(WIN32)
     target_compile_definitions(Gallery PRIVATE FLUENT_USE_QT_STYLE GALLERY_ENABLE_I18N)
+    target_link_libraries(Gallery PRIVATE iphlpapi pdh)
 else()
     target_link_libraries(Gallery PRIVATE FluentUI3Style)
     set_target_properties(Gallery PROPERTIES
@@ -132,6 +142,10 @@ if(WIN32 AND GALLERY_LUPDATE)
             "${CMAKE_CURRENT_SOURCE_DIR}/liquidgaugeshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/radialgaugeshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/progressringshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/timelineshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/changelogtimelinewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/systemresourceswidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/systemresources/systemresourceprovider.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/applanguage.cpp"
             -ts

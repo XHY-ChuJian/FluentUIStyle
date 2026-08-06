@@ -1,11 +1,14 @@
 #include "exradialgauge.h"
 
 #include <QAbstractAnimation>
+#include <QBrush>
+#include <QConicalGradient>
 #include <QEasingCurve>
 #include <QFontMetricsF>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPolygonF>
 #include <QSizePolicy>
 #include <QStyleOptionSlider>
@@ -135,8 +138,12 @@ ExRadialGauge::ExRadialGauge( QWidget* parent )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, labelsVisible, setLabelsVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, hubVisible, setHubVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, valueVisible, setValueVisible )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, progressGradientEnabled, setProgressGradientEnabled )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, sweepAreaVisible, setSweepAreaVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QString, title, setTitle )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QString, unit, setUnit )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, progressGradientStartColor, setProgressGradientStartColor )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, progressGradientEndColor, setProgressGradientEndColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, needleColor, setNeedleColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, tickColor, setTickColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, labelColor, setLabelColor )
@@ -152,8 +159,21 @@ void ExRadialGauge::setScaleMode( ScaleMode mode )
     }
 
     m_scaleMode = mode;
+    const Qt::PenCapStyle defaultCapStyle = mode == ProgressScale ? Qt::RoundCap : Qt::FlatCap;
+    const bool trackCapStyleDidChange = m_trackCapStyle != defaultCapStyle;
+    const bool ringCapStyleDidChange = m_ringCapStyle != defaultCapStyle;
+    m_trackCapStyle = defaultCapStyle;
+    m_ringCapStyle = defaultCapStyle;
     update();
     emit scaleModeChanged( mode );
+    if ( trackCapStyleDidChange )
+    {
+        emit trackCapStyleChanged( m_trackCapStyle );
+    }
+    if ( ringCapStyleDidChange )
+    {
+        emit ringCapStyleChanged( m_ringCapStyle );
+    }
 }
 
 void ExRadialGauge::setNeedleStyle( NeedleStyle style )
@@ -225,6 +245,24 @@ void ExRadialGauge::setValueAnimationDuration( int duration )
     }
     update();
     emit valueAnimationDurationChanged( duration );
+}
+
+void ExRadialGauge::setSweepAreaOpacity( qreal opacity )
+{
+    if ( !qIsFinite( opacity ) )
+    {
+        return;
+    }
+
+    opacity = qBound( 0.0, opacity, 1.0 );
+    if ( qFuzzyCompare( m_sweepAreaOpacity + 1.0, opacity + 1.0 ) )
+    {
+        return;
+    }
+
+    m_sweepAreaOpacity = opacity;
+    update();
+    emit sweepAreaOpacityChanged( opacity );
 }
 
 void ExRadialGauge::setMinimumAngle( qreal angle )
@@ -660,13 +698,64 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
     QPainter painter( this );
     painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
 
+    const QColor progressStartColor = enabled
+                                          ? ( m_progressGradientStartColor.isValid()
+                                                  ? m_progressGradientStartColor
+                                                  : paletteAccentColor.lighter( 135 ) )
+                                          : paletteAccentColor;
+    const QColor progressEndColor = enabled && m_progressGradientEndColor.isValid()
+                                        ? m_progressGradientEndColor
+                                        : paletteAccentColor;
+    const auto makeAngularGradient = [&]( qreal sectionStartAngle,
+                                          qreal sectionSpan,
+                                          const QColor& startColor,
+                                          const QColor& endColor )
+    {
+        qreal gradientAngle = std::fmod( sectionStartAngle + sectionSpan, FullCircle );
+        if ( gradientAngle < 0.0 )
+        {
+            gradientAngle += FullCircle;
+        }
+
+        const qreal activeStop = qBound( 0.0, -sectionSpan / FullCircle, 1.0 );
+        QConicalGradient gradient( center, gradientAngle );
+        gradient.setColorAt( 0.0, endColor );
+        gradient.setColorAt( activeStop, startColor );
+        if ( activeStop < 1.0 )
+        {
+            gradient.setColorAt( 1.0, endColor );
+        }
+        return QBrush( gradient );
+    };
+
+    if ( m_scaleMode == ProgressScale && m_sweepAreaVisible && fraction > 0.0 && m_sweepAreaOpacity > 0.0 )
+    {
+        QColor areaStartColor = progressStartColor;
+        QColor areaEndColor = progressEndColor;
+        areaStartColor.setAlphaF( areaStartColor.alphaF() * m_sweepAreaOpacity );
+        areaEndColor.setAlphaF( areaEndColor.alphaF() * m_sweepAreaOpacity );
+
+        const qreal areaStartAngle = 90.0 - m_minimumAngle;
+        const qreal areaSpan = -sweep * fraction;
+        QPainterPath sweepArea;
+        sweepArea.moveTo( center );
+        sweepArea.lineTo( pointAtAngle( center, radius, m_minimumAngle ) );
+        sweepArea.arcTo( scaleRect, areaStartAngle, areaSpan );
+        sweepArea.closeSubpath();
+        painter.fillPath( sweepArea,
+                          makeAngularGradient( areaStartAngle,
+                                               areaSpan,
+                                               areaStartColor,
+                                               areaEndColor ) );
+    }
+
     QPen trackPen( trackColor, m_scaleWidth, Qt::SolidLine, m_trackCapStyle );
     painter.setPen( trackPen );
     painter.drawArc( scaleRect, qRound( trackStartAngle * 16.0 ), qRound( trackSpan * 16.0 ) );
 
     const auto drawScaleSection = [&]( qreal firstFraction,
                                        qreal secondFraction,
-                                       const QColor& color,
+                                       const QBrush& brush,
                                        Qt::PenCapStyle capStyle )
     {
         firstFraction = qBound( 0.0, firstFraction, 1.0 );
@@ -691,13 +780,28 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
         {
             sectionSpan -= endpointExtension;
         }
-        painter.setPen( QPen( color, m_scaleWidth, Qt::SolidLine, capStyle ) );
+        painter.setPen( QPen( brush, m_scaleWidth, Qt::SolidLine, capStyle ) );
         painter.drawArc( scaleRect, qRound( sectionStartAngle * 16.0 ), qRound( sectionSpan * 16.0 ) );
     };
 
     if ( m_scaleMode == ProgressScale && fraction > 0.0 )
     {
-        drawScaleSection( 0.0, fraction, paletteAccentColor, m_ringCapStyle );
+        QBrush progressBrush( paletteAccentColor );
+        if ( enabled && m_progressGradientEnabled )
+        {
+            const qreal sectionStartAngle = 90.0 - m_minimumAngle + endpointExtension;
+            qreal sectionSpan = -( sweep * fraction + endpointExtension );
+            if ( qFuzzyCompare( fraction, 1.0 ) )
+            {
+                sectionSpan -= endpointExtension;
+            }
+
+            progressBrush = makeAngularGradient( sectionStartAngle,
+                                                  sectionSpan,
+                                                  progressStartColor,
+                                                  progressEndColor );
+        }
+        drawScaleSection( 0.0, fraction, progressBrush, m_ringCapStyle );
     }
     else if ( m_scaleMode == RangeScale )
     {
@@ -715,7 +819,7 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
             }
             drawScaleSection( valueFraction( rangeItem->fromValue() ),
                               valueFraction( rangeItem->toValue() ),
-                              rangeColor,
+                              QBrush( rangeColor ),
                               m_ringCapStyle );
         }
     }
@@ -852,9 +956,13 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
         painter.setPen( valuePaintColor );
 
         const QFontMetricsF metrics( valueFont );
-        const qreal valueCenterY = m_valuePosition == CenterValue
-                                       ? center.y() + radius * 0.38
-                                       : center.y() + radius * 0.72;
+        const qreal titleOffset = m_title.isEmpty()
+                                      ? 0.0
+                                      : qBound( 2.0, metrics.height() * 0.1, 5.0 );
+        const qreal valueCenterY = ( m_valuePosition == CenterValue
+                                         ? center.y() + radius * 0.38
+                                         : center.y() + radius * 0.72 )
+                                   + titleOffset;
         const QRectF valueRect( center.x() - radius * 0.62,
                                 valueCenterY - metrics.height() * 0.5,
                                 radius * 1.24,
@@ -872,7 +980,7 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
         if ( !m_title.isEmpty() )
         {
             QFont titleFont = font();
-            titleFont.setPixelSize( qMax( 8, qRound( valueFont.pixelSize() * 0.42 ) ) );
+            titleFont.setPixelSize( qMax( 8, qRound( valueFont.pixelSize() * 0.48 ) ) );
             titleFont.setWeight( QFont::DemiBold );
             painter.setFont( titleFont );
             const QFontMetricsF titleMetrics( titleFont );
