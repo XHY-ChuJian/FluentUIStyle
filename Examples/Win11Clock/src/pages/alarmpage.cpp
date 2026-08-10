@@ -1,6 +1,5 @@
 #include "pages/alarmpage.h"
 
-#include <ExMessageBox.h>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -13,6 +12,7 @@
 #include "common/fluenthelpers.h"
 #include "dialogs/alarmeditdialog.h"
 #include "widgets/alarmcard.h"
+#include "exmessagebox.h"
 
 AlarmPage::AlarmPage( QWidget* parent )
     : QWidget( parent )
