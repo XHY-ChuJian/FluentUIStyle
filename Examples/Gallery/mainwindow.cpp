@@ -4,12 +4,14 @@
 //=============================================================================
 
 #include "mainwindow.h"
+#include "borderbeamshowcasewidget.h"
 #include "changelogtimelinewidget.h"
 #include "liquidgaugeshowcasewidget.h"
 #include "progressringshowcasewidget.h"
 #include "radialgaugeshowcasewidget.h"
 #include "systemresourceswidget.h"
 #include "timelineshowcasewidget.h"
+#include "audiolevelmetershowcasewidget.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "audiomaticplayerwidget.h"
@@ -1312,6 +1314,14 @@ void MainWindow::setupExWidgetsPages()
     rangeSliderPage->setObjectName(QStringLiteral("pageExRangeSlider"));
     ui->stackedWidget->addWidget(rangeSliderPage);
 
+    auto *borderBeamPage = new BorderBeamShowcaseWidget(ui->stackedWidget);
+    borderBeamPage->setObjectName(QStringLiteral("pageExBorderBeam"));
+    ui->stackedWidget->addWidget(borderBeamPage);
+
+    auto *audioLevelMeterPage = new AudioLevelMeterShowcaseWidget(ui->stackedWidget);
+    audioLevelMeterPage->setObjectName(QStringLiteral("pageExAudioLevelMeter"));
+    ui->stackedWidget->addWidget(audioLevelMeterPage);
+
     auto *radialGaugePage = new RadialGaugeShowcaseWidget(ui->stackedWidget);
     radialGaugePage->setObjectName(QStringLiteral("pageExRadialGauge"));
     ui->stackedWidget->addWidget(radialGaugePage);
@@ -1364,6 +1374,10 @@ void MainWindow::addExWidgetsNavigation()
 
     QWidget *colorPickerPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageColorPicker"));
     const int colorPickerPageIndex = colorPickerPage ? ui->stackedWidget->indexOf(colorPickerPage) : -1;
+    QWidget *borderBeamPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExBorderBeam"));
+    const int borderBeamPageIndex = borderBeamPage ? ui->stackedWidget->indexOf(borderBeamPage) : -1;
+    QWidget *audioLevelMeterPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExAudioLevelMeter"));
+    const int audioLevelMeterPageIndex = audioLevelMeterPage ? ui->stackedWidget->indexOf(audioLevelMeterPage) : -1;
     QWidget *radialGaugePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExRadialGauge"));
     const int radialGaugePageIndex = radialGaugePage ? ui->stackedWidget->indexOf(radialGaugePage) : -1;
     QWidget *liquidGaugePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExLiquidGauge"));
@@ -1385,6 +1399,14 @@ void MainWindow::addExWidgetsNavigation()
     };
 
     addExWidgetItem(QStringLiteral("ExRangeSlider"), rangeSliderPageIndex);
+    if (borderBeamPageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExBorderBeam"), borderBeamPageIndex);
+    }
+    if (audioLevelMeterPageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExAudioLevelMeter"), audioLevelMeterPageIndex);
+    }
     if (radialGaugePageIndex >= 0)
     {
         addExWidgetItem(QStringLiteral("ExRadialGauge"), radialGaugePageIndex);

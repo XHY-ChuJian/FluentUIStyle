@@ -11,6 +11,10 @@ set(GALLERY_SOURCES
     dialogshowcasewidget.h
     colorshowcasewidget.cpp
     colorshowcasewidget.h
+    borderbeamshowcasewidget.cpp
+    borderbeamshowcasewidget.h
+    audiolevelmetershowcasewidget.cpp
+    audiolevelmetershowcasewidget.h
     rangeslidershowcasewidget.cpp
     rangeslidershowcasewidget.h
     liquidgaugeshowcasewidget.cpp
@@ -140,6 +144,8 @@ if(WIN32 AND GALLERY_LUPDATE)
             "${CMAKE_CURRENT_SOURCE_DIR}/tabshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/dialogshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/colorshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/borderbeamshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/audiolevelmetershowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/rangeslidershowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/liquidgaugeshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/radialgaugeshowcasewidget.cpp"

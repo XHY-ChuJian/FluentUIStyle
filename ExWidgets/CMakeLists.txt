@@ -1,5 +1,11 @@
 set(EXWIDGETS_SOURCES
     exwidgetsmacros.h
+    exborderbeam.cpp
+    exborderbeam.h
+    exborderbeambutton.cpp
+    exborderbeambutton.h
+    exaudiolevelmeter.cpp
+    exaudiolevelmeter.h
     colorgradientslider.cpp
     colorgradientslider.h
     exrangeslider.cpp

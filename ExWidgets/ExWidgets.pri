@@ -1,6 +1,9 @@
 include($$PWD/../3rd/kissfft/kissfft.pri)
 
 SOURCES += \
+    $$PWD/exborderbeam.cpp \
+    $$PWD/exborderbeambutton.cpp \
+    $$PWD/exaudiolevelmeter.cpp \
     $$PWD/colorgradientslider.cpp \
     $$PWD/exrangeslider.cpp \
     $$PWD/excolorpicker.cpp \
@@ -23,6 +26,9 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/exwidgetsmacros.h \
+    $$PWD/exborderbeam.h \
+    $$PWD/exborderbeambutton.h \
+    $$PWD/exaudiolevelmeter.h \
     $$PWD/colorgradientslider.h \
     $$PWD/exrangeslider.h \
     $$PWD/excolorpicker.h \

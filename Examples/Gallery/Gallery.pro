@@ -39,6 +39,8 @@ SOURCES += $$PWD/main.cpp \
            $$PWD/aboutprojectwidget.cpp \
            $$PWD/segoeicongallerywidget.cpp \
            $$PWD/colorshowcasewidget.cpp \
+           $$PWD/borderbeamshowcasewidget.cpp \
+           $$PWD/audiolevelmetershowcasewidget.cpp \
            $$PWD/rangeslidershowcasewidget.cpp \
            $$PWD/liquidgaugeshowcasewidget.cpp \
            $$PWD/radialgaugeshowcasewidget.cpp \
@@ -56,6 +58,8 @@ HEADERS += $$PWD/mainwindow.h \
            $$PWD/aboutprojectwidget.h \
            $$PWD/segoeicongallerywidget.h \
            $$PWD/colorshowcasewidget.h \
+           $$PWD/borderbeamshowcasewidget.h \
+           $$PWD/audiolevelmetershowcasewidget.h \
            $$PWD/rangeslidershowcasewidget.h \
            $$PWD/liquidgaugeshowcasewidget.h \
            $$PWD/radialgaugeshowcasewidget.h \

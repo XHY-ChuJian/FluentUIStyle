@@ -36,6 +36,8 @@ Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Fr
 | Widget | Header | Description |
 |--------|--------|-------------|
 | `ExRangeSlider` | `exrangeslider.h` | Dual-handle range slider |
+| `ExBorderBeam` / `ExBorderBeamButton` | `exborderbeam.h` / `exborderbeambutton.h` | Animated gradient border container and button with Light/Dark themes |
+| `ExAudioLevelMeter` | `exaudiolevelmeter.h` | Mono/stereo dBFS level meter with scale, decay, and peak hold |
 | `ExColorPicker` | `excolorpicker.h` | Full color picker dialog |
 | `ExColorPickerButton` | `excolorpickerbutton.h` | Tool button + flyout picker |
 | `ExMessageBox` | `exmessagebox.h` | Fluent-styled `QMessageBox` |

@@ -65,6 +65,8 @@ LIBS += -lExWidgets
 | 控件 | 头文件 | 说明 | Gallery 演示 |
 |------|--------|------|--------------|
 | `ExRangeSlider` | `exrangeslider.h` | WinUI3 双端范围滑块 | ExWidgets → ExRangeSlider |
+| `ExBorderBeam` / `ExBorderBeamButton` | `exborderbeam.h` / `exborderbeambutton.h` | 支持 Light/Dark 配置的动画渐变边框容器和按钮 | ExWidgets → ExBorderBeam |
+| `ExAudioLevelMeter` | `exaudiolevelmeter.h` | 支持单声道/立体声、dBFS 刻度、峰值保持和衰减的音频电平表 | ExWidgets → ExAudioLevelMeter |
 | `ExColorPicker` | `excolorpicker.h` | CommunityToolkit 取色器 | ExWidgets → ExColorPicker |
 | `ExColorPickerButton` | `excolorpickerbutton.h` | 带 Flyout 的取色按钮 | ExColorPicker 页内 |
 | `ExMessageBox` | `exmessagebox.h` | Fluent 风格 `QMessageBox` | Dialogs 页 |
@@ -83,6 +85,34 @@ LIBS += -lExWidgets
 | `ExTabWidget` | `extabwidget.h` | 带动画的 `QTabWidget` | Tab 演示 |
 | `ColorGradientSlider` | `colorgradientslider.h` | 渐变轨道滑条（ExColorPicker 内部） | ExColorPicker 内部 |
 | `FluentTitleBar` / `FluentWindowFrame` | `fluenttitlebar.h` / `fluentwindowframe.h` | 可选 QWindowKit 无边框窗口组件 | Gallery / AudiomaticMini |
+
+---
+
+## ExAudioLevelMeter
+
+`ExAudioLevelMeter` 是只读电平表，不用于调节音量。可直接提交 dBFS，也可提交范围为 `0.0 ~ 1.0` 的线性幅度：
+
+```cpp
+#include "exaudiolevelmeter.h"
+
+auto *meter = new ExAudioLevelMeter(this);
+meter->setScalePosition(ExAudioLevelMeter::CenterScale);
+
+meter->setStereoLevels(leftPeakDb, rightPeakDb);
+// 或：meter->setLinearLevels({leftPeak, rightPeak});
+```
+
+刻度可按间隔、固定数量或自定义数值生成：
+
+```cpp
+meter->setScaleMode(ExAudioLevelMeter::CustomScale);
+meter->setCustomScaleValues({0, -3, -6, -12, -24, -48, -60});
+meter->setScaleUnit("dBFS");
+meter->setScaleUnitVisible(true);
+meter->setScalePrecision(0);
+```
+
+`setLevel()` / `setLevels()` / `setLinearLevels()` 支持从普通工作线程调用，控件会把更新投递到 GUI 线程。多声道数据会自动调整 `channelCount`（最多 8 声道）。如果数据来自不允许分配内存的硬实时音频回调，应先写入原子/无锁状态，再由工作线程提交给控件。
 
 ---
 
