@@ -404,9 +404,9 @@ QPainterPath ExLiquidGauge::shapePath( const QRectF& bounds ) const
         break;
     }
     case TriangleShape:
-        path.addPolygon( QPolygonF{QPointF( bounds.center().x(), bounds.top() ),
+        path.addPolygon( QPolygonF{QVector<QPointF>{QPointF( bounds.center().x(), bounds.top() ),
                                    QPointF( bounds.right(), bounds.bottom() ),
-                                   QPointF( bounds.left(), bounds.bottom() )} );
+                                   QPointF( bounds.left(), bounds.bottom() )} });
         path.closeSubpath();
         break;
     case CircleShape:

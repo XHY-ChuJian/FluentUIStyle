@@ -11,6 +11,7 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <exmessagebox.h>
+#include <QVariant>
 
 TimerPage::TimerPage(QWidget* parent)
     : QWidget(parent)

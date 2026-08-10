@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QVariant>
 
 AlarmCard::AlarmCard(const QTime& time,
                      const QString& name,

@@ -8,6 +8,7 @@
 #include <QScrollArea>
 #include <QTime>
 #include <QVBoxLayout>
+#include <QVariant>
 
 #include "common/fluenthelpers.h"
 #include "dialogs/alarmeditdialog.h"
