@@ -17,6 +17,10 @@ set_target_properties(kissfft PROPERTIES
     C_STANDARD 99
 )
 
+if(UNIX AND NOT APPLE)
+    set_target_properties(kissfft PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
+
 target_include_directories(kissfft PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
