@@ -1,3 +1,12 @@
+【更新内容2026-8-10】
+1.新增 ExBorderBeam / ExBorderBeamButton 动态渐变边框控件，支持 Light / Dark 主题、方向、光束数量与颜色配置
+2.新增 ExAudioLevelMeter 音频电平表控件，支持多声道、dBFS 刻度、峰值保持与衰减动画
+3.Gallery 新增 ExAudioLevelMeter 展示页，支持本地音乐播放、进度调节和音量控制
+4.使用解码后的实时 PCM 电平联动单声道、立体声及实时属性预览
+5.ExAudioLevelMeter 新增 Light / Dark 两套默认配色并支持主题自动切换
+6.ExAudioLevelMeter 实时属性编辑器改为基础、刻度、动画、颜色四个 Tab 页
+7.修复 Qt 6.8+ 菜单与下拉弹窗外阴影显示问题
+
 【更新内容2026-8-6】
 1.新增支持水平/垂直布局的 ExTimeline 时间轴控件
 2.扩展 ExRadialGauge 仪表盘功能

@@ -4,22 +4,38 @@
 #include <excolorpickerbutton.h>
 #include <excombobox.h>
 
+#include <QApplication>
+#include <QByteArray>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFont>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QRandomGenerator>
 #include <QScrollArea>
+#include <QSlider>
 #include <QSpinBox>
+#include <QStandardPaths>
+#include <QTabWidget>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QtMath>
 
 #include <cmath>
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#include <audiospectrumanalyzer.h>
+
+#include <QAudioOutput>
+#include <QMediaPlayer>
+#include <QUrl>
+#endif
 
 namespace
 {
@@ -42,14 +58,65 @@ QLabel* makeTitle( const QString& text, QWidget* parent )
     return label;
 }
 
-void useReferenceColors( ExAudioLevelMeter* meter )
+bool usesDarkTheme()
 {
-    meter->setBackgroundColor( QColor( QStringLiteral( "#111111" ) ) );
-    meter->setActiveColor( QColor( QStringLiteral( "#FF8C00" ) ) );
-    meter->setInactiveColor( QColor( QStringLiteral( "#292929" ) ) );
-    meter->setScaleColor( QColor( QStringLiteral( "#5A5A5A" ) ) );
-    meter->setPeakColor( QColor( QStringLiteral( "#F5F5F5" ) ) );
+    const QVariant scheme = qApp->property( "_q_colorscheme" );
+    return scheme.isValid() ? scheme.toInt() == 1
+                            : qApp->palette().color( QPalette::Window ).lightness() < 128;
 }
+
+void useThemeColors( ExAudioLevelMeter* meter )
+{
+    if ( usesDarkTheme() )
+    {
+        meter->setBackgroundColor( QColor( QStringLiteral( "#111111" ) ) );
+        meter->setActiveColor( QColor( QStringLiteral( "#FF9F2D" ) ) );
+        meter->setInactiveColor( QColor( QStringLiteral( "#292929" ) ) );
+        meter->setWarningColor( QColor( QStringLiteral( "#FFD166" ) ) );
+        meter->setClipColor( QColor( QStringLiteral( "#FF5A5F" ) ) );
+        meter->setScaleColor( QColor( QStringLiteral( "#A0A0A0" ) ) );
+        meter->setPeakColor( QColor( QStringLiteral( "#FFFFFF" ) ) );
+        return;
+    }
+
+    meter->setBackgroundColor( QColor( QStringLiteral( "#F4F4F4" ) ) );
+    meter->setActiveColor( QColor( QStringLiteral( "#C85D00" ) ) );
+    meter->setInactiveColor( QColor( QStringLiteral( "#D8D8D8" ) ) );
+    meter->setWarningColor( QColor( QStringLiteral( "#A15C00" ) ) );
+    meter->setClipColor( QColor( QStringLiteral( "#C42B1C" ) ) );
+    meter->setScaleColor( QColor( QStringLiteral( "#5D5D5D" ) ) );
+    meter->setPeakColor( QColor( QStringLiteral( "#202020" ) ) );
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+QString formatPlaybackTime( qint64 milliseconds )
+{
+    const qint64 totalSeconds = qMax<qint64>( 0, milliseconds ) / 1000;
+    return QStringLiteral( "%1:%2" )
+        .arg( totalSeconds / 60 )
+        .arg( totalSeconds % 60, 2, 10, QLatin1Char( '0' ) );
+}
+
+qreal pcmLevelDecibels( const QByteArray& pcmData )
+{
+    const auto* samples = reinterpret_cast<const qint16*>( pcmData.constData() );
+    const qsizetype sampleCount = pcmData.size() / qsizetype( sizeof( qint16 ) );
+    if ( sampleCount <= 0 )
+    {
+        return -60.0;
+    }
+
+    long double sumSquares = 0.0;
+    for ( qsizetype i = 0; i < sampleCount; ++i )
+    {
+        const long double sample = static_cast<long double>( samples[i] ) / 32768.0L;
+        sumSquares += sample * sample;
+    }
+
+    const qreal rms = static_cast<qreal>( std::sqrt( sumSquares / sampleCount ) );
+    return rms > 0.000001 ? qBound( -60.0, 20.0 * std::log10( rms ), 0.0 ) : -60.0;
+}
+#endif
 
 } // namespace
 
@@ -86,6 +153,40 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     description->setWordWrap( true );
     mainLayout->addWidget( description );
 
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    auto* playerCard = makeCard( content );
+    auto* playerLayout = new QVBoxLayout( playerCard );
+    playerLayout->setContentsMargins( 16, 16, 16, 16 );
+    playerLayout->setSpacing( 10 );
+    playerLayout->addWidget( makeTitle( tr( "音乐播放与实时电平" ), playerCard ) );
+
+    auto* trackLabel = new QLabel( tr( "请选择本地音乐文件" ), playerCard );
+    trackLabel->setTextInteractionFlags( Qt::TextSelectableByMouse );
+    playerLayout->addWidget( trackLabel );
+
+    auto* transportLayout = new QHBoxLayout;
+    auto* openButton = new QPushButton( tr( "打开音乐" ), playerCard );
+    auto* playButton = new QPushButton( tr( "播放" ), playerCard );
+    playButton->setEnabled( false );
+    auto* positionSlider = new QSlider( Qt::Horizontal, playerCard );
+    positionSlider->setRange( 0, 0 );
+    auto* timeLabel = new QLabel( QStringLiteral( "0:00 / 0:00" ), playerCard );
+    auto* volumeLabel = new QLabel( tr( "音量" ), playerCard );
+    auto* volumeSlider = new QSlider( Qt::Horizontal, playerCard );
+    volumeSlider->setRange( 0, 100 );
+    volumeSlider->setValue( 70 );
+    volumeSlider->setFixedWidth( 110 );
+    transportLayout->addWidget( openButton );
+    transportLayout->addWidget( playButton );
+    transportLayout->addWidget( positionSlider, 1 );
+    transportLayout->addWidget( timeLabel );
+    transportLayout->addSpacing( 8 );
+    transportLayout->addWidget( volumeLabel );
+    transportLayout->addWidget( volumeSlider );
+    playerLayout->addLayout( transportLayout );
+    mainLayout->addWidget( playerCard );
+#endif
+
     auto* examplesCard = makeCard( content );
     auto* examplesLayout = new QVBoxLayout( examplesCard );
     examplesLayout->setContentsMargins( 16, 16, 16, 16 );
@@ -104,7 +205,7 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     monoMeter->setScalePosition( ExAudioLevelMeter::RightScale );
     monoMeter->setChannelLabelsVisible( false );
     monoMeter->setFixedSize( 105, 330 );
-    useReferenceColors( monoMeter );
+    useThemeColors( monoMeter );
     monoColumn->addWidget( monoLabel );
     monoColumn->addWidget( monoMeter );
     metersRow->addLayout( monoColumn );
@@ -115,13 +216,91 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     auto* stereoMeter = new ExAudioLevelMeter( examplesCard );
     stereoMeter->setScalePosition( ExAudioLevelMeter::CenterScale );
     stereoMeter->setFixedSize( 190, 330 );
-    useReferenceColors( stereoMeter );
+    useThemeColors( stereoMeter );
     stereoColumn->addWidget( stereoLabel );
     stereoColumn->addWidget( stereoMeter );
     metersRow->addLayout( stereoColumn );
     metersRow->addStretch();
     examplesLayout->addLayout( metersRow );
     mainLayout->addWidget( examplesCard );
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    auto* mediaPlayer = new QMediaPlayer( this );
+    auto* audioOutput = new QAudioOutput( this );
+    auto* levelAnalyzer = new AudioSpectrumAnalyzer( this );
+    audioOutput->setVolume( volumeSlider->value() / 100.0 );
+    mediaPlayer->setAudioOutput( audioOutput );
+
+    connect( openButton, &QPushButton::clicked, this, [=]
+             {
+                 const QString fileName = QFileDialog::getOpenFileName(
+                     this,
+                     tr( "打开音乐" ),
+                     QStandardPaths::writableLocation( QStandardPaths::MusicLocation ),
+                     tr( "音频文件 (*.mp3 *.flac *.wav *.ogg *.aac *.m4a *.wma *.opus);;所有文件 (*.*)" ) );
+                 if ( fileName.isEmpty() )
+                 {
+                     return;
+                 }
+
+                 const QUrl source = QUrl::fromLocalFile( fileName );
+                 mediaPlayer->setSource( source );
+                 levelAnalyzer->setSource( source );
+                 trackLabel->setText( QFileInfo( fileName ).fileName() );
+                 playButton->setEnabled( true );
+                 mediaPlayer->play();
+             } );
+    connect( playButton, &QPushButton::clicked, mediaPlayer, [=]
+             {
+                 if ( mediaPlayer->playbackState() == QMediaPlayer::PlayingState )
+                 {
+                     mediaPlayer->pause();
+                 }
+                 else if ( !mediaPlayer->source().isEmpty() )
+                 {
+                     mediaPlayer->play();
+                 }
+             } );
+    connect( volumeSlider, &QSlider::valueChanged, audioOutput, [audioOutput]( int value )
+             { audioOutput->setVolume( value / 100.0 ); } );
+    connect( mediaPlayer, &QMediaPlayer::durationChanged, positionSlider, [=]( qint64 duration )
+             {
+                 positionSlider->setRange( 0, static_cast<int>( duration ) );
+                 timeLabel->setText( tr( "%1 / %2" )
+                                         .arg( formatPlaybackTime( mediaPlayer->position() ),
+                                               formatPlaybackTime( duration ) ) );
+             } );
+    connect( mediaPlayer, &QMediaPlayer::positionChanged, positionSlider, [=]( qint64 position )
+             {
+                 if ( !positionSlider->isSliderDown() )
+                 {
+                     positionSlider->setValue( static_cast<int>( position ) );
+                 }
+                 timeLabel->setText( tr( "%1 / %2" )
+                                         .arg( formatPlaybackTime( position ),
+                                               formatPlaybackTime( mediaPlayer->duration() ) ) );
+                 levelAnalyzer->setPlaybackPositionMs( position );
+             } );
+    connect( positionSlider, &QSlider::sliderMoved, mediaPlayer, [mediaPlayer]( int position )
+             { mediaPlayer->setPosition( position ); } );
+    connect( mediaPlayer, &QMediaPlayer::playbackStateChanged, this, [=]( QMediaPlayer::PlaybackState state )
+             {
+                 const bool playing = state == QMediaPlayer::PlayingState;
+                 playButton->setText( playing ? tr( "暂停" ) : tr( "播放" ) );
+                 if ( playing )
+                 {
+                     levelAnalyzer->setPlaybackPositionMs( mediaPlayer->position() );
+                 }
+                 levelAnalyzer->setActive( playing );
+             } );
+    connect( mediaPlayer, &QMediaPlayer::errorOccurred, this, [=]( QMediaPlayer::Error, const QString& error )
+             {
+                 if ( !error.isEmpty() )
+                 {
+                     trackLabel->setText( tr( "播放失败：%1" ).arg( error ) );
+                 }
+             } );
+#endif
 
     auto* propertiesCard = makeCard( content );
     auto* propertiesLayout = new QVBoxLayout( propertiesCard );
@@ -136,7 +315,16 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     preview->setCustomScaleValues( QVector<qreal>{0.0, -3.0, -6.0, -12.0, -24.0, -36.0, -48.0, -60.0} );
     preview->setMinimumSize( 220, 390 );
     preview->setMaximumWidth( 300 );
-    useReferenceColors( preview );
+    useThemeColors( preview );
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    connect( levelAnalyzer, &AudioSpectrumAnalyzer::pcmDataReady, this, [=]( const QByteArray& pcmData )
+             {
+                 const qreal decibels = pcmLevelDecibels( pcmData );
+                 monoMeter->setLevel( decibels );
+                 stereoMeter->setStereoLevels( decibels, decibels );
+                 preview->setLevels( QVector<qreal>( preview->channelCount(), decibels ) );
+             } );
+#endif
     editorLayout->addWidget( preview, 1, Qt::AlignHCenter | Qt::AlignTop );
 
     auto* editor = new QWidget( propertiesCard );
@@ -247,7 +435,68 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     form->addRow( labelsCheck );
     form->addRow( unitCheck );
     form->addRow( tickMarksCheck );
-    editorLayout->addWidget( editor, 1 );
+    auto* propertyTabs = new QTabWidget( propertiesCard );
+    propertyTabs->tabBar()->setProperty("tabBarStyle", 3);
+    propertyTabs->setMinimumWidth( 390 );
+    auto* scalePage = new QWidget( propertyTabs );
+    auto* animationPage = new QWidget( propertyTabs );
+    auto* colorsPage = new QWidget( propertyTabs );
+    auto* scaleForm = new QFormLayout( scalePage );
+    auto* animationForm = new QFormLayout( animationPage );
+    auto* colorsForm = new QFormLayout( colorsPage );
+    const auto configureForm = []( QFormLayout* tabForm )
+    {
+        tabForm->setContentsMargins( 12, 12, 12, 12 );
+        tabForm->setSpacing( 10 );
+        tabForm->setFieldGrowthPolicy( QFormLayout::ExpandingFieldsGrow );
+        tabForm->setLabelAlignment( Qt::AlignRight | Qt::AlignVCenter );
+    };
+    configureForm( form );
+    configureForm( scaleForm );
+    configureForm( animationForm );
+    configureForm( colorsForm );
+
+    // Rows are moved from bottom to top so their original order is retained.
+    for ( int row = form->rowCount() - 1; row >= 0; --row )
+    {
+        QFormLayout* destination = nullptr;
+        if ( row == 1 || row == 2 || row == 3 || row == 4 || row == 5 || row == 20 || row == 21 )
+        {
+            destination = scaleForm;
+        }
+        else if ( row == 11 || row == 12 || row == 18 )
+        {
+            destination = animationForm;
+        }
+        else if ( row == 6 || ( row >= 13 && row <= 17 ) )
+        {
+            destination = colorsForm;
+        }
+        if ( !destination )
+        {
+            continue;
+        }
+
+        const QFormLayout::TakeRowResult taken = form->takeRow( row );
+        QWidget* label = taken.labelItem ? taken.labelItem->widget() : nullptr;
+        QWidget* field = taken.fieldItem ? taken.fieldItem->widget() : nullptr;
+        if ( label && field )
+        {
+            destination->insertRow( 0, label, field );
+        }
+        else if ( field )
+        {
+            destination->insertRow( 0, field );
+        }
+        delete taken.labelItem;
+        delete taken.fieldItem;
+    }
+
+    propertyTabs->addTab( editor, tr( "基础" ) );
+    propertyTabs->addTab( scalePage, tr( "刻度" ) );
+    propertyTabs->addTab( animationPage, tr( "动画" ) );
+    propertyTabs->addTab( colorsPage, tr( "颜色" ) );
+    editorLayout->addWidget( propertyTabs, 1 );
     propertiesLayout->addLayout( editorLayout );
     mainLayout->addWidget( propertiesCard );
     mainLayout->addStretch();
@@ -354,8 +603,18 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     connect( animationTimer,
              &QTimer::timeout,
              this,
-             [monoMeter, stereoMeter, preview, phase = qreal( 0.0 )]() mutable
+             [monoMeter, stereoMeter, preview,
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+              mediaPlayer,
+#endif
+              phase = qreal( 0.0 )]() mutable
              {
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+                 if ( !mediaPlayer->source().isEmpty() )
+                 {
+                     return;
+                 }
+#endif
                  phase += 0.16;
                  const qreal noise1 = QRandomGenerator::global()->generateDouble() * 5.0;
                  const qreal noise2 = QRandomGenerator::global()->generateDouble() * 7.0;
@@ -389,4 +648,19 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     animationTimer->start();
 
     scrollArea->setWidget( content );
+}
+
+void AudioLevelMeterShowcaseWidget::changeEvent( QEvent* event )
+{
+    QFrame::changeEvent( event );
+    if ( event->type() != QEvent::PaletteChange && event->type() != QEvent::ApplicationPaletteChange )
+    {
+        return;
+    }
+
+    const auto meters = findChildren<ExAudioLevelMeter*>();
+    for ( ExAudioLevelMeter* meter : meters )
+    {
+        useThemeColors( meter );
+    }
 }

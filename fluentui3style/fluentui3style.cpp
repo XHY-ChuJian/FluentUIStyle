@@ -4020,7 +4020,7 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
 {
     if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
     {
-        TabBarStyle tabBarStyle = widget ? static_cast<TabBarStyle>( widget->property( "tabBarStyle" ).toInt() ) : TabBarStyle::Capsule;
+        TabBarStyle tabBarStyle = (widget && widget->property(TabBarStyleProperty).isValid()) ? (TabBarStyle)( widget->property(TabBarStyleProperty).toInt() ) : TabBarStyle::PillTabs;
         if ( tabBarStyle == TabBarStyle::Pivot_Grow )
         {
             drawPivotGrowingTab( tab, painter, widget );
@@ -4057,9 +4057,10 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
         {
             drawNavigationTab( tab, painter, widget );
         }
+        //默认PillTab
         else
         {
-            drawCapsuleTab( tab, painter, widget );
+            drawPillTab( tab, painter, widget );
         }
     }
 }

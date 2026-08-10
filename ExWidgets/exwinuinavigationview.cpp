@@ -52,7 +52,7 @@ ExWinUINavigationView::ExWinUINavigationView(QWidget *parent)
     d->line->setObjectName(QStringLiteral("line"));
     d->line->setFrameShape(QFrame::HLine);
     d->line->setFrameShadow(QFrame::Sunken);
-    d->line->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    d->line->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 
     d->footerNav = new ExNavTreeWidget(this);
     d->footerNav->setObjectName(QStringLiteral("footerNavView"));

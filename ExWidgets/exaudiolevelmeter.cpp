@@ -1,5 +1,6 @@
 #include "exaudiolevelmeter.h"
 
+#include <QApplication>
 #include <QEvent>
 #include <QFontMetrics>
 #include <QHideEvent>
@@ -47,6 +48,23 @@ QColor mixedColor( const QColor& from, const QColor& to, qreal progress )
                     from.blueF() + ( to.blueF() - from.blueF() ) * progress,
                     from.alphaF() + ( to.alphaF() - from.alphaF() ) * progress );
     return result;
+}
+
+bool usesDarkTheme( const QWidget* widget )
+{
+    const QVariant scheme = qApp ? qApp->property( "_q_colorscheme" ) : QVariant();
+    return scheme.isValid() ? scheme.toInt() == 1
+                            : widget->palette().color( QPalette::Window ).lightness() < 128;
+}
+
+QColor themedColor( const QWidget* widget,
+                    const QColor& customColor,
+                    const char* lightColor,
+                    const char* darkColor )
+{
+    return customColor.isValid()
+               ? customColor
+               : QColor( QLatin1String( usesDarkTheme( widget ) ? darkColor : lightColor ) );
 }
 
 } // namespace
@@ -471,7 +489,7 @@ void ExAudioLevelMeter::setBackgroundColor( QColor color )
 
 void ExAudioLevelMeter::setActiveColor( QColor color )
 {
-    if ( !color.isValid() || m_activeColor == color )
+    if ( m_activeColor == color )
     {
         return;
     }
@@ -493,7 +511,7 @@ void ExAudioLevelMeter::setInactiveColor( QColor color )
 
 void ExAudioLevelMeter::setWarningColor( QColor color )
 {
-    if ( !color.isValid() || m_warningColor == color )
+    if ( m_warningColor == color )
     {
         return;
     }
@@ -504,7 +522,7 @@ void ExAudioLevelMeter::setWarningColor( QColor color )
 
 void ExAudioLevelMeter::setClipColor( QColor color )
 {
-    if ( !color.isValid() || m_clipColor == color )
+    if ( m_clipColor == color )
     {
         return;
     }
@@ -515,7 +533,7 @@ void ExAudioLevelMeter::setClipColor( QColor color )
 
 void ExAudioLevelMeter::setPeakColor( QColor color )
 {
-    if ( !color.isValid() || m_peakColor == color )
+    if ( m_peakColor == color )
     {
         return;
     }
@@ -696,10 +714,7 @@ void ExAudioLevelMeter::paintEvent( QPaintEvent* event )
 
     QPainter painter( this );
     painter.setRenderHint( QPainter::Antialiasing, true );
-    if ( m_backgroundColor.isValid() )
-    {
-        painter.fillRect( rect(), m_backgroundColor );
-    }
+    painter.fillRect( rect(), themedColor( this, m_backgroundColor, "#F4F4F4", "#111111" ) );
 
     const QFontMetrics metrics( font() );
     const QVector<qreal> ticks = scaleValues();
@@ -773,7 +788,8 @@ void ExAudioLevelMeter::paintEvent( QPaintEvent* event )
     }
 
     QColor inactive = resolvedInactiveColor();
-    QColor peak = withDisabledAlpha( m_peakColor, isEnabled() );
+    QColor peak = withDisabledAlpha(
+        themedColor( this, m_peakColor, "#202020", "#FFFFFF" ), isEnabled() );
     painter.setPen( Qt::NoPen );
 
     for ( int channel = 0; channel < layout.channels.size(); ++channel )
@@ -1093,9 +1109,12 @@ QColor ExAudioLevelMeter::resolvedScaleColor() const
 
 QColor ExAudioLevelMeter::colorForLevel( qreal decibels ) const
 {
+    const QColor active = themedColor( this, m_activeColor, "#C85D00", "#FF9F2D" );
+    const QColor warning = themedColor( this, m_warningColor, "#A15C00", "#FFD166" );
+    const QColor clip = themedColor( this, m_clipColor, "#C42B1C", "#FF5A5F" );
     if ( m_colorMode == SingleColor )
     {
-        return m_activeColor;
+        return active;
     }
     if ( m_colorMode == GradientColors )
     {
@@ -1103,25 +1122,25 @@ QColor ExAudioLevelMeter::colorForLevel( qreal decibels ) const
         {
             const qreal range = m_warningDecibels - m_minimumDecibels;
             const qreal progress = range > 0.0 ? ( decibels - m_minimumDecibels ) / range : 1.0;
-            return mixedColor( m_activeColor, m_warningColor, progress );
+            return mixedColor( active, warning, progress );
         }
         if ( decibels <= m_clipDecibels )
         {
             const qreal range = m_clipDecibels - m_warningDecibels;
             const qreal progress = range > 0.0 ? ( decibels - m_warningDecibels ) / range : 1.0;
-            return mixedColor( m_warningColor, m_clipColor, progress );
+            return mixedColor( warning, clip, progress );
         }
-        return m_clipColor;
+        return clip;
     }
     if ( decibels >= m_clipDecibels )
     {
-        return m_clipColor;
+        return clip;
     }
     if ( decibels >= m_warningDecibels )
     {
-        return m_warningColor;
+        return warning;
     }
-    return m_activeColor;
+    return active;
 }
 
 QString ExAudioLevelMeter::resolvedChannelLabel( int channel ) const
