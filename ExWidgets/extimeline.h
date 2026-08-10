@@ -126,7 +126,7 @@ public:
     // 时间轴内容与视口边缘之间的距离。
     EXWIDGETS_DECLARE_PROPERTY( int, contentPadding, contentPadding, setContentPadding, 12 )
 
-    // 时间轴连接线颜色；无效颜色表示使用 QPalette::Mid。
+    // 时间轴连接线颜色；无效颜色表示根据调色板自动生成适配明暗主题的中性色。
     EXWIDGETS_DECLARE_PROPERTY( QColor, lineColor, lineColor, setLineColor, QColor() )
 
     // 标题字号，0 表示使用控件字体。

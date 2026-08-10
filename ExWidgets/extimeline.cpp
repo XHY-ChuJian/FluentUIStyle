@@ -39,6 +39,24 @@ QColor withAlpha( QColor color, int alpha )
     color.setAlpha( qBound( 0, alpha, 255 ) );
     return color;
 }
+
+QColor blendedColor( const QColor& background, const QColor& foreground, qreal foregroundAmount )
+{
+    foregroundAmount             = qBound( 0.0, foregroundAmount, 1.0 );
+    const qreal backgroundAmount = 1.0 - foregroundAmount;
+    return QColor( qRound( background.red() * backgroundAmount + foreground.red() * foregroundAmount ),
+                   qRound( background.green() * backgroundAmount + foreground.green() * foregroundAmount ),
+                   qRound( background.blue() * backgroundAmount + foreground.blue() * foregroundAmount ) );
+}
+
+QColor defaultRailColor( const QPalette& palette, QPalette::ColorGroup group )
+{
+    // 使用不透明的调色板混合色，避免透明视口叠加到不同背景时产生不可控的明暗差异。
+    const qreal textAmount = group == QPalette::Disabled ? 0.12 : 0.22;
+    return blendedColor( palette.color( group, QPalette::Base ),
+                         palette.color( group, QPalette::Text ),
+                         textAmount );
+}
 }  // namespace
 
 class ExTimelineModel final : public QAbstractListModel
@@ -277,11 +295,8 @@ public:
             }
         }
 
-        QColor railColor = m_timeline->lineColor().isValid() ? m_timeline->lineColor() : option.palette.color( colorGroup, QPalette::Mid );
-        if ( !m_timeline->lineColor().isValid() )
-        {
-            railColor.setAlpha( colorGroup == QPalette::Disabled ? 70 : 130 );
-        }
+        const QColor railColor = m_timeline->lineColor().isValid() ? m_timeline->lineColor()
+                                                                    : defaultRailColor( option.palette, colorGroup );
         painter->setPen( QPen( railColor, m_timeline->lineWidth(), Qt::SolidLine, Qt::FlatCap ) );
         if ( index.row() > 0 )
         {
@@ -384,12 +399,8 @@ private:
         axisY = bottom - top >= radius * 2.0 ? qBound( top + radius, axisY, bottom - radius ) : itemRect.center().y();
         const QPointF nodeCenter( itemRect.center().x(), axisY );
 
-        QColor railColor = m_timeline->lineColor().isValid() ? m_timeline->lineColor()
-                                                              : option.palette.color( colorGroup, QPalette::Mid );
-        if ( !m_timeline->lineColor().isValid() )
-        {
-            railColor.setAlpha( colorGroup == QPalette::Disabled ? 70 : 130 );
-        }
+        const QColor railColor = m_timeline->lineColor().isValid() ? m_timeline->lineColor()
+                                                                    : defaultRailColor( option.palette, colorGroup );
         painter->setPen( QPen( railColor, m_timeline->lineWidth(), Qt::SolidLine, Qt::FlatCap ) );
         if ( index.row() > 0 )
         {
@@ -576,7 +587,7 @@ private:
             painter->drawEllipse( center, radius + 2.0 + progress * 6.0, radius + 2.0 + progress * 6.0 );
         }
 
-        const bool outlined = event->status() == ExTimelineEvent::Pending;
+        const bool outlined = event->status() == ExTimelineEvent::Normal || event->status() == ExTimelineEvent::Pending;
         painter->setPen( QPen( color, outlined ? 2.0 : 1.0 ) );
         painter->setBrush( outlined ? palette.color( colorGroup, QPalette::Base ) : color );
         painter->drawEllipse( center, radius, radius );
@@ -1012,7 +1023,7 @@ QColor ExTimeline::resolvedEventColor( const ExTimelineEvent* event, QPalette::C
         case ExTimelineEvent::Completed :
             return QColor( QStringLiteral( "#107C10" ) );
         case ExTimelineEvent::Pending :
-            return palette().color( group, QPalette::Mid );
+            return defaultRailColor( palette(), group );
         case ExTimelineEvent::Warning :
             return QColor( QStringLiteral( "#F2A900" ) );
         case ExTimelineEvent::Error :
