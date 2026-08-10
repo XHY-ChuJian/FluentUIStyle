@@ -28,6 +28,12 @@ ExProgressRing::ExProgressRing( QWidget* parent )
     setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Preferred );
 }
 
+ExProgressRing::~ExProgressRing()
+{
+    disconnect( m_centerWidgetDestroyedConnection );
+    m_centerWidget = nullptr;
+}
+
 #define EX_PROGRESS_RING_SIMPLE_SETTER( Type, Property, Setter ) \
     void ExProgressRing::Setter( Type value ) \
     { \

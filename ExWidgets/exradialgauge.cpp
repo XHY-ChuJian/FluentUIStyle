@@ -17,6 +17,7 @@
 #include <QtMath>
 
 #include <cmath>
+#include <utility>
 
 namespace
 {
@@ -121,6 +122,16 @@ ExRadialGauge::ExRadialGauge( QWidget* parent )
              {
                  m_valueAnimation->stop();
              } );
+}
+
+ExRadialGauge::~ExRadialGauge()
+{
+    m_valueAnimation->stop();
+    for ( ExRadialGaugeRange* range : std::as_const( m_ranges ) )
+    {
+        disconnect( range, nullptr, this, nullptr );
+    }
+    m_ranges.clear();
 }
 
 #define EX_RADIAL_GAUGE_SIMPLE_SETTER( Type, Property, Setter ) \

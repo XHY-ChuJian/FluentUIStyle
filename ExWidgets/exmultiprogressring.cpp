@@ -106,6 +106,18 @@ ExMultiProgressRing::ExMultiProgressRing( QWidget* parent )
              } );
 }
 
+ExMultiProgressRing::~ExMultiProgressRing()
+{
+    m_valueAnimation->stop();
+    for ( ExMultiProgressRingItem* item : std::as_const( m_items ) )
+    {
+        disconnect( item, nullptr, this, nullptr );
+    }
+    m_items.clear();
+    m_displayedValues.clear();
+    m_animationStartValues.clear();
+}
+
 #define EX_MULTI_PROGRESS_RING_SIMPLE_SETTER( Type, Property, Setter ) \
     void ExMultiProgressRing::Setter( Type value ) \
     { \

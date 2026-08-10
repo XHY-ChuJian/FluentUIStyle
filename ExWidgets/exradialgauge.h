@@ -179,6 +179,7 @@ public:
     EXWIDGETS_DECLARE_PROPERTY( QColor, valueColor, valueColor, setValueColor, QColor() )
 
     explicit ExRadialGauge( QWidget* parent = nullptr );
+    ~ExRadialGauge() override;
 
     Q_SLOT void setValue( int value );
     [[nodiscard]] bool isValueAnimating() const;

@@ -12,6 +12,17 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(MSVC)
     # /utf-8: avoid C4819 when sources contain UTF-8 (e.g. Chinese comments) under CP936
     add_compile_options(/wd4273 /utf-8)
+
+    # Keep Release optimized while retaining enough CodeView information for
+    # post-mortem dump analysis. /Z7 avoids one shared compiler PDB becoming a
+    # bottleneck under Ninja; the linker still emits the final target PDB.
+    add_compile_options($<$<CONFIG:Release>:/Z7>)
+    add_link_options(
+        $<$<CONFIG:Release>:/DEBUG:FULL>
+        $<$<CONFIG:Release>:/OPT:REF>
+        $<$<CONFIG:Release>:/OPT:ICF>
+    )
+    message(STATUS "MSVC Release symbols    : enabled (/Z7, /DEBUG:FULL)")
 endif()
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets Svg)
@@ -107,11 +118,13 @@ set(_out_lib "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_out_bin}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_out_lib}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}")
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${_out_bin}")
 
 foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
+    set(CMAKE_PDB_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}")
 endforeach()
 
 option(BUILD_LIBRARY "Build as library" ON)

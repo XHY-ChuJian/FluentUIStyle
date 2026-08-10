@@ -28,6 +28,8 @@ set(GALLERY_SOURCES
     systemresources/systemresourceprovider.cpp
     systemresources/systemresourceprovider.h
     systemresources/systemresourcesnapshot.h
+    diagnostics/crashdump.cpp
+    diagnostics/crashdump.h
     aboutprojectwidget.cpp
     aboutprojectwidget.h
     segoeicongallerywidget.cpp
@@ -86,7 +88,7 @@ endif()
 
 if(WIN32)
     target_compile_definitions(Gallery PRIVATE FLUENT_USE_QT_STYLE GALLERY_ENABLE_I18N)
-    target_link_libraries(Gallery PRIVATE iphlpapi pdh)
+    target_link_libraries(Gallery PRIVATE dbghelp iphlpapi pdh)
 else()
     target_link_libraries(Gallery PRIVATE FluentUI3Style)
     set_target_properties(Gallery PROPERTIES

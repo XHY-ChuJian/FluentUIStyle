@@ -46,7 +46,8 @@ SOURCES += $$PWD/main.cpp \
            $$PWD/timelineshowcasewidget.cpp \
            $$PWD/changelogtimelinewidget.cpp \
            $$PWD/systemresourceswidget.cpp \
-           $$PWD/systemresources/systemresourceprovider.cpp
+           $$PWD/systemresources/systemresourceprovider.cpp \
+           $$PWD/diagnostics/crashdump.cpp
 HEADERS += $$PWD/mainwindow.h \
            $$PWD/installedsoftwaretablewidget.h \
            $$PWD/tabshowcasewidget.h \
@@ -63,11 +64,12 @@ HEADERS += $$PWD/mainwindow.h \
            $$PWD/changelogtimelinewidget.h \
            $$PWD/systemresourceswidget.h \
            $$PWD/systemresources/systemresourceprovider.h \
-           $$PWD/systemresources/systemresourcesnapshot.h
+           $$PWD/systemresources/systemresourcesnapshot.h \
+           $$PWD/diagnostics/crashdump.h
 FORMS   += $$PWD/mainwindow.ui
 
 win32 {
-    LIBS += -liphlpapi -lpdh
+    LIBS += -ldbghelp -liphlpapi -lpdh
     SOURCES += $$PWD/applanguage.cpp
     HEADERS += $$PWD/applanguage.h
 

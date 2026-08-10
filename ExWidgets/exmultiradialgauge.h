@@ -192,6 +192,7 @@ public:
     EXWIDGETS_DECLARE_PROPERTY( int, valueAnimationDuration, valueAnimationDuration, setValueAnimationDuration, 500 )
 
     explicit ExMultiRadialGauge( QWidget* parent = nullptr );
+    ~ExMultiRadialGauge() override;
 
     void setRange( qreal minimum, qreal maximum );
     [[nodiscard]] QList<ExMultiRadialGaugeItem*> items() const;

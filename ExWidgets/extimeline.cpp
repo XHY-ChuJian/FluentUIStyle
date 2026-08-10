@@ -737,7 +737,15 @@ ExTimeline::ExTimeline( QWidget* parent )
              } );
 }
 
-ExTimeline::~ExTimeline() = default;
+ExTimeline::~ExTimeline()
+{
+    m_pulseAnimation->stop();
+    const QList<ExTimelineEvent*> timelineEvents = m_timelineModel->events();
+    for ( ExTimelineEvent* event : timelineEvents )
+    {
+        disconnect( event, nullptr, this, nullptr );
+    }
+}
 
 #define EX_TIMELINE_LAYOUT_SETTER( Type, Property, Setter ) \
     void ExTimeline::Setter( Type value )                   \

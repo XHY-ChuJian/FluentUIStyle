@@ -149,6 +149,18 @@ ExMultiRadialGauge::ExMultiRadialGauge( QWidget* parent )
              } );
 }
 
+ExMultiRadialGauge::~ExMultiRadialGauge()
+{
+    m_valueAnimation->stop();
+    for ( ExMultiRadialGaugeItem* item : std::as_const( m_items ) )
+    {
+        disconnect( item, nullptr, this, nullptr );
+    }
+    m_items.clear();
+    m_displayedValues.clear();
+    m_animationStartValues.clear();
+}
+
 #define EX_MULTI_RADIAL_GAUGE_SIMPLE_SETTER( Type, Property, Setter ) \
     void ExMultiRadialGauge::Setter( Type value ) \
     { \

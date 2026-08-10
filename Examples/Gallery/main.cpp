@@ -25,6 +25,7 @@
 #include <QPropertyAnimation>
 
 #include "mainwindow.h"
+#include "diagnostics/crashdump.h"
 #ifdef GALLERY_ENABLE_I18N
 #include "applanguage.h"
 #endif
@@ -39,8 +40,11 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication a(argc, argv);
-    //FLUENT_USE_QT_STYLE只是在本项目中为了“qApp->setStyle("FluentUI3");”
-    //和“fluentUIAppearance.initialize();”方式的切换，其他项目中可以根据需要选择使用哪种方式
+    const QString crashDumpDirectory = GalleryCrashDump::install();
+    if (!crashDumpDirectory.isEmpty())
+    {
+        qInfo() << "Crash dumps:" << crashDumpDirectory;
+    }
 
 #ifdef FLUENT_USE_QT_STYLE
     qDebug() << QStyleFactory::keys();

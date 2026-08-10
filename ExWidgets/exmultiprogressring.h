@@ -100,6 +100,7 @@ public:
                                 500 )
 
     explicit ExMultiProgressRing( QWidget* parent = nullptr );
+    ~ExMultiProgressRing() override;
 
     void setRange( qreal minimum, qreal maximum );
     [[nodiscard]] QList<ExMultiProgressRingItem*> items() const;

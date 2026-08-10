@@ -39,6 +39,7 @@ public:
     Q_PROPERTY( QWidget* centerWidget READ centerWidget WRITE setCenterWidget NOTIFY centerWidgetChanged )
 
     explicit ExProgressRing( QWidget* parent = nullptr );
+    ~ExProgressRing() override;
 
     [[nodiscard]] QWidget* centerWidget() const;
     // 控件接管 widget 的所有权；替换时会删除原中心控件。
