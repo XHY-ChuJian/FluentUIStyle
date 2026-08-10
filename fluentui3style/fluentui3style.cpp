@@ -28,6 +28,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QProgressBar>
+#include <QRadialGradient>
 #include <QScreen>
 #include <QScrollBar>
 #include <QSettings>
@@ -92,7 +93,8 @@ static constexpr int cBRoundingRadius                  = 4;
 static constexpr const char* cBPopupAnimatorProperty   = "_q_fluent_combo_popup_animator";
 static constexpr int menuPopupAnimationDuration        = 400;
 static constexpr const char* menuPopupAnimatorProperty = "_q_fluent_menu_popup_animator";
-static constexpr const int sliderShadowBorderWidth     = cBShadowBorderWidth;
+static constexpr int sliderHandleDiameter    = 20;
+static constexpr int sliderShadowBorderWidth = 3;
 
 static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 {
@@ -223,9 +225,8 @@ static void showSliderValueTip( QSlider* slider, int value )
     {
         return;
     }
-    const qreal outerRadius =
-        qMin( 10.0, ( slider->orientation() == Qt::Horizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0 ) - 1.0 );
-    const QPoint globalCenter = slider->mapToGlobal( handleRect.center() );
+    const qreal outerRadius = sliderHandleDiameter / 2.0 - 1.0;
+    const QPoint globalCenter = slider->mapToGlobal( QRectF( handleRect ).center().toPoint() );
     int x                     = 0;
     int y                     = 0;
     if ( slider->orientation() == Qt::Horizontal )
@@ -1739,12 +1740,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             {
                 QObject* styleObject = option->styleObject;  // Can be widget or qquickitem
 
-                QRectF thumbRect = proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget );
-                thumbRect        = thumbRect.marginsRemoved(
-                    QMargins { sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth } );
-
-                const qreal outerRadius =
-                    qMin( 10.0, ( slider->orientation == Qt::Horizontal ? thumbRect.height() / 2.0 : thumbRect.width() / 2.0 ) - 1 );
+                const qreal outerRadius = sliderHandleDiameter / 2.0 - 1.0;
                 bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
 
                 bool oldIsInsideHandle        = styleObject->property( "_q_insidehandle" ).toBool();
@@ -1958,12 +1954,14 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             {
                 const auto& slrect      = slider->rect;
                 const bool isHorizontal = slider->orientation == Qt::Horizontal;
-                QRectF handleOriginRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
                 QRectF handleRect( proxy()->subControlRect( CC_Slider, option, SC_SliderHandle, widget ) );
-                handleRect = handleRect.marginsRemoved(
-                    QMargins { sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth } );
-
                 const QPointF handleCenter( handleRect.center() );
+                const qreal outerRadius = sliderHandleDiameter / 2.0 - 1.0;
+
+                if ( sub & SC_SliderHandle )
+                {
+                    drawSliderHandleShadow( painter, handleCenter, outerRadius );
+                }
 
                 if ( sub & SC_SliderGroove )
                 {
@@ -2072,8 +2070,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 }
                 if ( sub & SC_SliderHandle )
                 {
-                    const qreal outerRadius = qMin( 10.0, ( isHorizontal ? handleRect.height() / 2.0 : handleRect.width() / 2.0 ) - 1 );
-                    ;
                     float innerRadius = outerRadius * sliderInnerRadius( state, false );
 
                     if ( option->styleObject )
@@ -2091,8 +2087,6 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                             innerRadius         = outerRadius * sliderInnerRadius( state, isInsideHandle );
                         }
                     }
-                    drawSliderHandleShadow( painter, handleCenter, outerRadius );
-
                     painter->setPen( Qt::NoPen );
                     painter->setBrush( winUI3Color( controlFillSolid ) );
                     painter->drawEllipse( handleCenter, outerRadius, outerRadius );
@@ -4015,10 +4009,6 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
 #endif  // QT_CONFIG(toolbutton)
         case CC_Slider :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
-            if ( subControl == SC_SliderHandle )
-            {
-                ret.adjust( -sliderShadowBorderWidth, -sliderShadowBorderWidth, sliderShadowBorderWidth, sliderShadowBorderWidth );
-            }
             break;
         default :
             ret = QProxyStyle::subControlRect( control, option, subControl, widget );
@@ -7672,24 +7662,27 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
         case PM_ExclusiveIndicatorHeight :
             res = 18;
             break;
-        case PM_SliderThickness :  // full height of a slider
-            if ( auto opt = qstyleoption_cast<const QStyleOptionSlider*>( option ) )
+        case PM_SliderThickness :
+            res = sliderHandleDiameter + 2 * sliderShadowBorderWidth;
+            break;
+        case PM_SliderControlThickness :
+        case PM_SliderLength :
+            res = sliderHandleDiameter;
+            break;
+        case PM_SliderTickmarkOffset :
+            res = sliderShadowBorderWidth;
+            if ( const auto* slider = qstyleoption_cast<const QStyleOptionSlider*>( option ) )
             {
-                // hard-coded in qslider.cpp, but we need a little bit more
-                constexpr auto TickSpace = 5;
-                if ( opt->tickPosition & QSlider::TicksAbove )
+                const int crossSize = slider->orientation == Qt::Horizontal ? slider->rect.height() : slider->rect.width();
+                if ( slider->tickPosition == QSlider::TicksAbove )
                 {
-                    res += 6 - TickSpace;
+                    res = crossSize - sliderHandleDiameter - sliderShadowBorderWidth;
                 }
-                if ( opt->tickPosition & QSlider::TicksBelow )
+                else if ( slider->tickPosition == QSlider::TicksBothSides )
                 {
-                    res += 6 - TickSpace;
+                    res = ( crossSize - sliderHandleDiameter ) / 2;
                 }
             }
-            Q_FALLTHROUGH();
-        case PM_SliderControlThickness :  // size of the control handle
-        case PM_SliderLength :            // same because handle is a circle with r=8
-            res += 2 * 10;
             break;
         case PM_RadioButtonLabelSpacing :
         case PM_CheckBoxLabelSpacing :
@@ -8744,15 +8737,19 @@ void FluentUI3Style::drawEffectShadow( QPainter* painter, QRect widgetRect, int 
 
 void FluentUI3Style::drawSliderHandleShadow( QPainter* painter, const QPointF& center, qreal outerRadius ) const
 {
+    const qreal handleRadius = outerRadius + 1.0;
+    const qreal shadowRadius = handleRadius + sliderShadowBorderWidth;
+    const qreal shadowStart  = handleRadius / shadowRadius;
+    const int shadowAlpha    = colorSchemeIndex == 0 ? 28 : 44;
+
+    QRadialGradient shadow( center, shadowRadius );
+    shadow.setColorAt( 0.0, QColor( 0, 0, 0, shadowAlpha ) );
+    shadow.setColorAt( shadowStart, QColor( 0, 0, 0, shadowAlpha ) );
+    shadow.setColorAt( 1.0, QColor( 0, 0, 0, 0 ) );
+
     painter->setPen( Qt::NoPen );
-    const qreal shadowStrength = ( colorSchemeIndex == 0 ) ? 0.7 : 1.0;
-    for ( int i = 5; i >= 1; --i )
-    {
-        const int alpha = qRound( ( 40.0 / i ) * shadowStrength );
-        painter->setBrush( QColor( 0, 0, 0, alpha ) );
-        const qreal offset = i * 0.8;
-        painter->drawEllipse( center, outerRadius + offset, outerRadius + offset );
-    }
+    painter->setBrush( shadow );
+    painter->drawEllipse( center, shadowRadius, shadowRadius );
 }
 
 bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
