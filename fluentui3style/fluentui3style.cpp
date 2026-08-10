@@ -1620,7 +1620,7 @@ inline bool isHighContrastTheme()
 #endif
 }
 
-FluentUI3Style::FluentUI3Style( QStyle* style ) /*: QProxyStyle(QStyleFactory::create("windows"))*/
+FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle(QStyleFactory::create("fusion"))
 {
     static bool resourceInit = false;
     static int fontId        = -1;
@@ -3640,7 +3640,7 @@ QRect FluentUI3Style::subControlRect( ComplexControl control,
             if ( const QStyleOptionSpinBox* spinbox = qstyleoption_cast<const QStyleOptionSpinBox*>( option ) )
             {
                 const bool hasButtons  = spinbox->buttonSymbols != QAbstractSpinBox::NoButtons;
-                const int fw           = spinbox->frame ? proxy()->pixelMetric( PM_SpinBoxFrameWidth, spinbox, widget ) : 0;
+                const int fw           = spinbox->frame ? pixelMetric( PM_SpinBoxFrameWidth, spinbox, widget ) : 0;
                 const int buttonHeight = hasButtons ? qMin( spinbox->rect.height() - 3 * fw, spinbox->fontMetrics.height() * 5 / 4 ) : 0;
                 const QSize buttonSize( buttonHeight * 6 / 5, buttonHeight );
                 const int textFieldLength = spinbox->rect.width() - 2 * fw - 2 * buttonSize.width();
@@ -7327,7 +7327,7 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
                 const int margins     = 8;
                 // const int buttonWidth = hasButtons ? qRound( QStyleHelper::dpiScaled( 16, dpi ) ) : 0;
                 const int buttonWidth = hasButtons ? 16 + contentItemHMargin : 0;
-                const int frameWidth  = spinBoxOpt->frame ? proxy()->pixelMetric( PM_SpinBoxFrameWidth, spinBoxOpt, widget ) : 0;
+                const int frameWidth  = spinBoxOpt->frame ? pixelMetric( PM_SpinBoxFrameWidth, spinBoxOpt, widget ) : 0;
 
                 contentSize += QSize( 2 * buttonWidth + 2 * frameWidth + 2 * margins, 2 * frameWidth );
             }
@@ -7657,6 +7657,9 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
 
     switch ( metric )
     {
+        case PM_SpinBoxFrameWidth:
+            res = 1;
+            break;
         case PM_IndicatorWidth :
         case PM_IndicatorHeight :
         {
