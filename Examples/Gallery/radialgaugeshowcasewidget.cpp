@@ -642,7 +642,7 @@ RadialGaugeShowcaseWidget::RadialGaugeShowcaseWidget( QWidget* parent )
 
     const auto addEChartsGauge = [&]( const QString& title,
                                       const QString& subtitle,
-                                      const auto& configure )
+                                      void ( *configure )( ExRadialGauge* ) )
     {
         addEChartsSample( title, subtitle, [configure, &echartsGauges]( QWidget* parent ) -> QWidget*
                           {

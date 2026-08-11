@@ -1621,7 +1621,22 @@ inline bool isHighContrastTheme()
 #endif
 }
 
-FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle(QStyleFactory::create("fusion"))
+static QStyle* createBaseStyle( QStyle* style )
+{
+    if ( style )
+    {
+        return style;
+    }
+
+    if ( QStyle* windowsVistaStyle = QStyleFactory::create(  "windowsvista" ) )
+    {
+        return windowsVistaStyle;
+    }
+
+    return QStyleFactory::create( "fusion" );
+}
+
+FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle( createBaseStyle( style ) )
 {
     static bool resourceInit = false;
     static int fontId        = -1;
@@ -1629,7 +1644,7 @@ FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle(QStyleFactory::cre
     {
         Q_INIT_RESOURCE( resource );
         resourceInit = true;
-        fontId       = QFontDatabase::addApplicationFont( QStringLiteral( ":/resource/Segoe Fluent Icons.ttf" ) );
+        fontId       = QFontDatabase::addApplicationFont( ":/resource/Segoe Fluent Icons.ttf");
     }
 
     if ( fontId != -1 )
