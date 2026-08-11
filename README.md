@@ -7,10 +7,11 @@
 <img width="1920" height="1094" alt="QQ20260509-112403-HD" src="https://github.com/user-attachments/assets/2e5d044d-7f2a-41cd-a76d-e5faf3cbc140" />
 <img width="2081" height="1335" alt="QQ20260713-173357" src="https://github.com/user-attachments/assets/be4a2d53-adee-408e-b837-0e8f37ee418f" />
 <img width="2081" height="1335" alt="QQ20260713-173544" src="https://github.com/user-attachments/assets/3438b9bc-cfc8-4b81-a199-ee635cfcb7bb" />
+
+## 自定义控件预览
+<img width="2697" height="1279" alt="QQ20260811-114012" src="https://github.com/user-attachments/assets/744b67cb-6f5b-4f6a-8ed7-ea3b72637644" />
 <img width="1972" height="1329" alt="QQ20260713-173612" src="https://github.com/user-attachments/assets/856a6e6c-ec98-46f6-9c6d-7657b361dc63" />
 <img width="2081" height="1335" alt="QQ20260713-173534" src="https://github.com/user-attachments/assets/e7ec0db1-617f-4ee3-a157-4b1192581e21" />
-<img width="2081" height="1335" alt="QQ20260713-173524" src="https://github.com/user-attachments/assets/ae64d4d3-4d87-4347-a424-74dd3e6532f8" />
-<img width="2081" height="1335" alt="QQ20260713-173434" src="https://github.com/user-attachments/assets/d8b81324-02f9-4604-96d1-3d9d172cedd8" />
 
 
 ## QDesigner展示
