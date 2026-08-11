@@ -21,6 +21,12 @@
 
 FluentUI3Style基于QProxyStyle实现，完整实现了FluentUI3 UI风格，使用到项目中超简单。通过编译成Qt样式插件，可直接在项目中使用`app.setStyle("FluentUI3")`来应用样式，无需手动加载库或链接源码。
 
+### 基础样式选择
+
+FluentUI3Style 基于 `QProxyStyle` 实现，没有重写的尺寸指标、子控件布局、默认绘制和交互行为仍由基础样式提供。实测表明，Qt 的 `windowsvista` 与 `fusion` 在这些细节上并不完全一致，因此即使使用同一套 FluentUI3Style 代码，部分控件的尺寸、位置和最终视觉效果仍可能存在细微差别。
+
+为尽量保持 Windows 下的预期效果，FluentUI3Style 默认优先使用 `windowsvista` 作为基础样式；当前 Qt 环境不提供 `windowsvista` 时（例如部分非 Windows 平台），再自动回退到 `fusion`。通过构造函数显式传入 `QStyle` 时，则以传入的样式为准。通过 `app.setStyle("FluentUI3")` 加载插件时也会进入相同的选择逻辑。
+
 ### 项目定位说明
 
 本项目定位为样式库，目标是将 Qt 现有控件呈现为 FluentUI（WinUI3）风格。
@@ -53,11 +59,7 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 ### 构建方式说明
 
-| 方式 | 状态 | 说明 |
-| ---- | ---- | ---- |
-| **CMake** | ✅ 推荐、持续维护 | 与 `examples/Gallery/CMakeLists.txt` 等功能同步更新，日常开发请使用 CMake |
-| **qmake** | ⚠️ 遗留、不再同步 | 根目录 `fluentw3uistyle.pro` 仍保留，但**不再与 CMake 同步维护**，不保证与最新 Gallery / QWindowKit 行为一致 |
-
+目前仅对 **CMake** 进行维护更新，推荐使用 CMake 构建本项目。
 ### 使用说明
 
 - **版本兼容性**：样式库在 Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC 环境）下测试正常
@@ -78,226 +80,39 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 | Qt6.10   | ✅ 支持 | ✅ 支持 | 样式代码基于 Qt 6.10 Win11 样式移植 |
 
 
-## 编译步骤（详细）
+## 编译步骤
 
-### 零、获取源码（含子模块）
+### 1. 获取源码（含子模块）
 
-`ExWidgets::Frameless` 的无边框窗口与 DWM 背景依赖 **[QWindowKit](https://github.com/stdware/qwindowkit)**，子模块位于 `3rd/qwindowkit/`。
-Qt ≥ 5.15.2 时该组件默认开启；设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 可跳过 QWindowKit 子模块。
-
-若要启用无边框组件，`git clone` 后须初始化子模块，否则 CMake 会尝试查找系统安装的 QWindowKit package。
-
-#### 首次克隆（推荐）
+若需要无边框组件支持（依赖 QWindowKit），请在克隆时初始化子模块：
 
 ```powershell
 git clone --recursive https://github.com/XHY-ChuJian/FluentUIStyle.git
-cd FluentUIStyle
 ```
 
-#### 已经克隆过仓库
+### 2. 编译工程
 
-```powershell
-git pull
-git submodule update --init --recursive
-```
+推荐直接使用支持 CMake 的 IDE（如 Qt Creator、Visual Studio 或 CLion）打开根目录的 `CMakeLists.txt` 进行配置与编译。
 
-> **注意：** 日常 `git pull` **不会**自动更新子模块。仅在 `EXWIDGETS_BUILD_FRAMELESS=ON` 时需要 QWindowKit；找不到 `3rd/qwindowkit` 时请执行 `git submodule update --init --recursive`。
-
-其他第三方依赖（如 `3rd/kissfft`）已直接提交在仓库中，无需额外步骤。
-
----
-
-### 一、准备环境
-
-- 操作系统：建议 Windows 10/11
-- 编译器：MSVC（与 Qt 套件保持一致）
-- Qt：建议使用已测试版本（如 Qt 6.6.3）
-- CMake：基础组件建议 3.16+；无边框组件需 3.19+
-
-> 说明：请确保 `cmake`、`ninja`（如使用）和 Qt 对应工具链在同一套环境中，避免出现“头文件版本与 moc 版本不一致”问题。
-
----
-
-### 二、使用 CMake 编译（推荐，唯一持续维护的构建方式）
-
-项目以 **CMake** 为准：`CMakeLists.txt` 与各子目录 `CMakeLists.txt` 会随功能更新；**qmake 工程不再同步维护**。
-
-#### 1) 进入项目目录
-
-```powershell
-cd D:/workspace/Code/Github/Window11Style
-```
-
-#### 2) 配置工程
-
-Qt 5.15.2 示例（须 **64 位** MSVC Kit，Kit 名称含 `64bit`）：
-
-```powershell
-cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH="D:/Qt/5.15.2/msvc2019_64" -DCMAKE_BUILD_TYPE=Debug
-```
-
-Qt 6 示例：
-
-```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64"
-```
-
-如果你希望更明确地指定 Qt 包目录，也可以加上：
-
-```powershell
--DQt6_DIR="D:/app/Qt/Qt6.6.3/6.6.3/msvc2019_64/lib/cmake/Qt6"
-```
-
-#### 3) 编译
-
-```powershell
-cmake --build build
-```
-
-多配置生成器（Visual Studio）可使用：
-
-```powershell
-cmake --build build --config Debug
-```
-
-#### 4) 运行示例
-
-```powershell
-./build/bin/Galleryd.exe   # Debug
-./build/bin/Gallery.exe    # Release
-```
-
-#### 5) 关键构建选项（CMake）
+### 3. CMake 构建选项
 
 - `BUILD_LIBRARY`：编译样式库（默认 ON）
 - `BUILD_PLUGIN`：编译 Qt Style 插件（默认 ON）
 - `BUILD_GALLERY`：编译 Gallery（默认 ON）
 - `EXWIDGETS_BUILD_FRAMELESS`：编译 `ExWidgets::Frameless` 并引入 QWindowKit（Qt ≥ 5.15.2 默认 **ON**，旧版 Qt 默认 **OFF**）
-- `FLUENTUI3STYLE_COPY_TO_QT_DIR`：构建后将插件复制到 Qt 的 `plugins/styles`（默认 **OFF**，避免无权限写入 Qt 安装目录）
+- `FLUENTUI3STYLE_COPY_TO_QT_DIR`：构建后将插件复制到 Qt 的 `plugins/styles`（默认 **ON**）
 
-例如只编译库和插件、不编译示例：
+## 使用方法
 
-```powershell
-cmake -S . -B build -DBUILD_GALLERY=OFF
-```
+完整的使用说明、控件属性设置以及不同的接入方式，请参阅单独的文档：**[使用方法 (USAGE.md)](USAGE.md)**。
 
-#### 6) Qt 5.14.2 说明
-
-- **样式库 / 插件 / Gallery 均可通过 CMake 正常构建**
-- Gallery **不使用 QWindowKit**，窗口为 **系统边框 + 系统标题栏**
-- 无需初始化 `3rd/qwindowkit` 子模块（若不编译依赖 QWindowKit 的目标）
-
----
-
-### 三、qmake 编译（遗留，不再同步更新）
-
-根目录仍保留 `fluentw3uistyle.pro`，便于旧工程参考，但 **不再与 CMake 同步更新**，不保证包含最新 Gallery 功能（如 QWindowKit 无边框、AudiomaticMini 等）。
-
-若仍需尝试：
-
-```powershell
-cd D:/workspace/Code/Github/Window11Style
-qmake fluentw3uistyle.pro
-nmake
-```
-
-**新接入与日常开发请使用 CMake。**
-
----
-
-### 四、插件部署说明
-
-当启用插件构建时，构建脚本会自动把样式插件拷贝到 Qt 的 `plugins/styles` 目录。  
-如果你在自定义环境中使用，也可以手动将生成的插件复制到目标 Qt 环境的 `plugins/styles` 下。
-
-## 如何使用
-
-## 项目接入方式（推荐）
-
-下面是把 `FluentUI3Style` 接入到你自己的 Qt 项目的常见流程。
-
-### 1) 构建并部署插件
-
-先按上面的 **CMake** 步骤完成构建。若开启 `FLUENTUI3STYLE_COPY_TO_QT_DIR=ON`，插件会复制到 Qt 的样式插件目录：
-
-- `QT_INSTALL_PLUGINS/styles`
-
-同时会自动复制属性头文件到：
-
-- `QT_INSTALL_HEADERS/FluentUI3Style/fluentui3styleproperties.h`
-
-> 如果 Qt 安装目录在受保护路径（例如 `Program Files`），复制阶段可能需要管理员权限。
-
-### 2) 项目中启用样式
-
-应用启动后直接使用插件名启用：
+**最简单的加载方式：**
+若已将插件部署到 Qt 目录，在项目启动后直接调用即可应用样式：
 
 ```cpp
 QApplication app(argc, argv);
 app.setStyle("FluentUI3");
 ```
-
-### 3) 在业务代码里使用属性枚举（推荐）
-
-```cpp
-#include <FluentUI3Style/fluentui3styleproperties.h>
-// 或者 include "fluentui3styleproperties.h"
-```
-
-然后通过 `setProperty` 设置控件样式，不建议再写数字魔法值。
-
-### 4) CMake 工程引用示例
-
-#### CMake（示例）
-
-```cmake
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
-add_executable(MyApp main.cpp mainwindow.cpp)
-target_link_libraries(MyApp PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
-```
-
-只要运行环境能找到 `FluentUI3` 插件（`plugins/styles` 下），业务工程无需显式链接 `FluentUI3Style` 库即可使用 `app.setStyle("FluentUI3")`。
-
-### 方式 1：直接在代码中创建样式实例
-
-```cpp
-#include "fluentui3style.h"
-
-QApplication app(argc, argv);
-app.setStyle(new FluentUI3Style);
-```
-
-适用场景：
-
-- 你以源码或库形式集成样式
-- 不依赖 Qt 插件机制
-
-### 方式 2：通过插件名加载（推荐）
-
-```cpp
-QApplication app(argc, argv);
-app.setStyle("FluentUI3");
-```
-
-适用场景：
-
-- 已构建并部署 `FluentUI3` 样式插件
-- 希望主工程最少改动接入
-
-### 方式 3：配合 FluentUIAppearance 初始化（可选）
-
-```cpp
-#include "fluentuiappearance.h"
-
-FluentUIAppearance::instance()->initialize();
-
-QApplication app(argc, argv);
-```
-
-适用场景：
-
-- 需要更完整的外观初始化流程
-- 需要统一主题/配色相关行为
 
 ## 支持的控件样式
 
@@ -334,72 +149,6 @@ FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
 | 表格控件 | QTableWidget   | 表格组件   |                                                                                                                                                                       |
 
 
-## 使用方法
-
-### 控件属性设置示例（来自 examples/Gallery/MainWindow）
-
-建议优先使用 `fluentui3styleproperties.h` 里的属性名常量和枚举值，而不是直接写数字。
-
-```cpp
-#include <FluentUI3Style/fluentui3styleproperties.h>
-
-// ProgressBar：粗条样式
-ui->progressBar->setProperty(ProgressBarStyleProperty, ProgressBarThick);
-
-// TabBar：WinUI3 Segmented 样式
-ui->tabBar->setProperty(TabBarStyleProperty, Segmented_WinUI3);
-
-// TabBar：其他样式
-pillBar->setProperty(TabBarStyleProperty, PillTabs);
-capTabBar->setProperty(TabBarStyleProperty, Capsule);
-navTabBar->setProperty(TabBarStyleProperty, Navigation);
-
-// SpinBox 按钮布局（当前属性名仍是字符串）
-ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsVertical);
-ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsHorizontalSides);
-ui->spinBox->setProperty("spinBoxButtonLayout", ArrowsHorizontalRight);
-ui->spinBox->setProperty("spinBoxButtonLayout", PlusMinusHorizontalSides);
-
-// CheckBox 开关样式
-checkBox->setProperty(SwitchStyleProperty, true);
-```
-
-常用属性速查：
-
-- `TabBarStyleProperty`：`QTabBar` 风格（Capsule / Pivot / Segmented / Navigation）
-- `ProgressBarStyleProperty`：`QProgressBar` 风格（Thin / Thick / Ring）
-- `SwitchStyleProperty`：`QCheckBox` 切换开关样式
-- `ButtonAccentStyleProperty`：按钮 Accent 色风格
-- `NavigationViewStyleProperty`：导航指示器样式
-- `NoRoundedCorners`：关闭圆角样式
-
-### 方法1：直接创建实例
-
-```cpp
-#include "fluentui3style.h"
-
-QApplication app(argc, argv);
-app.setStyle(new FluentUI3Style);
-```
-
-### 方法2：通过插件加载（推荐）
-
-```cpp
-QApplication app(argc, argv);
-app.setStyle("FluentUI3");
-```
-
-### 方法3：使用FluentUIAppearance
-
-```cpp
-#include "fluentuiappearance.h"
-
-// 初始化FluentUI外观
-FluentUIAppearance::instance()->initialize();
-
-QApplication app(argc, argv);
-```
-
 ## 技术实现
 
 ### 1. 代码来源
@@ -412,30 +161,6 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 - 增强了跨版本兼容性
 - 其他问题
 
-### 2. 颜色体系
-
-定义了完整的FluentUI3颜色体系，包括：
-
-- Light主题颜色方案
-- Dark主题颜色方案
-- 各种状态下的控件颜色（默认、悬停、按下、禁用）
-- 文本颜色
-- 边框颜色
-- 支持Fluent和Teams两种配色方案
-
-### 3. 图标支持
-
-使用Segoe Fluent Icons字体作为图标源，实现了FluentUI3风格的图标显示。
-
-### 4. 主题检测
-
-自动检测系统主题设置，在Windows 11上使用系统API获取当前主题，在其他系统上使用默认Light主题。
-
-## 编译选项
-
-- **BUILD_LIBRARY**：编译为静态库（默认ON）
-- **BUILD_PLUGIN**：编译为Qt插件（默认OFF）
-- **BUILD_GALLERY**：编译 Gallery（默认ON）
 
 ## 示例效果
 

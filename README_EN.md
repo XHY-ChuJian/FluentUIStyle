@@ -25,6 +25,12 @@
 
 FluentUI3Style is built on `QProxyStyle` and implements a full Fluent UI 3 visual language for Qt. It is easy to adopt: build the project as a Qt style plugin and apply it with `app.setStyle("FluentUI3")`—no manual DLL loading or linking style sources into every app.
 
+### Base style selection
+
+FluentUI3Style is implemented with `QProxyStyle`, so metrics, subcontrol layouts, default painting, and interaction behavior that it does not override are still supplied by its base style. Testing shows that Qt's `windowsvista` and `fusion` styles differ slightly in these areas; as a result, some widget sizes, positions, and final visuals can differ even when the same FluentUI3Style code is used.
+
+To preserve the expected appearance on Windows, FluentUI3Style prefers `windowsvista` as its default base style. If the current Qt environment does not provide `windowsvista`—for example, on some non-Windows platforms—it automatically falls back to `fusion`. A `QStyle` explicitly passed to the constructor takes precedence. Loading the plugin through `app.setStyle("FluentUI3")` uses the same selection logic.
+
 ### What this project is
 
 This repository is a **style library**. The goal is to make standard Qt widgets look and behave as close as practical to Fluent UI (WinUI 3).
