@@ -1,7 +1,7 @@
 
 # FluentUI3Style：基于Qt的FluentUI3风格实现
 
-**English:** [README_EN.md](README_EN.md)
+**English:** [README_EN.md](README_EN.md) | **使用方法:** [USAGE.md](USAGE.md)
 
 ## 预览
 <img width="1920" height="1094" alt="QQ20260509-112403-HD" src="https://github.com/user-attachments/assets/2e5d044d-7f2a-41cd-a76d-e5faf3cbc140" />
@@ -125,8 +125,6 @@ FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
 | 按钮   | QCheckBox      | 复选框    | `switchButton=true`：启用开关按钮样式                                                                                                                                          |
 | 按钮   | QRadioButton   | 单选按钮   |                                                                                                                                                                       |
 | 输入控件 | QLineEdit      | 文本框    | 支持底边线动画                                                                                                                                                               |
-| 输入控件 | QTextEdit      | 文本编辑框  |                                                                                                                                                                       |
-| 输入控件 | QPlainTextEdit | 纯文本编辑框 |                                                                                                                                                                       |
 | 输入控件 | QSpinBox       | 数字输入框  | `spinBoxButtonLayout`属性： `0`：垂直箭头（默认） `1`：水平两侧箭头 `2`：水平右侧箭头 `3`：水平两侧加减号                                                                                               |
 | 输入控件 | QDoubleSpinBox | 浮点数输入框 | `spinBoxButtonLayout`属性： `0`：垂直箭头（默认） `1`：水平两侧箭头 `2`：水平右侧箭头 `3`：水平两侧加减号                                                                                               |
 | 选择控件 | QComboBox      | 下拉组合框  | 支持下拉动画和阴影效果                                                                                                                                                           |
@@ -135,18 +133,13 @@ FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
 | 滑块   | QSlider        | 滑块     | 支持水平和垂直方向                                                                                                                                                             |
 | 进度条  | QProgressBar   | 进度条    | `progressBarStyle`属性： `0`：细条样式（默认） `1`：粗条样式 `2`：环形样式                                                                                                                  |
 | 标签页  | QTabBar        | 标签栏    | `tabBarStyle`属性： `1`：Capsule `2`：Pivot_Grow `3`：Pivot_Slide `4`：Pivot_Stretch `5`：PillTabs `6`：Segmented_Slide `7`：Segmented_Fade `8`：Navigation `9`：Segmented_WinUI3 |
-| 标签页  | QTabWidget     | 标签页组件  | 继承QTabBar的样式设置                                                                                                                                                        |
 | 滚动条  | QScrollBar     | 滚动条    | 支持水平和垂直方向                                                                                                                                                             |
-| 滚动条  | QScrollArea    | 滚动区域   |                                                                                                                                                                       |
 | 菜单   | QMenu          | 上下文菜单  | 支持阴影效果                                                                                                                                                                |
 | 菜单   | QMenuBar       | 菜单栏    |                                                                                                                                                                       |
 | 对话框  | QMessageBox    | 消息框    |                                                                                                                                                                       |
-| 对话框  | QFileDialog    | 文件对话框  |                                                                                                                                                                       |
 | 工具栏  | QToolButton    | 工具按钮   | 支持菜单箭头动画                                                                                                                                                              |
-| 工具栏  | QToolBar       | 工具栏    |                                                                                                                                                                       |
 | 树形控件 | QTreeView      | 树型视图   | 支持FluentUI导航控件样式                                                                                                                                                      |
 | 表格控件 | QTableView     | 表格视图   |                                                                                                                                                                       |
-| 表格控件 | QTableWidget   | 表格组件   |                                                                                                                                                                       |
 
 
 ## 技术实现
