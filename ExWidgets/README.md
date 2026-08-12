@@ -96,8 +96,13 @@ LIBS += -lExWidgets
 #include "exaudiolevelmeter.h"
 
 auto *meter = new ExAudioLevelMeter(this);
-meter->setScalePosition(ExAudioLevelMeter::CenterScale);
+meter->setRange(-60.0, 0.0);
 
+// 单声道只需持续提交当前电平
+meter->setLevel(currentPeakDb);
+
+// 立体声
+meter->setScalePosition(ExAudioLevelMeter::CenterScale);
 meter->setStereoLevels(leftPeakDb, rightPeakDb);
 // 或：meter->setLinearLevels({leftPeak, rightPeak});
 ```

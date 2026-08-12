@@ -76,7 +76,16 @@ if(MSVC)
 endif()
 
 
-
+# Copy to PyExamples directory for Python testing if the directory exists
+set(PY_EXAMPLES_DIR "${CMAKE_SOURCE_DIR}/PyExamples")
+if(EXISTS "${PY_EXAMPLES_DIR}")
+    set(PY_EXAMPLES_PLUGINS_DIR "${PY_EXAMPLES_DIR}/plugins/styles")
+    add_custom_command(TARGET FluentUI3StylePlugin POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PY_EXAMPLES_PLUGINS_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying FluentUI3StylePlugin to PyExamples..."
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:FluentUI3StylePlugin>" "${PY_EXAMPLES_PLUGINS_DIR}"
+    )
+endif()
 
 
 # Copy into Qt's install tree only when explicitly enabled (needs write access to Qt dir).

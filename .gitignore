@@ -60,3 +60,9 @@ compile_commands.json
 .vscode/settings.json
 
 /视频相关资料
+
+# Python virtual environment and cache
+.venv/
+venv/
+__pycache__/
+*.pyc
