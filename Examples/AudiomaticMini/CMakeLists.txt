@@ -30,7 +30,7 @@ target_link_libraries(AudiomaticMiniWidgets PUBLIC
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 
-if(BUILD_AUDIOMATIC_MINI)
+if(BUILD_EXAMPLES)
     set(AUDIOMATIC_MINI_APP_SOURCES
         main.cpp
         playerwindow.cpp
@@ -88,8 +88,7 @@ if(BUILD_AUDIOMATIC_MINI)
     qt_finalize_executable(AudiomaticMini)
 endif()
 
-option(BUILD_SPECTRUM_DEMO "Build standalone ExSpectrumWidget demo (Qt 6 only)" ON)
-if(BUILD_SPECTRUM_DEMO)
+if(BUILD_EXAMPLES)
     qt_add_executable(SpectrumDemo
         MANUAL_FINALIZATION
         spectrumdemomain.cpp

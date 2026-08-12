@@ -129,9 +129,7 @@ endforeach()
 
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
-option(BUILD_GALLERY "Build the Gallery application" ON)
-option(BUILD_AUDIOMATIC_MINI "Build Audiomatic mini player" ON)
-option(BUILD_WIN11_CLOCK "Build the Win11 Clock sample application" ON)
+option(BUILD_EXAMPLES "Build example applications" ON)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
@@ -147,7 +145,7 @@ if(BUILD_PLUGIN)
     add_subdirectory(fluentui3style/plugin)
 endif()
 
-if(BUILD_GALLERY OR BUILD_AUDIOMATIC_MINI OR BUILD_WIN11_CLOCK)
+if(BUILD_EXAMPLES)
     add_subdirectory(Examples)
 endif()
 

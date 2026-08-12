@@ -79,6 +79,23 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 | Qt6.10   | ✅ 支持 | ✅ 支持 | 样式代码基于 Qt 6.10 Win11 样式移植 |
 
 
+## Python (PySide6) 支持与示例
+
+本项目在 `PyExamples/` 目录下提供了基于 PySide6 的 Python 演示程序。该演示程序还原了 C++ 版本 Gallery 的绝大部分功能、界面布局与动态响应（如主题切换、强调色更改等）。
+
+### 为什么能在 Python 中直接使用 FluentUI3 样式？
+
+在 Python (PySide6/PyQt) 中，可以直接通过 `app.setStyle("FluentUI3")` 启用本样式库，而**不需要任何特殊的 Python 绑定**。
+这是因为本样式库本质上是一个标准的 Qt Style 插件（底层是由 C++ 编写的动态链接库 `.dll` 或 `.so`）。当你通过 `QCoreApplication.addLibraryPath()` 告知 Python 程序插件所在路径后，Qt 的底层 C++ 引擎就会自动发现并加载该样式插件。由于 PySide6 仅仅是 Qt C++ 引擎的 Python 包装器，所有的标准控件（如 `QPushButton`、`QComboBox` 等）在底层依然是原生的 C++ 对象，因此它们完全可以无缝接收并渲染底层加载的 C++ 样式。
+
+### 为什么 ExWidgets 扩展组件无法在 Python 中使用？
+
+你在 Python 演示程序的导航栏中会发现，`ExWidgets` 节点（如 `ExRangeSlider`、`ExBorderBeam` 等高级自定义组件）虽然保留了入口，但并未实际移植展示内容。
+这是因为 `ExWidgets` 属于**纯自定义的 C++ 控件类**，而非简单的样式机制。
+- **标准 Qt 控件**在 PySide6 中已经由官方提前写好了 Python 封装（Bindings），所以你可以直接在 Python 里 `from PySide6.QtWidgets import QPushButton` 并实例化。
+- **自定义 C++ 控件**（如 `ExRangeSlider`）对 Python 解释器来说是完全未知的。如果想要在 Python 中像原生 `QWidget` 一样创建和使用它们，必须使用 `Shiboken` 或 `sip` 等专门的工具为这些 C++ 源码生成专属的 Python 绑定包装库。
+由于本项目作为一个轻量级样式库，并未提供这些 C++ 扩展控件的 Python 包装工程，因此在 Python 中无法直接实例化与使用 `ExWidgets` 组件。如果你的 Python 项目只需要对基础控件进行 FluentUI 美化，现有的样式插件机制就已经完全足够了。
+
 ## 编译步骤
 
 ### 1. 获取源码（含子模块）

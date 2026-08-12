@@ -176,14 +176,14 @@ cmake --build build --config Debug
 
 - `BUILD_LIBRARY` — build the style library (default **ON**).
 - `BUILD_PLUGIN` — build the Qt style plugin (default **ON**).
-- `BUILD_GALLERY` — build Gallery (default **ON**).
+- `BUILD_EXAMPLES` — build all examples supported by the selected Qt version (default **ON**).
 - `EXWIDGETS_BUILD_FRAMELESS` — build `ExWidgets::Frameless` and bring in QWindowKit (default **ON** with Qt ≥ 5.15.2; **OFF** with older Qt).
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR` — copy the plugin into Qt’s `plugins/styles` after build (default **OFF**, avoids writing into a protected Qt install).
 
 For example, to build only the library and plugin:
 
 ```powershell
-cmake -S . -B build -DBUILD_GALLERY=OFF
+cmake -S . -B build -DBUILD_EXAMPLES=OFF
 ```
 
 #### 6) Qt 5.14.2 notes
@@ -430,7 +430,7 @@ The style can follow the OS theme on Windows 11 via system APIs; on other platfo
 
 - **`BUILD_LIBRARY`** — build the static style library (default **ON**).
 - **`BUILD_PLUGIN`** — build the Qt style plugin (default **ON**).
-- **`BUILD_GALLERY`** — build Gallery (default **ON**).
+- **`BUILD_EXAMPLES`** — build all examples supported by the selected Qt version (default **ON**).
 
 ## Demo gallery
 

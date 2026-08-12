@@ -1,48 +1,63 @@
 import sys
 import os
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QCheckBox, QProgressBar, QTabWidget
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtWidgets import QApplication, QStackedWidget
+from PySide6.QtCore import QCoreApplication, QFile
+from PySide6.QtGui import QFont
+from PySide6.QtUiTools import QUiLoader
+
+from mainwindow import MainWindowController
+from table_showcase import setup_table_widget
+from tab_showcase import setup_tab_showcase
+from basic_showcase import setup_basic_showcase
+
+class ExStackedWidget(QStackedWidget):
+    pass
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    # 动态加载当前文件所在目录下的 plugins 文件夹，以寻找 Qt Style 插件
+    app.setProperty("_q_scrollHint_center", False)
+    app.setProperty("_q_themestyle", 0)            
+    
     plugin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plugins")
     QCoreApplication.addLibraryPath(plugin_path)
-    
-    # 应用 FluentUI3 样式 (如果 plugins/styles/ 下没有对应的 dll 插件，这句将无效并使用系统默认样式)
     app.setStyle("FluentUI3")
 
-    window = QWidget()
-    window.setWindowTitle("FluentUI3 PySide6 Demo")
-    window.resize(400, 300)
-    layout = QVBoxLayout(window)
+    font = app.font()
+    font.setPixelSize(13)
+    font.setFamily("微软雅黑")
+    font.setHintingPreference(QFont.PreferNoHinting)
+    app.setFont(font)
 
-    # 1. 强调色按钮 (Accent Button)
-    btn = QPushButton("强调按钮")
-    btn.setProperty("accent", True)  # C++: ButtonAccentStyleProperty
-    layout.addWidget(btn)
+    ui_path = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), 
+        "..", "Examples", "Gallery", "mainwindow.ui"
+    ))
+    
+    loader = QUiLoader()
+    loader.registerCustomWidget(ExStackedWidget) 
+    
+    ui_file = QFile(ui_path)
+    if not ui_file.open(QFile.ReadOnly):
+        print(f"无法打开 UI 文件: {ui_path}\n错误信息: {ui_file.errorString()}")
+        sys.exit(-1)
+        
+    window = loader.load(ui_file)
+    ui_file.close()
+    
+    if not window:
+        print(f"UI 文件加载失败: {loader.errorString()}")
+        sys.exit(-1)
+        
+    # 集中处理主窗口绑定 (菜单、工具栏、导航、全局设置)
+    controller = MainWindowController(window)
+    
+    # 初始化各个子模块 UI 逻辑
+    setup_table_widget(window)
+    setup_tab_showcase(window, controller)
+    setup_basic_showcase(window, controller)
 
-    # 2. 开关按钮 (Switch Button)
-    switch_btn = QCheckBox("拨动开关")
-    switch_btn.setProperty("isSwitchButton", True)  # C++: SwitchStyleProperty
-    layout.addWidget(switch_btn)
-
-    # 3. 环形进度条 (Ring ProgressBar)
-    progress = QProgressBar()
-    progress.setValue(60)
-    # ProgressBarStyle 枚举: Thin=0, Thick=1, Ring=2
-    progress.setProperty("progressBarStyle", 2) 
-    progress.setProperty("progressBarThickness", 8)
-    layout.addWidget(progress)
-
-    # 4. 导航风格选项卡 (TabWidget)
-    tabs = QTabWidget()
-    tabs.addTab(QWidget(), "Home")
-    tabs.addTab(QWidget(), "Settings")
-    # TabBarStyle 枚举: Segmented_WinUI3 = 9
-    tabs.tabBar().setProperty("tabBarStyle", 9) 
-    layout.addWidget(tabs)
-
+    window.setWindowTitle("FluentUI3 PySide6 Gallery Demo")
     window.show()
+    
     sys.exit(app.exec())
