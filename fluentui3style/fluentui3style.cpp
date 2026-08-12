@@ -102,9 +102,10 @@ static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
     return QMarginsF( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth );
 }
 
-static constexpr int ProgressBarThickness       = 4;
-static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
-static constexpr int NavigationIconRole         = Qt::UserRole + 1;
+static constexpr int ProgressBarThickness         = 4;
+static constexpr int ProgressBarThinThickness     = 3;
+static constexpr int NavigationSettingsSpinRole   = Qt::UserRole + 1001;
+static constexpr int NavigationIconRole           = Qt::UserRole + 1;
 
 // The shared FluShadow profile extends four logical pixels beyond the panel.
 static constexpr int toolTipShadowBorderWidth      = FlyoutShadowBorderWidth;
@@ -3616,7 +3617,32 @@ QRect FluentUI3Style::subElementRect( SubElement element, const QStyleOption* op
                 }
 
                 // 不使用QProxyStyle，计算出来的opt->rect是错误的
-                return QCommonStyle::subElementRect( element, &optCopy, widget );
+                QRect progressRect  = QCommonStyle::subElementRect( element, &optCopy, widget );
+                const int styleValue = widget ? widget->property( ProgressBarStyleProperty ).toInt() : ProgressBarThin;
+                // Keep the full rect when the horizontal label is actually
+                // drawn, so the label and the bar share one geometric center.
+                const bool hasVisibleLabel = pb->textVisible && ( pb->state & State_Horizontal );
+                if ( element != SE_ProgressBarLabel && styleValue != ProgressBarRing && !hasVisibleLabel )
+                {
+                    // WinUI lays out both visuals in one fixed cross-axis grid:
+                    // 3 px for the default indicator and 4 px for the thick style.
+                    // Returning that shared grid here keeps Groove and Contents
+                    // on exactly the same integer-aligned center.
+                    const int thickness = styleValue == ProgressBarThick
+                                              ? ProgressBarThickness
+                                              : ProgressBarThinThickness;
+                    if ( pb->state & QStyle::State_Horizontal )
+                    {
+                        progressRect.setTop( progressRect.top() + ( progressRect.height() - thickness ) / 2 );
+                        progressRect.setHeight( thickness );
+                    }
+                    else
+                    {
+                        progressRect.setLeft( progressRect.left() + ( progressRect.width() - thickness ) / 2 );
+                        progressRect.setWidth( thickness );
+                    }
+                }
+                return progressRect;
             }
             break;
 #endif  // QT_CONFIG(progressbar)
@@ -6096,6 +6122,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
             {
                 PainterStateGuard psg( painter );
                 const int styleValue = widget ? widget->property( ProgressBarStyleProperty ).toInt() : ProgressBarThin;
+                const bool isThick   = styleValue == ProgressBarThick;
                 const bool isRing    = styleValue == ProgressBarRing;
                 if ( isRing )
                 {
@@ -6104,9 +6131,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 }
 
                 QRectF rect = option->rect;
+                const auto orientation = ( baropt->state & QStyle::State_Horizontal ) ? Qt::Horizontal : Qt::Vertical;
                 painter->translate( rect.topLeft() );
                 rect.translate( -rect.topLeft() );
-                const auto orientation = ( baropt->state & QStyle::State_Horizontal ) ? Qt::Horizontal : Qt::Vertical;
                 if ( orientation == Qt::Horizontal )
                 {
                     rect.setLeft( rect.left() + 2 );
@@ -6164,18 +6191,16 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     rect.setWidth( rect.width() * fillPercentage );
                 }
 
-                qreal progressBarThickness = 3.0;
-                qreal offset               = ( int( rect.height() ) % 2 == 0 ) ? 0.5f : 0.0f;
-                if ( widget && widget->property( ProgressBarStyleProperty ).toInt() == ProgressBarThick )
+                qreal progressBarThickness = ProgressBarThinThickness;
+                if ( isThick )
                 {
                     progressBarThickness = ProgressBarThickness;
-                    offset               = 0.0;
                 }
 
                 const QPointF center                 = rect.center();
                 const qreal progressBarHalfThickness = progressBarThickness / 2.0;
                 rect.setHeight( progressBarThickness );
-                rect.moveTop( center.y() - progressBarHalfThickness - offset );
+                rect.moveTop( center.y() - progressBarHalfThickness );
                 if ( rect.width() > 1.0 )
                 {
                     // After the vertical-path transform, width is still along progress and height is thickness.

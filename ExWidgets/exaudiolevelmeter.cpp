@@ -23,6 +23,7 @@ namespace
 
 constexpr int AnimationInterval = 16;
 
+// paintEvent 中一次计算出声道区、刻度区和有效内容区，避免绘制阶段重复处理布局。
 struct MeterLayout
 {
     QVector<QRectF> channels;
@@ -90,9 +91,12 @@ void ExAudioLevelMeter::setChannelCount( int count )
     }
     m_channelCount = count;
     resizeLevelStorage();
+    updateAnimationState();
     updateGeometry();
     update();
     emit channelCountChanged( count );
+    emit levelsChanged( m_levels );
+    emit peakLevelsChanged( m_peakLevels );
 }
 
 void ExAudioLevelMeter::setMinimumDecibels( qreal decibels )
@@ -101,28 +105,8 @@ void ExAudioLevelMeter::setMinimumDecibels( qreal decibels )
     {
         return;
     }
-    decibels = qBound( -160.0, decibels, m_maximumDecibels - 1.0 );
-    if ( qFuzzyCompare( m_minimumDecibels, decibels ) )
-    {
-        return;
-    }
-    m_minimumDecibels = decibels;
-    const qreal oldWarning = m_warningDecibels;
-    const qreal oldClip = m_clipDecibels;
-    m_warningDecibels = qBound( m_minimumDecibels, m_warningDecibels, m_maximumDecibels );
-    m_clipDecibels = qBound( m_warningDecibels, m_clipDecibels, m_maximumDecibels );
-    resizeLevelStorage();
-    updateGeometry();
-    update();
-    emit minimumDecibelsChanged( decibels );
-    if ( !qFuzzyCompare( oldWarning + 1.0, m_warningDecibels + 1.0 ) )
-    {
-        emit warningDecibelsChanged( m_warningDecibels );
-    }
-    if ( !qFuzzyCompare( oldClip + 1.0, m_clipDecibels + 1.0 ) )
-    {
-        emit clipDecibelsChanged( m_clipDecibels );
-    }
+    setRange( qBound( -160.0, decibels, m_maximumDecibels - 1.0 ),
+              m_maximumDecibels );
 }
 
 void ExAudioLevelMeter::setMaximumDecibels( qreal decibels )
@@ -131,20 +115,49 @@ void ExAudioLevelMeter::setMaximumDecibels( qreal decibels )
     {
         return;
     }
-    decibels = qBound( m_minimumDecibels + 1.0, decibels, 24.0 );
-    if ( qFuzzyCompare( m_maximumDecibels + 1.0, decibels + 1.0 ) )
+    setRange( m_minimumDecibels,
+              qBound( m_minimumDecibels + 1.0, decibels, 24.0 ) );
+}
+
+void ExAudioLevelMeter::setRange( qreal minimumDecibels, qreal maximumDecibels )
+{
+    if ( !qIsFinite( minimumDecibels ) || !qIsFinite( maximumDecibels )
+         || minimumDecibels >= maximumDecibels )
     {
         return;
     }
-    m_maximumDecibels = decibels;
+
+    minimumDecibels = qBound( -160.0, minimumDecibels, 23.0 );
+    maximumDecibels = qBound( minimumDecibels + 1.0, maximumDecibels, 24.0 );
+    const bool minimumChanged = !qFuzzyCompare( m_minimumDecibels + 1.0,
+                                                minimumDecibels + 1.0 );
+    const bool maximumChanged = !qFuzzyCompare( m_maximumDecibels + 1.0,
+                                                maximumDecibels + 1.0 );
+    if ( !minimumChanged && !maximumChanged )
+    {
+        return;
+    }
+
     const qreal oldWarning = m_warningDecibels;
     const qreal oldClip = m_clipDecibels;
+    const QVector<qreal> oldLevels = m_levels;
+    const QVector<qreal> oldPeaks = m_peakLevels;
+    m_minimumDecibels = minimumDecibels;
+    m_maximumDecibels = maximumDecibels;
     m_warningDecibels = qBound( m_minimumDecibels, m_warningDecibels, m_maximumDecibels );
     m_clipDecibels = qBound( m_warningDecibels, m_clipDecibels, m_maximumDecibels );
     resizeLevelStorage();
+    updateAnimationState();
     updateGeometry();
     update();
-    emit maximumDecibelsChanged( decibels );
+    if ( minimumChanged )
+    {
+        emit minimumDecibelsChanged( m_minimumDecibels );
+    }
+    if ( maximumChanged )
+    {
+        emit maximumDecibelsChanged( m_maximumDecibels );
+    }
     if ( !qFuzzyCompare( oldWarning + 1.0, m_warningDecibels + 1.0 ) )
     {
         emit warningDecibelsChanged( m_warningDecibels );
@@ -152,6 +165,14 @@ void ExAudioLevelMeter::setMaximumDecibels( qreal decibels )
     if ( !qFuzzyCompare( oldClip + 1.0, m_clipDecibels + 1.0 ) )
     {
         emit clipDecibelsChanged( m_clipDecibels );
+    }
+    if ( oldLevels != m_levels )
+    {
+        emit levelsChanged( m_levels );
+    }
+    if ( oldPeaks != m_peakLevels )
+    {
+        emit peakLevelsChanged( m_peakLevels );
     }
 }
 
@@ -386,13 +407,24 @@ void ExAudioLevelMeter::setPeakHoldEnabled( bool enabled )
         return;
     }
     m_peakHoldEnabled = enabled;
+    bool peakChanged = false;
     if ( !enabled )
     {
+        peakChanged = m_peakLevels != m_displayedLevels;
         m_peakLevels = m_displayedLevels;
+        m_peakHoldRemaining.fill( 0 );
+    }
+    else
+    {
+        m_peakHoldRemaining.fill( m_peakHoldDuration );
     }
     updateAnimationState();
     update();
     emit peakHoldEnabledChanged( enabled );
+    if ( peakChanged )
+    {
+        emit peakLevelsChanged( m_peakLevels );
+    }
 }
 
 void ExAudioLevelMeter::setPeakHoldDuration( int duration )
@@ -403,6 +435,11 @@ void ExAudioLevelMeter::setPeakHoldDuration( int duration )
         return;
     }
     m_peakHoldDuration = duration;
+    for ( int& remaining : m_peakHoldRemaining )
+    {
+        remaining = qMin( remaining, duration );
+    }
+    updateAnimationState();
     emit peakHoldDurationChanged( duration );
 }
 
@@ -418,6 +455,7 @@ void ExAudioLevelMeter::setDecayRate( qreal decibelsPerSecond )
         return;
     }
     m_decayRate = decibelsPerSecond;
+    updateAnimationState();
     emit decayRateChanged( decibelsPerSecond );
 }
 
@@ -433,6 +471,7 @@ void ExAudioLevelMeter::setPeakDecayRate( qreal decibelsPerSecond )
         return;
     }
     m_peakDecayRate = decibelsPerSecond;
+    updateAnimationState();
     emit peakDecayRateChanged( decibelsPerSecond );
 }
 
@@ -455,14 +494,25 @@ void ExAudioLevelMeter::setAnimationEnabled( bool enabled )
         return;
     }
     m_animationEnabled = enabled;
+    bool peakChanged = false;
     if ( !enabled )
     {
         m_displayedLevels = m_levels;
+        peakChanged = m_peakLevels != m_levels;
         m_peakLevels = m_levels;
+        m_peakHoldRemaining.fill( 0 );
+    }
+    else if ( m_peakHoldEnabled )
+    {
+        m_peakHoldRemaining.fill( m_peakHoldDuration );
     }
     updateAnimationState();
     update();
     emit animationEnabledChanged( enabled );
+    if ( peakChanged )
+    {
+        emit peakLevelsChanged( m_peakLevels );
+    }
 }
 
 void ExAudioLevelMeter::setColorMode( ColorMode mode )
@@ -576,6 +626,8 @@ QVector<qreal> ExAudioLevelMeter::customScaleValues() const
 
 void ExAudioLevelMeter::setCustomScaleValues( const QVector<qreal>& values )
 {
+    // 保存完整的有效配置。量程过滤放在 scaleValues() 中完成，这样修改量程后
+    // 原先位于量程外的自定义刻度仍可自动恢复。
     QVector<qreal> normalized;
     normalized.reserve( values.size() );
     for ( qreal value : values )
@@ -640,6 +692,7 @@ bool ExAudioLevelMeter::isRunning() const
 
 QSize ExAudioLevelMeter::sizeHint() const
 {
+    return minimumSizeHint();
     const int width = m_channelCount == 1 ? 100 : 70 + m_channelCount * 42;
     return QSize( width, 320 );
 }
@@ -681,6 +734,7 @@ void ExAudioLevelMeter::setLinearLevels( const QVector<qreal>& amplitudes )
     decibels.reserve( amplitudes.size() );
     for ( qreal amplitude : amplitudes )
     {
+        // 电平表接收的是峰值幅度，因此采用 20 * log10，而不是功率的 10 * log10。
         const qreal magnitude = qAbs( amplitude );
         decibels.append( magnitude > 0.0 ? 20.0 * std::log10( magnitude ) : -160.0 );
     }
@@ -727,7 +781,11 @@ void ExAudioLevelMeter::paintEvent( QPaintEvent* event )
     }
     const qreal tickSpace = m_scaleTickMarksVisible ? m_scaleTickLength + 4.0 : 0.0;
     const qreal scaleWidth = m_scalePosition == NoScale ? 0.0 : scaleLabelWidth + tickSpace + 4.0;
-    QRectF content = QRectF( rect() ).adjusted( 10.0, 10.0, -10.0, -10.0 - labelHeight );
+    const qreal scaleEdgeMargin = m_scalePosition == NoScale ? 10.0 : qMax( 10.0, metrics.height() * 0.5 + 1.0 );
+    QRectF content = QRectF( rect() ).adjusted( 10.0,
+                                                scaleEdgeMargin,
+                                                -10.0,
+                                                -scaleEdgeMargin - labelHeight );
     if ( content.width() <= 0.0 || content.height() < 4.0 )
     {
         return;
@@ -755,6 +813,7 @@ void ExAudioLevelMeter::paintEvent( QPaintEvent* event )
 
     if ( scalePosition == CenterScale )
     {
+        // CenterScale 只服务于立体声：左右声道等宽，刻度固定置于中间。
         const qreal meterWidth = ( content.width() - scaleWidth - 2.0 * m_channelSpacing ) * 0.5;
         if ( meterWidth <= 0.0 )
         {
@@ -805,6 +864,7 @@ void ExAudioLevelMeter::paintEvent( QPaintEvent* event )
 
         for ( int segment = 0; segment < visibleSegments; ++segment )
         {
+            // segment == 0 是最底部的分段，电平由下向上点亮。
             const qreal segmentRatio = static_cast<qreal>( segment + 1 ) / visibleSegments;
             const qreal segmentDecibels = m_minimumDecibels
                                           + segmentRatio * ( m_maximumDecibels - m_minimumDecibels );
@@ -895,6 +955,10 @@ void ExAudioLevelMeter::changeEvent( QEvent* event )
          || event->type() == QEvent::ApplicationPaletteChange || event->type() == QEvent::StyleChange
          || event->type() == QEvent::FontChange )
     {
+        if ( event->type() == QEvent::FontChange || event->type() == QEvent::StyleChange )
+        {
+            updateGeometry();
+        }
         update();
     }
 }
@@ -908,6 +972,7 @@ void ExAudioLevelMeter::applyLevels( const QVector<qreal>& decibels )
     }
     if ( decibels.size() != m_channelCount )
     {
+        // 让常见的 mono/stereo/multichannel 输入无需额外调用 setChannelCount()。
         setChannelCount( decibels.size() );
     }
 
@@ -916,9 +981,28 @@ void ExAudioLevelMeter::applyLevels( const QVector<qreal>& decibels )
     {
         const qreal value = boundedLevel( decibels.value( channel, m_minimumDecibels ) );
         m_levels[channel] = value;
-        if ( !m_animationEnabled || value >= m_displayedLevels.at( channel ) )
+        if ( !m_animationEnabled )
+        {
+            // 禁用动画时峰值保持也不能继续计时，否则峰值会永久停在历史最大值。
+            m_displayedLevels[channel] = value;
+            peakChanged = peakChanged
+                          || !qFuzzyCompare( m_peakLevels.at( channel ) + 1.0, value + 1.0 );
+            m_peakLevels[channel] = value;
+            m_peakHoldRemaining[channel] = 0;
+            continue;
+        }
+        if ( value >= m_displayedLevels.at( channel ) )
         {
             m_displayedLevels[channel] = value;
+        }
+        if ( !m_peakHoldEnabled )
+        {
+            peakChanged = peakChanged
+                          || !qFuzzyCompare( m_peakLevels.at( channel ) + 1.0,
+                                            m_displayedLevels.at( channel ) + 1.0 );
+            m_peakLevels[channel] = m_displayedLevels.at( channel );
+            m_peakHoldRemaining[channel] = 0;
+            continue;
         }
         if ( value >= m_peakLevels.at( channel ) )
         {
@@ -955,9 +1039,13 @@ void ExAudioLevelMeter::updateAnimationState()
     for ( int channel = 0; channel < m_channelCount; ++channel )
     {
         const qreal target = timedOut ? m_minimumDecibels : m_levels.at( channel );
-        hasMotion = hasMotion || qAbs( m_displayedLevels.at( channel ) - target ) > 0.001
-                    || ( m_peakHoldEnabled
-                         && m_peakLevels.at( channel ) > m_displayedLevels.at( channel ) + 0.001 );
+        // 速率为 0 表示保持，因此不能把它当成仍有运动，否则计时器不会停止。
+        const bool levelCanDecay = m_decayRate > 0.0
+                                   && m_displayedLevels.at( channel ) > target + 0.001;
+        const bool peakCanDecay = m_peakHoldEnabled
+                                  && m_peakLevels.at( channel ) > m_displayedLevels.at( channel ) + 0.001
+                                  && ( m_peakHoldRemaining.at( channel ) > 0 || m_peakDecayRate > 0.0 );
+        hasMotion = hasMotion || levelCanDecay || peakCanDecay;
     }
     const bool shouldRun = m_animationEnabled && isVisible() && isEnabled()
                            && ( hasMotion || waitingForTimeout || timedOut );
@@ -1003,6 +1091,8 @@ void ExAudioLevelMeter::updateAnimationFrame()
 
         if ( !m_peakHoldEnabled )
         {
+            peakChanged = peakChanged
+                          || !qFuzzyCompare( m_peakLevels.at( channel ) + 1.0, displayed + 1.0 );
             m_peakLevels[channel] = displayed;
             continue;
         }
@@ -1026,8 +1116,14 @@ void ExAudioLevelMeter::updateAnimationFrame()
         }
     }
 
+    bool levelsReset = false;
     if ( timedOut )
     {
+        // 超时只处理一次；显示值随后按照 decayRate 独立回落。
+        for ( qreal level : std::as_const( m_levels ) )
+        {
+            levelsReset = levelsReset || level > m_minimumDecibels + 0.001;
+        }
         m_levels.fill( m_minimumDecibels );
         m_inputElapsed.invalidate();
     }
@@ -1038,6 +1134,10 @@ void ExAudioLevelMeter::updateAnimationFrame()
     if ( peakChanged )
     {
         emit peakLevelsChanged( m_peakLevels );
+    }
+    if ( levelsReset )
+    {
+        emit levelsChanged( m_levels );
     }
     updateAnimationState();
 }
@@ -1161,6 +1261,7 @@ QVector<qreal> ExAudioLevelMeter::scaleValues() const
     QVector<qreal> values;
     if ( m_scaleMode == CustomScale )
     {
+        // 自定义配置保持不变，只在绘制时忽略当前量程之外的刻度。
         for ( qreal value : m_customScaleValues )
         {
             if ( value >= m_minimumDecibels && value <= m_maximumDecibels )
