@@ -71,6 +71,9 @@ LIBS += -lExWidgets
 | `ExColorPickerButton` | `excolorpickerbutton.h` | 带 Flyout 的取色按钮 | ExColorPicker 页内 |
 | `ExMessageBox` | `exmessagebox.h` | Fluent 风格 `QMessageBox` | Dialogs 页 |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog | Dialogs 页 |
+| `ExInfoBar` | `exinfobar.h` | 页面内非阻塞通知，支持四种严重级别、操作与关闭动画 | ExWidgets → ExInfoBar / ExExpander |
+| `ExInfoBarHost` | `exinfobarhost.h` | 窗口级 InfoBar 弹出、六向定位、多条堆叠与超时管理 | ExWidgets → ExInfoBar / ExExpander |
+| `ExExpander` | `exexpander.h` | 可向上或向下展开的 Header/Content 折叠容器 | ExWidgets → ExInfoBar / ExExpander |
 | `ExTimerDial` | `extimerdial.h` | 剩余时间、环形进度与预计完成时刻 | Win11Clock 计时器 |
 | `ExTimeline` / `ExTimelineEvent` | `extimeline.h` | 事件时间轴，支持水平/垂直、单侧/交错布局、状态节点和动画 | ExWidgets → ExTimeline |
 | `ExLiquidGauge` | `exliquidgauge.h` | Ant Design 风格水波图，支持四种形状、双层波浪和中心文本 | ExWidgets → ExLiquidGauge |
@@ -365,6 +368,62 @@ dlg.setDefaultButton(ExContentDialog::PrimaryBtn);
 const ExContentDialog::ContentDialogResult r = dlg.showDialog();
 if (r == ExContentDialog::Primary) { /* 确认 */ }
 ```
+
+---
+
+## ExInfoBar
+
+`ExInfoBar` 是参与页面布局的非阻塞通知，不会像对话框一样覆盖或锁定其他内容。默认处于关闭状态：
+
+```cpp
+#include "exinfobar.h"
+
+auto *bar = new ExInfoBar(this);
+bar->setSeverity(ExInfoBar::Warning);
+bar->setTitle(tr("网络连接不稳定"));
+bar->setMessage(tr("部分内容可能无法及时更新。"));
+bar->setActionButtonText(tr("重试"));
+connect(bar, &ExInfoBar::actionTriggered, this, &Page::retry);
+bar->setOpen(true);
+```
+
+`setActionWidget()` 可用任意 `QWidget` 替换默认操作按钮；`takeActionWidget()` 可在不删除控件的情况下转移所有权。关闭按钮、图标和动画时长均可配置。
+
+窗口级弹出通知使用 `ExInfoBarHost`。它支持左上、顶部、右上、左下、底部和右下六个锚点。顶部锚点的新通知依次排在已有通知下方，底部锚点则从底边向上堆叠：
+
+```cpp
+#include "exinfobarhost.h"
+
+// 主窗口初始化时设置一次。
+ExInfoBarHost::setDefaultTarget(mainWindow);
+
+ExInfoBarHost::defaultHost()->showInfoBar(ExInfoBar::Success,
+                                          tr("保存成功"),
+                                          tr("所有更改均已保存。"),
+                                          ExInfoBarHost::TopRight);
+```
+
+默认窗口和默认 Host 使用 `QPointer` 跟踪生命周期。需要在其他顶层窗口中
+使用独立通知队列时，仍可直接构造 `ExInfoBarHost(window, window)`。
+
+默认在 4.5 秒后自动关闭，鼠标悬停会暂停计时。不设置固定数量上限，但只显示当前窗口高度能够完整容纳的通知，其余通知按加入顺序等待，前面的通知关闭后自动补位。传入 `timeout == 0` 可创建常驻通知。
+
+---
+
+## ExExpander
+
+`ExExpander` 的 Header 始终可见，展开后的 Content 会推开相邻内容而不是覆盖它：
+
+```cpp
+#include "exexpander.h"
+
+auto *expander = new ExExpander(this);
+expander->setHeader(tr("高级设置"));
+expander->setContentWidget(settingsWidget);
+expander->setExpanded(true);
+```
+
+Header 和 Content 都可以是任意 `QWidget`。`expandDirection` 支持 `Down` 和 `Up`；Header 支持鼠标和键盘操作，并显示焦点状态。
 
 ---
 

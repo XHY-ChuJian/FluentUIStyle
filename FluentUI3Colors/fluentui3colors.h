@@ -3,6 +3,7 @@
 
 #include <QtGlobal>
 #include <QColor>
+#include <QPalette>
 #include <array>
 
 enum WINUI3Color
@@ -156,5 +157,39 @@ inline const QColor shellCaptionCloseFillColorSecondary(0xC4, 0x2B, 0x1C, 0xE6);
 inline const QColor shellCaptionCloseTextFillColorSecondary(0xFF, 0xFF, 0xFF, 0xB3);
 
 inline const std::array<std::array<QColor, WINUI3Color::count>, 2> WINUI3Colors{WINUI3ColorsLight, WINUI3ColorsDark};
+
+// 返回 QWidget isCard / Expander 共用的最终背景色。普通模式预合成到不透明
+// Base/Window，透明或壁纸模式则保留受控透明度。
+inline QColor winUI3CardBackgroundColor( const QPalette& palette,
+                                         bool darkTheme,
+                                         bool translucentBackground = false )
+{
+    QColor base = palette.base().color();
+    if ( base.alpha() == 0 )
+    {
+        base = palette.window().color();
+    }
+    if ( base.alpha() == 0 )
+    {
+        base = darkTheme ? QColor( 0x1E, 0x1E, 0x1E )
+                         : QColor( 0xFF, 0xFF, 0xFF );
+    }
+
+    const QColor card = WINUI3Colors[ darkTheme ? 1 : 0 ][ cardBackgroundFillColorDefault ];
+    if ( card.alpha() == 255 )
+    {
+        return card;
+    }
+
+    const qreal alpha = card.alphaF();
+    QColor result( qRound( base.red() * ( 1.0 - alpha ) + card.red() * alpha ),
+                   qRound( base.green() * ( 1.0 - alpha ) + card.green() * alpha ),
+                   qRound( base.blue() * ( 1.0 - alpha ) + card.blue() * alpha ) );
+    if ( translucentBackground )
+    {
+        result.setAlpha( qMax( darkTheme ? 72 : 92, qMin( 160, base.alpha() ) ) );
+    }
+    return result;
+}
 
 #endif // FLUENTUI3COLORS_H

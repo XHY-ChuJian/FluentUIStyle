@@ -22,6 +22,9 @@ SOURCES += \
     $$PWD/exstackedwidget.cpp \
     $$PWD/extabwidget.cpp \
     $$PWD/excontentdialog.cpp \
+    $$PWD/exinfobar.cpp \
+    $$PWD/exinfobarhost.cpp \
+    $$PWD/exexpander.cpp \
     $$PWD/exspectrumwidget.cpp
 
 HEADERS += \
@@ -48,6 +51,9 @@ HEADERS += \
     $$PWD/exwidgets_global.h \
     $$PWD/extabwidget.h \
     $$PWD/excontentdialog.h \
+    $$PWD/exinfobar.h \
+    $$PWD/exinfobarhost.h \
+    $$PWD/exexpander.h \
     $$PWD/exspectrumwidget.h
 
 INCLUDEPATH += $$PWD

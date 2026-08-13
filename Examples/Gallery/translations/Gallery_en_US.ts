@@ -1779,4 +1779,162 @@ li.checked::marker { content: "\2612"; }
         <translation>Insights</translation>
     </message>
 </context>
+<context>
+    <name>ExInfoBar</name>
+    <message>
+        <source>关闭</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <source>关闭通知</source>
+        <translation>Close notification</translation>
+    </message>
+</context>
+<context>
+    <name>FeedbackShowcaseWidget</name>
+    <message>
+        <source>InfoBar 与 Expander</source>
+        <translation>InfoBar and Expander</translation>
+    </message>
+    <message>
+        <source>InfoBar 用于页面内非阻塞通知；Expander 用于按需显示相关的次要内容。</source>
+        <translation>InfoBar shows non-blocking inline notifications; Expander reveals related secondary content on demand.</translation>
+    </message>
+    <message>
+        <source>ExInfoBar</source>
+        <translation>ExInfoBar</translation>
+    </message>
+    <message>
+        <source>信息</source>
+        <translation>Information</translation>
+    </message>
+    <message>
+        <source>新版本已经可以下载。</source>
+        <translation>A new version is ready to download.</translation>
+    </message>
+    <message>
+        <source>查看更新</source>
+        <translation>View update</translation>
+    </message>
+    <message>
+        <source>当前已经是最新版本。</source>
+        <translation>You are already using the latest version.</translation>
+    </message>
+    <message>
+        <source>成功</source>
+        <translation>Success</translation>
+    </message>
+    <message>
+        <source>所有更改均已保存。</source>
+        <translation>All changes have been saved.</translation>
+    </message>
+    <message>
+        <source>警告</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>网络连接不稳定，部分内容可能延迟。</source>
+        <translation>The network connection is unstable, so some content may be delayed.</translation>
+    </message>
+    <message>
+        <source>错误</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>无法连接到服务，请稍后重试。</source>
+        <translation>Unable to connect to the service. Try again later.</translation>
+    </message>
+    <message>
+        <source>重新显示全部通知</source>
+        <translation>Show all notifications again</translation>
+    </message>
+    <message>
+        <source>窗口级弹出</source>
+        <translation>Window-level popups</translation>
+    </message>
+    <message>
+        <source>弹出通知相对主窗口定位；顶部的新通知向下追加，底部的新通知向上追加，空间不足时自动排队。</source>
+        <translation>Popup notifications are positioned relative to the main window. Top notifications append downward, bottom notifications append upward, and overflow waits in a queue.</translation>
+    </message>
+    <message>
+        <source>窗口级通知 %1</source>
+        <translation>Window notification %1</translation>
+    </message>
+    <message>
+        <source>该通知会在 4.5 秒后关闭；鼠标悬停时暂停计时。</source>
+        <translation>This notification closes after 4.5 seconds; hovering pauses the timer.</translation>
+    </message>
+    <message>
+        <source>左上</source>
+        <translation>Top left</translation>
+    </message>
+    <message>
+        <source>顶部</source>
+        <translation>Top</translation>
+    </message>
+    <message>
+        <source>右上</source>
+        <translation>Top right</translation>
+    </message>
+    <message>
+        <source>左下</source>
+        <translation>Bottom left</translation>
+    </message>
+    <message>
+        <source>底部</source>
+        <translation>Bottom</translation>
+    </message>
+    <message>
+        <source>右下</source>
+        <translation>Bottom right</translation>
+    </message>
+    <message>
+        <source>在右上角连续弹出 10 条</source>
+        <translation>Show 10 at the top right</translation>
+    </message>
+    <message>
+        <source>关闭全部弹出通知</source>
+        <translation>Close all popup notifications</translation>
+    </message>
+    <message>
+        <source>ExExpander</source>
+        <translation>ExExpander</translation>
+    </message>
+    <message>
+        <source>高级设置</source>
+        <translation>Advanced settings</translation>
+    </message>
+    <message>
+        <source>启用自动保存</source>
+        <translation>Enable autosave</translation>
+    </message>
+    <message>
+        <source>启动时恢复上次会话</source>
+        <translation>Restore the previous session at startup</translation>
+    </message>
+    <message>
+        <source>通知音量</source>
+        <translation>Notification volume</translation>
+    </message>
+    <message>
+        <source>同步状态</source>
+        <translation>Sync status</translation>
+    </message>
+    <message>
+        <source>3 个设备</source>
+        <translation>3 devices</translation>
+    </message>
+    <message>
+        <source>桌面电脑、笔记本电脑和移动设备均已在刚刚完成同步。</source>
+        <translation>The desktop, laptop, and mobile device have just finished syncing.</translation>
+    </message>
+    <message>
+        <source>向上展开</source>
+        <translation>Expand upward</translation>
+    </message>
+    <message>
+        <source>内容显示在 Header 上方，适合靠近页面底部的布局。</source>
+        <translation>Content appears above the header, which suits layouts near the bottom of a page.</translation>
+    </message>
+</context>
 </TS>

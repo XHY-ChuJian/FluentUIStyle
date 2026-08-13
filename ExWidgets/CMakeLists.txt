@@ -36,6 +36,12 @@ set(EXWIDGETS_SOURCES
     exspectrumwidget.h
     excontentdialog.cpp
     excontentdialog.h
+    exinfobar.cpp
+    exinfobar.h
+    exinfobarhost.cpp
+    exinfobarhost.h
+    exexpander.cpp
+    exexpander.h
     exnavtreewidget.cpp
     exnavtreewidget.h
     exwinuinavigationview.cpp

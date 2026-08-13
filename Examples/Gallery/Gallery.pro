@@ -35,6 +35,7 @@ SOURCES += $$PWD/main.cpp \
            $$PWD/installedsoftwaretablewidget.cpp \
            $$PWD/tabshowcasewidget.cpp \
            $$PWD/dialogshowcasewidget.cpp \
+           $$PWD/feedbackshowcasewidget.cpp \
            $$PWD/font-icon/fonticon.cpp \
            $$PWD/aboutprojectwidget.cpp \
            $$PWD/segoeicongallerywidget.cpp \
@@ -54,6 +55,7 @@ HEADERS += $$PWD/mainwindow.h \
            $$PWD/installedsoftwaretablewidget.h \
            $$PWD/tabshowcasewidget.h \
            $$PWD/dialogshowcasewidget.h \
+           $$PWD/feedbackshowcasewidget.h \
            $$PWD/font-icon/fonticon.h \
            $$PWD/aboutprojectwidget.h \
            $$PWD/segoeicongallerywidget.h \

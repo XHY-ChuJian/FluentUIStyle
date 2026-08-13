@@ -12,6 +12,7 @@
 #include "systemresourceswidget.h"
 #include "timelineshowcasewidget.h"
 #include "audiolevelmetershowcasewidget.h"
+#include "feedbackshowcasewidget.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "audiomaticplayerwidget.h"
@@ -94,6 +95,8 @@
 
 // Project Headers
 #include <excombobox.h>
+#include <exexpander.h>
+#include <exinfobarhost.h>
 #include <exstackedwidget.h>
 #include <exnavtreewidget.h>
 #include <exmessagebox.h>
@@ -335,6 +338,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    ExInfoBarHost::setDefaultTarget( this );
+
+    setupSettingsExpanders();
+
     m_menuBar = new QMenuBar(this);
     m_menuBar->setObjectName(QStringLiteral("win-menu-bar"));
 
@@ -369,8 +376,11 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef GALLERY_ENABLE_I18N
     syncLanguageRadios();
 #else
-    ui->labelUiLanguage->hide();
-    ui->widgetUiLanguage->hide();
+    if ( QWidget* languageExpander = ui->pageSetting->findChild<QWidget*>(
+             QStringLiteral( "settingsLanguageExpander" ) ) )
+    {
+        languageExpander->hide();
+    }
 #endif
 
 #ifdef __MINGW32__
@@ -422,15 +432,74 @@ void MainWindow::initializeFluentBorderWidgets()
 {
     QList<QWidget *> fluentWidgets;
     fluentWidgets << ui->widget << ui->widget_2 << ui->widget_3 << ui->widget_4 << ui->widget_5 << ui->widget_6 << ui->widget_7
-                  << ui->widget_8 << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_14
-                  << ui->widgetWidgetMode << ui->widgetNavMode << ui->widgetColorSheme << ui->widgetAccentColor
-                  << ui->widgetUiLanguage;
+                  << ui->widget_8 << ui->widget_9 << ui->widget_10 << ui->widget_12 << ui->widget_13 << ui->widget_14;
 
     for (QWidget *widget : std::as_const(fluentWidgets))
     {
         widget->setAttribute(Qt::WA_StyledBackground);
         widget->setProperty("isCard", true);
     }
+}
+
+void MainWindow::setupSettingsExpanders()
+{
+    struct SettingsSection
+    {
+        QLabel* label;
+        QWidget* content;
+        QLayout* nestedLayout;
+        const char* objectName;
+    };
+
+    const SettingsSection sections[] = {
+        { ui->label_20, ui->widgetColorSheme, nullptr, "settingsThemeExpander" },
+        { ui->labelUiLanguage, ui->widgetUiLanguage, nullptr, "settingsLanguageExpander" },
+        { ui->label_21, ui->widgetWidgetMode, ui->verticalLayout_2, "settingsBackgroundExpander" },
+        { ui->label_22, ui->widgetNavMode, ui->verticalLayout_3, "settingsNavigationExpander" },
+        { ui->label_19, ui->widgetAccentColor, ui->verticalLayout, "settingsAccentExpander" }
+    };
+
+    // 先从 Designer 生成的布局中取出原有“标题 + Card”，保留控件本身及其信号连接。
+    for ( const SettingsSection& section : sections )
+    {
+        if ( section.nestedLayout )
+        {
+            section.nestedLayout->removeWidget( section.label );
+            section.nestedLayout->removeWidget( section.content );
+            ui->gridLayout_29->removeItem( section.nestedLayout );
+            delete section.nestedLayout;
+        }
+        else
+        {
+            ui->gridLayout_29->removeWidget( section.label );
+            ui->gridLayout_29->removeWidget( section.content );
+        }
+        section.label->hide();
+        section.content->setProperty( "isCard", QVariant() );
+        section.content->setAttribute( Qt::WA_StyledBackground, false );
+        if ( section.content->layout() )
+        {
+            // ExExpander 的 ContentPanel 已提供统一的 16 px 内边距。
+            section.content->layout()->setContentsMargins( 0, 0, 0, 0 );
+        }
+    }
+
+    ui->gridLayout_29->removeItem( ui->verticalSpacer );
+    delete ui->verticalSpacer;
+    ui->gridLayout_29->setHorizontalSpacing( 0 );
+    ui->gridLayout_29->setVerticalSpacing( 8 );
+
+    int row = 0;
+    for ( const SettingsSection& section : sections )
+    {
+        auto* expander = new ExExpander( ui->scrollAreaWidgetContents );
+        expander->setObjectName( QString::fromLatin1( section.objectName ) );
+        expander->setHeader( section.label->text() );
+        expander->setContentWidget( section.content );
+        expander->setExpanded( true );
+        ui->gridLayout_29->addWidget( expander, row++, 0, 1, 2 );
+    }
+    ui->gridLayout_29->setRowStretch( row, 1 );
 }
 
 void MainWindow::initializeComponents()
@@ -1333,6 +1402,10 @@ void MainWindow::setupExWidgetsPages()
     auto *timelinePage = new TimelineShowcaseWidget(ui->stackedWidget);
     timelinePage->setObjectName(QStringLiteral("pageExTimeline"));
     ui->stackedWidget->addWidget(timelinePage);
+
+    auto *feedbackPage = new FeedbackShowcaseWidget(ui->stackedWidget);
+    feedbackPage->setObjectName(QStringLiteral("pageExFeedback"));
+    ui->stackedWidget->addWidget(feedbackPage);
 }
 
 void MainWindow::setupAudiomaticPlayerPage()
@@ -1386,6 +1459,8 @@ void MainWindow::addExWidgetsNavigation()
     const int progressRingPageIndex = progressRingPage ? ui->stackedWidget->indexOf(progressRingPage) : -1;
     QWidget *timelinePage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExTimeline"));
     const int timelinePageIndex = timelinePage ? ui->stackedWidget->indexOf(timelinePage) : -1;
+    QWidget *feedbackPage = ui->stackedWidget->findChild<QWidget *>(QStringLiteral("pageExFeedback"));
+    const int feedbackPageIndex = feedbackPage ? ui->stackedWidget->indexOf(feedbackPage) : -1;
     const int audiomaticPageIndex = m_audiomaticPlayerPage ? ui->stackedWidget->indexOf(m_audiomaticPlayerPage) : -1;
 
     m_navExWidgetsRoot = new QTreeWidgetItem();
@@ -1422,6 +1497,10 @@ void MainWindow::addExWidgetsNavigation()
     if (timelinePageIndex >= 0)
     {
         addExWidgetItem(QStringLiteral("ExTimeline"), timelinePageIndex);
+    }
+    if (feedbackPageIndex >= 0)
+    {
+        addExWidgetItem(QStringLiteral("ExInfoBar / ExExpander"), feedbackPageIndex);
     }
     if (colorPickerPageIndex >= 0)
     {
@@ -1923,6 +2002,7 @@ void MainWindow::setupAccentColorWidget()
         delete ui->widgetAccentColor->layout();
     }
     QHBoxLayout *layout = new QHBoxLayout(ui->widgetAccentColor);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     QList<QColor> colors = {
         QColor(),          // Default (represented by invalid QColor)

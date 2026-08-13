@@ -346,6 +346,40 @@ Search|Search
 Settings|Settings
 Help|Help
 About|About
+InfoBar 与 Expander|InfoBar and Expander
+InfoBar 用于页面内非阻塞通知；Expander 用于按需显示相关的次要内容。|InfoBar shows non-blocking inline notifications; Expander reveals related secondary content on demand.
+信息|Information
+新版本已经可以下载。|A new version is ready to download.
+查看更新|View update
+当前已经是最新版本。|You are already using the latest version.
+成功|Success
+所有更改均已保存。|All changes have been saved.
+警告|Warning
+网络连接不稳定，部分内容可能延迟。|The network connection is unstable, so some content may be delayed.
+错误|Error
+无法连接到服务，请稍后重试。|Unable to connect to the service. Try again later.
+重新显示全部通知|Show all notifications again
+窗口级弹出|Window-level popups
+弹出通知相对主窗口定位；同一位置的新通知贴近窗口边缘，旧通知向中心依次堆叠。|Popup notifications are positioned relative to the main window. New notifications stay at the selected edge while older ones stack toward the center.
+窗口级通知 %1|Window notification %1
+该通知会在 4.5 秒后关闭；鼠标悬停时暂停计时。|This notification closes after 4.5 seconds; hovering pauses the timer.
+左上|Top left
+顶部|Top
+右上|Top right
+左下|Bottom left
+底部|Bottom
+右下|Bottom right
+在右上角连续弹出 10 条|Show 10 at the top right
+关闭全部弹出通知|Close all popup notifications
+高级设置|Advanced settings
+启用自动保存|Enable autosave
+启动时恢复上次会话|Restore the previous session at startup
+通知音量|Notification volume
+同步状态|Sync status
+3 个设备|3 devices
+桌面电脑、笔记本电脑和移动设备均已在刚刚完成同步。|The desktop, laptop, and mobile device have just finished syncing.
+向上展开|Expand upward
+内容显示在 Header 上方，适合靠近页面底部的布局。|Content appears above the header, which suits layouts near the bottom of a page.
 """.strip()
 
 TABLE = {}

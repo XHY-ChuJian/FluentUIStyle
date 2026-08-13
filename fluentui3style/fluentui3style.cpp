@@ -335,20 +335,6 @@ static QColor resolveOpaque( const QColor& fluentColor, const QColor& base )
                    qRound( base.blue() * ( 1.0 - a ) + fluentColor.blue() * a ) );
 }
 
-static QColor opaqueBlendBase( const QPalette& palette, bool darkTheme )
-{
-    QColor base = palette.base().color();
-    if ( base.alpha() == 0 )
-    {
-        base = palette.window().color();
-    }
-    if ( base.alpha() == 0 )
-    {
-        base = darkTheme ? QColor( 0x1E, 0x1E, 0x1E ) : QColor( 0xFF, 0xFF, 0xFF );
-    }
-    return base;
-}
-
 QStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key );
 void startAnimationEx( QStyleAnimation* animation, QObject* target, const QByteArray& key );
 
@@ -3362,20 +3348,10 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
                 else
                 {
-                    const QColor cardColor = winUI3Color( cardBackgroundFillColorDefault );
-                    const QColor blendBase = opaqueBlendBase( option->palette, colorSchemeIndex == 1 );
-                    brColor                = resolveOpaque( cardColor, blendBase );
-
-                    // Gallery项目:
-                    // WidgetBgMode::Pixmap 会把 Base/Window 设为透明，这里保留最低透明度避免 card 过深或过透。
-                    // 不需要的话，直接使用cardColor即可
                     const bool wallpaperMode = qApp && qApp->property( "_q_widget_mode" ).toInt() >= 1;
-                    if ( wallpaperMode )
-                    {
-                        const int minAlpha  = ( colorSchemeIndex == 1 ) ? 72 : 92;
-                        const int keepAlpha = qMax( minAlpha, qMin( 160, blendBase.alpha() ) );
-                        brColor.setAlpha( keepAlpha );
-                    }
+                    brColor = winUI3CardBackgroundColor( option->palette,
+                                                         colorSchemeIndex == 1,
+                                                         wallpaperMode );
                 }
                 painter->setBrush( brColor );
                 painter->drawRoundedRect( r, 4, 4 );

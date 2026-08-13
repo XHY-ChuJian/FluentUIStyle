@@ -9,6 +9,8 @@ set(GALLERY_SOURCES
     tabshowcasewidget.h
     dialogshowcasewidget.cpp
     dialogshowcasewidget.h
+    feedbackshowcasewidget.cpp
+    feedbackshowcasewidget.h
     colorshowcasewidget.cpp
     colorshowcasewidget.h
     borderbeamshowcasewidget.cpp
@@ -143,6 +145,7 @@ if(WIN32 AND GALLERY_LUPDATE)
             "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.ui"
             "${CMAKE_CURRENT_SOURCE_DIR}/tabshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/dialogshowcasewidget.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/feedbackshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/colorshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/borderbeamshowcasewidget.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/audiolevelmetershowcasewidget.cpp"

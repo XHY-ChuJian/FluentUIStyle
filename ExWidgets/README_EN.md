@@ -42,6 +42,9 @@ Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Fr
 | `ExColorPickerButton` | `excolorpickerbutton.h` | Tool button + flyout picker |
 | `ExMessageBox` | `exmessagebox.h` | Fluent-styled `QMessageBox` |
 | `ExContentDialog` | `excontentdialog.h` | WinUI3 ContentDialog |
+| `ExInfoBar` | `exinfobar.h` | Inline, non-blocking notification with severity, actions, and dismissal animation |
+| `ExInfoBarHost` | `exinfobarhost.h` | Window-level InfoBar positioning, stacking, timeout, and hover pause |
+| `ExExpander` | `exexpander.h` | Header/content container that expands down or up |
 | `ExTimerDial` | `extimerdial.h` | Remaining time, circular progress, and optional finish time |
 | `ExTimeline` / `ExTimelineEvent` | `extimeline.h` | Horizontal/vertical event timeline with one-sided/alternating layouts, status nodes, reverse order, and animation |
 | `ExLiquidGauge` | `exliquidgauge.h` | Ant Design-inspired liquid gauge with four shapes, layered waves, and centered text |
