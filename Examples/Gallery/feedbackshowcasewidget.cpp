@@ -199,17 +199,18 @@ FeedbackShowcaseWidget::FeedbackShowcaseWidget( QWidget* parent )
 
     auto* basicExpander = new ExExpander( content );
     basicExpander->setHeader( tr( "高级设置" ) );
-    auto* settings = new QWidget;
-    auto* settingsLayout = new QVBoxLayout( settings );
-    settingsLayout->setContentsMargins( 0, 0, 0, 0 );
-    settingsLayout->setSpacing( 8 );
-    settingsLayout->addWidget( new QCheckBox( tr( "启用自动保存" ), settings ) );
-    settingsLayout->addWidget( new QCheckBox( tr( "启动时恢复上次会话" ), settings ) );
-    auto* volume = new QSlider( Qt::Horizontal, settings );
+    basicExpander->addContentWidget( new QCheckBox( tr( "启用自动保存" ) ));
+    basicExpander->addContentWidget( new QCheckBox( tr( "启动时恢复上次会话" ) ));
+
+    auto* audioSettings = new QWidget;
+    auto* audioSettingsLayout = new QVBoxLayout( audioSettings );
+    audioSettingsLayout->setContentsMargins( 0, 0, 0, 0 );
+    audioSettingsLayout->setSpacing( 8 );
+    auto* volume = new QSlider( Qt::Horizontal, audioSettings );
     volume->setValue( 60 );
-    settingsLayout->addWidget( new QLabel( tr( "通知音量" ), settings ) );
-    settingsLayout->addWidget( volume );
-    basicExpander->setContentWidget( settings );
+    audioSettingsLayout->addWidget( new QLabel( tr( "通知音量" ), audioSettings ) );
+    audioSettingsLayout->addWidget( volume );
+    basicExpander->addContentWidget( audioSettings );
     basicExpander->setExpanded( true );
     layout->addWidget( basicExpander );
 
@@ -238,14 +239,14 @@ FeedbackShowcaseWidget::FeedbackShowcaseWidget( QWidget* parent )
     } );
     headerLayout->addWidget( copyButton );
     customHeaderExpander->setHeaderWidget( customHeader );
-    customHeaderExpander->setContentWidget(
+    customHeaderExpander->addContentWidget(
         textContent( tr( "桌面电脑、笔记本电脑和移动设备均已在刚刚完成同步。" ) ) );
     layout->addWidget( customHeaderExpander );
 
     auto* upwardExpander = new ExExpander( content );
     upwardExpander->setHeader( tr( "向上展开" ) );
     upwardExpander->setExpandDirection( ExExpander::Up );
-    upwardExpander->setContentWidget(
+    upwardExpander->addContentWidget(
         textContent( tr( "内容显示在 Header 上方，适合靠近页面底部的布局。" ) ) );
     layout->addWidget( upwardExpander );
 

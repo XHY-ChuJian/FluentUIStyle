@@ -51,6 +51,7 @@ enum WINUI3Color
     tabBarHoverBackground,
     cardBackgroundFillColorDefault,
     cardStrokeColorDefault,
+    cardStrokeColorBalanced,
     count
 };
 
@@ -102,7 +103,8 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
     QColor(206,206,206),                            // tabBarSelectedBackground
     QColor(0, 0, 0, 18),                              // tabBarHoverBackground
     QColor(255, 255, 255, 179),                       // cardBackgroundFillColorDefault
-    QColor(0, 0, 0, 15)                               // cardStrokeColorDefault
+    QColor(0, 0, 0, 15),                              // cardStrokeColorDefault
+    QColor(0xE9, 0xE9, 0xE9)                          // cardStrokeColorBalanced
 };
 
 inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
@@ -148,7 +150,8 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
     QColor(82, 82, 84),                               // tabBarSelectedBackground
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(12.0)),  // tabBarHoverBackground
     QColor(255, 255, 255, 13),                        // cardBackgroundFillColorDefault
-    QColor(0, 0, 0, 25)                               // cardStrokeColorDefault
+    QColor(0, 0, 0, 25),                              // cardStrokeColorDefault
+    QColor(0x25, 0x25, 0x25)                          // cardStrokeColorBalanced
 };
 
 inline const QColor shellCaptionCloseFillColorPrimary(0xC4, 0x2B, 0x1C, 0xFF);

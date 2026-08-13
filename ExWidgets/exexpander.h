@@ -2,6 +2,7 @@
 
 #include "exwidgets_global.h"
 
+#include <QList>
 #include <QPointer>
 #include <QString>
 #include <QWidget>
@@ -13,7 +14,7 @@ class QVBoxLayout;
  * \brief 带可替换标题区域和内容区域的折叠容器。
  *
  * Header 始终可见，Content 在展开后参与正常布局，不覆盖相邻控件。
- * 支持向上或向下展开，并可在运行时替换任意 Header/Content QWidget。
+ * 支持向上或向下展开，并可追加多个任意 QWidget 作为独立 Content 面板。
  */
 class EXWIDGETS_EXPORT ExExpander final : public QWidget
 {
@@ -53,10 +54,12 @@ public:
     void setHeaderWidget( QWidget* widget );
     [[nodiscard]] QWidget* takeHeaderWidget();
 
-    [[nodiscard]] QWidget* contentWidget() const;
-    // 接管 widget 的所有权；替换时删除原 Content 控件。
-    void setContentWidget( QWidget* widget );
-    [[nodiscard]] QWidget* takeContentWidget();
+    [[nodiscard]] QList<QWidget*> contentWidgets() const;
+    // 追加独立 Content 面板并接管 widget 的所有权。
+    void addContentWidget( QWidget* widget );
+    // 移除并删除指定 Content 控件。
+    bool removeContentWidget( QWidget* widget );
+    void clearContentWidgets();
 
     [[nodiscard]] QSize sizeHint() const override;
     [[nodiscard]] QSize minimumSizeHint() const override;
@@ -82,24 +85,33 @@ protected:
 private:
     class HeaderButton;
     class ContentPanel;
+    class ContentStack;
     class ContentViewport;
+    bool hasContentWidgets() const;
+    bool isInternalWidget( const QWidget* widget ) const;
+    bool isContentWidgetOrDescendant( const QWidget* widget ) const;
+    void scheduleContentRefresh();
+    void rebuildContentLayout();
+    void refreshContentGeometry();
     void rebuildLayout();
     void finishTransition();
 
     QVBoxLayout* m_rootLayout = nullptr;
     HeaderButton* m_headerButton = nullptr;
-    ContentPanel* m_contentPanel = nullptr;
+    ContentStack* m_contentStack = nullptr;
     ContentViewport* m_contentContainer = nullptr;
     QVBoxLayout* m_contentLayout = nullptr;
     QPointer<QWidget> m_headerWidget;
-    QPointer<QWidget> m_contentWidget;
+    QList<QPointer<QWidget>> m_contentWidgets;
+    QList<ContentPanel*> m_contentPanels;
+    QList<QMetaObject::Connection> m_contentWidgetDestroyedConnections;
     QMetaObject::Connection m_headerWidgetDestroyedConnection;
-    QMetaObject::Connection m_contentWidgetDestroyedConnection;
     QVariantAnimation* m_expansionAnimation = nullptr;
     QString m_header;
     bool m_expanded = false;
     ExpandDirection m_expandDirection = Down;
     bool m_animationEnabled = true;
+    bool m_contentRefreshScheduled = false;
     // 与 WinUI3 一致：收起 167 ms，展开约 333 ms。
     int m_animationDuration = 167;
     qreal m_expansionProgress = 0.0;

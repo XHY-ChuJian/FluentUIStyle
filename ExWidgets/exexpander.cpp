@@ -15,6 +15,7 @@
 #include <QResizeEvent>
 #include <QStyle>
 #include <QStyleOptionFocusRect>
+#include <QTimer>
 #include <QVariantAnimation>
 #include <QVBoxLayout>
 
@@ -51,7 +52,7 @@ QColor cardBackground( const QPalette& palette )
 
 QColor cardBorder( const QPalette& palette, bool )
 {
-    return WINUI3Colors[ isDarkPalette( palette ) ? 1 : 0 ][ cardStrokeColorDefault ];
+    return WINUI3Colors[ isDarkPalette( palette ) ? 1 : 0 ][ cardStrokeColorBalanced ];
 }
 
 QPainterPath roundedPanelPath( const QRectF& rect,
@@ -107,12 +108,29 @@ QPainterPath roundedPanelPath( const QRectF& rect,
 class ExExpander::ContentPanel final : public QWidget
 {
 public:
-    explicit ContentPanel( ExExpander* expander )
+    ContentPanel( ExExpander* expander, QWidget* content )
         : QWidget( expander )
         , m_expander( expander )
     {
         setMinimumHeight( HeaderMinHeight );
         setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Maximum );
+        auto* layout = new QVBoxLayout( this );
+        layout->setContentsMargins( ContentPadding, ContentPadding,
+                                    ContentPadding, ContentPadding );
+        layout->setSpacing( 0 );
+        content->setParent( this );
+        layout->addWidget( content );
+        content->show();
+    }
+
+    void setOuterEdge( bool outerEdge )
+    {
+        if ( m_outerEdge == outerEdge )
+        {
+            return;
+        }
+        m_outerEdge = outerEdge;
+        update();
     }
 
 protected:
@@ -123,31 +141,67 @@ protected:
 
         const bool down = m_expander->expandDirection() == ExExpander::Down;
         const QRectF bounds = QRectF( rect() ).adjusted( 0.5, 0.5, -0.5, -0.5 );
-        const QPainterPath fillPath = roundedPanelPath( bounds,
-                                                        !down,
-                                                        !down,
-                                                        down,
-                                                        down );
+        // 所有 Content 与 Header 组成一个连续容器。只有距离 Header
+        // 最远的一项保留外侧圆角，其余连接边均为直角。
+        const QPainterPath fillPath = roundedPanelPath(
+            bounds,
+            !down && m_outerEdge,
+            !down && m_outerEdge,
+            down && m_outerEdge,
+            down && m_outerEdge );
         painter.fillPath( fillPath, cardBackground( palette() ) );
 
-        // Content 与 Header 共用的边不重复绘制，等价于 WinUI 的 1,0,1,1 / 1,1,1,0。
+        // 每项只绘制左右边和远离 Header 的横边。该横边同时作为下一项
+        // 的分隔线；靠近 Header 的边由 Header 或相邻 Content 绘制。
         QPainterPath borderPath;
         if ( down )
         {
             borderPath.moveTo( bounds.left(), bounds.top() );
-            borderPath.lineTo( bounds.left(), bounds.bottom() - CornerRadius );
-            borderPath.quadTo( bounds.left(), bounds.bottom(), bounds.left() + CornerRadius, bounds.bottom() );
-            borderPath.lineTo( bounds.right() - CornerRadius, bounds.bottom() );
-            borderPath.quadTo( bounds.right(), bounds.bottom(), bounds.right(), bounds.bottom() - CornerRadius );
+            borderPath.lineTo( bounds.left(), bounds.bottom() - ( m_outerEdge ? CornerRadius : 0 ) );
+            if ( m_outerEdge )
+            {
+                borderPath.quadTo( bounds.left(), bounds.bottom(),
+                                   bounds.left() + CornerRadius, bounds.bottom() );
+            }
+            else
+            {
+                borderPath.lineTo( bounds.left(), bounds.bottom() );
+            }
+            borderPath.lineTo( bounds.right() - ( m_outerEdge ? CornerRadius : 0 ), bounds.bottom() );
+            if ( m_outerEdge )
+            {
+                borderPath.quadTo( bounds.right(), bounds.bottom(),
+                                   bounds.right(), bounds.bottom() - CornerRadius );
+            }
+            else
+            {
+                borderPath.lineTo( bounds.right(), bounds.bottom() );
+            }
             borderPath.lineTo( bounds.right(), bounds.top() );
         }
         else
         {
             borderPath.moveTo( bounds.left(), bounds.bottom() );
-            borderPath.lineTo( bounds.left(), bounds.top() + CornerRadius );
-            borderPath.quadTo( bounds.left(), bounds.top(), bounds.left() + CornerRadius, bounds.top() );
-            borderPath.lineTo( bounds.right() - CornerRadius, bounds.top() );
-            borderPath.quadTo( bounds.right(), bounds.top(), bounds.right(), bounds.top() + CornerRadius );
+            borderPath.lineTo( bounds.left(), bounds.top() + ( m_outerEdge ? CornerRadius : 0 ) );
+            if ( m_outerEdge )
+            {
+                borderPath.quadTo( bounds.left(), bounds.top(),
+                                   bounds.left() + CornerRadius, bounds.top() );
+            }
+            else
+            {
+                borderPath.lineTo( bounds.left(), bounds.top() );
+            }
+            borderPath.lineTo( bounds.right() - ( m_outerEdge ? CornerRadius : 0 ), bounds.top() );
+            if ( m_outerEdge )
+            {
+                borderPath.quadTo( bounds.right(), bounds.top(),
+                                   bounds.right(), bounds.top() + CornerRadius );
+            }
+            else
+            {
+                borderPath.lineTo( bounds.right(), bounds.top() );
+            }
             borderPath.lineTo( bounds.right(), bounds.bottom() );
         }
         painter.setBrush( Qt::NoBrush );
@@ -157,12 +211,24 @@ protected:
 
 private:
     ExExpander* m_expander = nullptr;
+    bool m_outerEdge = false;
+};
+
+class ExExpander::ContentStack final : public QWidget
+{
+public:
+    explicit ContentStack( ExExpander* expander )
+        : QWidget( expander )
+    {
+        setMinimumWidth( ExpanderMinWidth );
+        setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Maximum );
+    }
 };
 
 class ExExpander::ContentViewport final : public QWidget
 {
 public:
-    ContentViewport( ExExpander* expander, ContentPanel* panel )
+    ContentViewport( ExExpander* expander, ContentStack* panel )
         : QWidget( expander )
         , m_expander( expander )
         , m_panel( panel )
@@ -197,7 +263,7 @@ public:
 
     QSize sizeHint() const override
     {
-        QSize result = m_panel->sizeHint().expandedTo( QSize( ExpanderMinWidth, HeaderMinHeight ) );
+        QSize result = m_panel->sizeHint().expandedTo( QSize( ExpanderMinWidth, 0 ) );
         result.setHeight( qRound( m_fullHeight * m_viewportProgress ) );
         return result;
     }
@@ -245,7 +311,7 @@ private:
                 result = heightForWidth;
             }
         }
-        return qMax( HeaderMinHeight, result );
+        return qMax( 0, result );
     }
 
     void updatePanelGeometry()
@@ -269,8 +335,8 @@ private:
     }
 
     ExExpander* m_expander = nullptr;
-    ContentPanel* m_panel = nullptr;
-    int m_fullHeight = HeaderMinHeight;
+    ContentStack* m_panel = nullptr;
+    int m_fullHeight = 0;
     qreal m_viewportProgress = 0.0;
 };
 
@@ -385,7 +451,7 @@ protected:
         QPainter painter( this );
         painter.setRenderHint( QPainter::Antialiasing );
 
-        const bool connected = m_expander->isExpanded();
+        const bool connected = m_expander->isExpanded() && m_expander->hasContentWidgets();
         const bool down = m_expander->expandDirection() == ExExpander::Down;
         const QRectF bounds = QRectF( rect() ).adjusted( 0.5, 0.5, -0.5, -0.5 );
         const QPainterPath headerPath = roundedPanelPath(
@@ -423,7 +489,7 @@ protected:
         painter.setPen( palette().color( isEnabled() ? QPalette::Active : QPalette::Disabled,
                                          QPalette::Text ) );
         QFont iconFont( QStringLiteral( "Segoe Fluent Icons" ) );
-        iconFont.setPixelSize( 12 );
+        iconFont.setPixelSize( 15 );
         iconFont.setStyleStrategy( QFont::NoFontMerging );
         painter.setFont( iconFont );
         const QRectF glyphRect( -ChevronButtonSize * 0.5,
@@ -468,9 +534,9 @@ ExExpander::ExExpander( QWidget* parent )
     : QWidget( parent )
     , m_rootLayout( new QVBoxLayout( this ) )
     , m_headerButton( new HeaderButton( this ) )
-    , m_contentPanel( new ContentPanel( this ) )
-    , m_contentContainer( new ContentViewport( this, m_contentPanel ) )
-    , m_contentLayout( new QVBoxLayout( m_contentPanel ) )
+    , m_contentStack( new ContentStack( this ) )
+    , m_contentContainer( new ContentViewport( this, m_contentStack ) )
+    , m_contentLayout( new QVBoxLayout( m_contentStack ) )
     , m_expansionAnimation( new QVariantAnimation( this ) )
 {
     setMinimumWidth( ExpanderMinWidth );
@@ -478,7 +544,7 @@ ExExpander::ExExpander( QWidget* parent )
     m_rootLayout->setContentsMargins( 0, 0, 0, 0 );
     m_rootLayout->setSpacing( 0 );
 
-    m_contentLayout->setContentsMargins( ContentPadding, ContentPadding, ContentPadding, ContentPadding );
+    m_contentLayout->setContentsMargins( 0, 0, 0, 0 );
     m_contentLayout->setSpacing( 0 );
     m_contentContainer->prepareAnimation();
     m_contentContainer->setViewportProgress( 0.0 );
@@ -502,7 +568,10 @@ ExExpander::~ExExpander()
     // QWidget 的子控件在派生类析构体之后才被逐个删除。提前断开监听，
     // 避免 destroyed 回调访问已经进入析构流程的 Header/Layout/Viewport。
     disconnect( m_headerWidgetDestroyedConnection );
-    disconnect( m_contentWidgetDestroyedConnection );
+    for ( const QMetaObject::Connection& connection : m_contentWidgetDestroyedConnections )
+    {
+        disconnect( connection );
+    }
 }
 
 QString ExExpander::header() const
@@ -538,11 +607,15 @@ void ExExpander::setExpandDirection( ExpandDirection direction )
         return;
     }
     m_expandDirection = direction;
+    rebuildContentLayout();
     rebuildLayout();
     m_headerButton->setExpansionProgress( m_expansionProgress );
     m_contentContainer->setViewportProgress( m_expansionProgress );
     m_headerButton->update();
-    m_contentPanel->update();
+    for ( ContentPanel* panel : m_contentPanels )
+    {
+        panel->update();
+    }
     updateGeometry();
     emit expandDirectionChanged( direction );
 }
@@ -593,9 +666,9 @@ void ExExpander::setHeaderWidget( QWidget* widget )
     if ( widget == this
          || widget == m_headerButton
          || widget == m_contentContainer
-         || widget == m_contentPanel
-         || widget == m_contentWidget.data()
-         || ( widget && m_contentWidget && m_contentWidget->isAncestorOf( widget ) )
+         || widget == m_contentStack
+         || isInternalWidget( widget )
+         || isContentWidgetOrDescendant( widget )
          || widget == m_headerWidget.data()
          || ( widget && m_headerWidget && m_headerWidget->isAncestorOf( widget ) )
          || ( widget && widget->isAncestorOf( this ) ) )
@@ -630,61 +703,196 @@ QWidget* ExExpander::takeHeaderWidget()
     return widget;
 }
 
-QWidget* ExExpander::contentWidget() const
+QList<QWidget*> ExExpander::contentWidgets() const
 {
-    return m_contentWidget.data();
+    QList<QWidget*> result;
+    for ( const QPointer<QWidget>& widget : m_contentWidgets )
+    {
+        if ( widget )
+        {
+            result.append( widget.data() );
+        }
+    }
+    return result;
 }
 
-void ExExpander::setContentWidget( QWidget* widget )
+void ExExpander::addContentWidget( QWidget* widget )
 {
-    if ( widget == this
+    if ( !widget
+         || widget == this
          || widget == m_headerButton
          || widget == m_contentContainer
-         || widget == m_contentPanel
+         || widget == m_contentStack
+         || isInternalWidget( widget )
          || widget == m_headerWidget.data()
          || ( widget && m_headerWidget && m_headerWidget->isAncestorOf( widget ) )
-         || widget == m_contentWidget.data()
-         || ( widget && m_contentWidget && m_contentWidget->isAncestorOf( widget ) )
+         || isContentWidgetOrDescendant( widget )
          || ( widget && widget->isAncestorOf( this ) ) )
     {
         return;
     }
-    if ( m_contentWidget )
+    for ( const QPointer<QWidget>& content : m_contentWidgets )
     {
-        disconnect( m_contentWidgetDestroyedConnection );
-        m_contentLayout->removeWidget( m_contentWidget );
-        delete m_contentWidget.data();
-    }
-    m_contentWidget = widget;
-    if ( widget )
-    {
-        widget->setParent( m_contentPanel );
-        m_contentLayout->addWidget( widget );
-        widget->show();
-        m_contentWidgetDestroyedConnection = connect( widget, &QObject::destroyed, this, [this]
+        if ( content && widget->isAncestorOf( content ) )
         {
-            m_contentWidget = nullptr;
-            m_contentContainer->updateGeometry();
-            updateGeometry();
-        } );
+            return;
+        }
     }
-    m_contentContainer->updateGeometry();
-    updateGeometry();
+
+    auto* panel = new ContentPanel( this, widget );
+    m_contentWidgets.append( widget );
+    m_contentPanels.append( panel );
+    m_contentWidgetDestroyedConnections.append(
+        connect( widget, &QObject::destroyed, this, [this, panel]
+        {
+            const int index = m_contentPanels.indexOf( panel );
+            if ( index < 0 )
+            {
+                return;
+            }
+            m_contentLayout->removeWidget( panel );
+            m_contentWidgets.removeAt( index );
+            m_contentPanels.removeAt( index );
+            m_contentWidgetDestroyedConnections.removeAt( index );
+            panel->deleteLater();
+            // sender 正处于 QWidget 析构中，布局刷新延迟到本轮事件结束，
+            // 避免重入其内部 QLayout 的子项移除流程。
+            scheduleContentRefresh();
+        } ) );
+    rebuildContentLayout();
+    refreshContentGeometry();
 }
 
-QWidget* ExExpander::takeContentWidget()
+bool ExExpander::removeContentWidget( QWidget* widget )
 {
-    QWidget* widget = m_contentWidget.data();
-    if ( widget )
+    int index = -1;
+    for ( int i = 0; i < m_contentWidgets.size(); ++i )
     {
-        disconnect( m_contentWidgetDestroyedConnection );
-        m_contentLayout->removeWidget( widget );
-        m_contentWidget = nullptr;
-        widget->setParent( nullptr );
-        m_contentContainer->updateGeometry();
-        updateGeometry();
+        if ( m_contentWidgets.at( i ) == widget )
+        {
+            index = i;
+            break;
+        }
     }
-    return widget;
+    if ( index < 0 )
+    {
+        return false;
+    }
+    disconnect( m_contentWidgetDestroyedConnections.takeAt( index ) );
+    m_contentWidgets.removeAt( index );
+    ContentPanel* panel = m_contentPanels.takeAt( index );
+    m_contentLayout->removeWidget( panel );
+    delete panel;
+    rebuildContentLayout();
+    refreshContentGeometry();
+    return true;
+}
+
+void ExExpander::clearContentWidgets()
+{
+    for ( const QMetaObject::Connection& connection : m_contentWidgetDestroyedConnections )
+    {
+        disconnect( connection );
+    }
+    m_contentWidgetDestroyedConnections.clear();
+    m_contentWidgets.clear();
+    const QList<ContentPanel*> panels = m_contentPanels;
+    m_contentPanels.clear();
+    for ( ContentPanel* panel : panels )
+    {
+        m_contentLayout->removeWidget( panel );
+        delete panel;
+    }
+    refreshContentGeometry();
+}
+
+bool ExExpander::hasContentWidgets() const
+{
+    return !m_contentPanels.isEmpty();
+}
+
+bool ExExpander::isInternalWidget( const QWidget* widget ) const
+{
+    return widget
+           && ( m_headerButton->isAncestorOf( widget )
+                || m_contentContainer->isAncestorOf( widget ) );
+}
+
+bool ExExpander::isContentWidgetOrDescendant( const QWidget* widget ) const
+{
+    if ( !widget )
+    {
+        return false;
+    }
+    for ( const QPointer<QWidget>& content : m_contentWidgets )
+    {
+        if ( content && ( content.data() == widget || content->isAncestorOf( widget ) ) )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ExExpander::scheduleContentRefresh()
+{
+    if ( m_contentRefreshScheduled )
+    {
+        return;
+    }
+    m_contentRefreshScheduled = true;
+    QTimer::singleShot( 0, this, [this]
+    {
+        m_contentRefreshScheduled = false;
+        rebuildContentLayout();
+        refreshContentGeometry();
+    } );
+}
+
+void ExExpander::rebuildContentLayout()
+{
+    for ( ContentPanel* panel : m_contentPanels )
+    {
+        m_contentLayout->removeWidget( panel );
+        panel->setOuterEdge( false );
+    }
+    if ( m_contentPanels.isEmpty() )
+    {
+        return;
+    }
+
+    // 第一个添加的 Content 始终紧邻 Header；向上展开时反向排列，
+    // 后续添加项自然继续向远离 Header 的方向延伸。
+    if ( m_expandDirection == Down )
+    {
+        for ( ContentPanel* panel : m_contentPanels )
+        {
+            m_contentLayout->addWidget( panel );
+            panel->show();
+        }
+    }
+    else
+    {
+        for ( int index = m_contentPanels.size() - 1; index >= 0; --index )
+        {
+            m_contentLayout->addWidget( m_contentPanels.at( index ) );
+            m_contentPanels.at( index )->show();
+        }
+    }
+    // 最后追加的 Content 位于距离 Header 最远的一端，负责整体外圆角。
+    m_contentPanels.last()->setOuterEdge( true );
+}
+
+void ExExpander::refreshContentGeometry()
+{
+    m_contentLayout->activate();
+    m_contentContainer->prepareAnimation();
+    m_contentContainer->setViewportProgress( m_expansionProgress );
+    const bool visible = m_expanded && hasContentWidgets();
+    m_contentStack->setVisible( visible );
+    m_contentContainer->setVisible( visible );
+    m_headerButton->update();
+    updateGeometry();
 }
 
 QSize ExExpander::sizeHint() const
@@ -721,14 +929,14 @@ void ExExpander::setExpanded( bool expanded )
         m_headerButton->setExpansionProgress( m_expansionProgress );
         if ( expanded )
         {
-            m_contentContainer->show();
-            m_contentPanel->show();
+            m_contentContainer->setVisible( hasContentWidgets() );
+            m_contentStack->setVisible( hasContentWidgets() );
             m_rootLayout->activate();
         }
         m_contentContainer->prepareAnimation();
-        m_contentPanel->setVisible( expanded );
+        m_contentStack->setVisible( expanded && hasContentWidgets() );
         m_contentContainer->setViewportProgress( m_expansionProgress );
-        m_contentContainer->setVisible( expanded );
+        m_contentContainer->setVisible( expanded && hasContentWidgets() );
         updateGeometry();
         if ( !expanded )
         {
@@ -740,14 +948,14 @@ void ExExpander::setExpanded( bool expanded )
 
     // ContentPanel 不做位移动画：展开时立即出现，收起时立即消失。
     // 动画只改变外层 ContentViewport 的裁剪高度和布局占用高度。
-    m_contentContainer->show();
+    m_contentContainer->setVisible( hasContentWidgets() );
     if ( expanded )
     {
-        m_contentPanel->show();
+        m_contentStack->setVisible( hasContentWidgets() );
     }
     m_rootLayout->activate();
     m_contentContainer->prepareAnimation();
-    m_contentPanel->setVisible( expanded );
+    m_contentStack->setVisible( expanded && hasContentWidgets() );
     m_contentContainer->setViewportProgress( m_expansionProgress );
 
     if ( expanded )
@@ -797,7 +1005,10 @@ void ExExpander::changeEvent( QEvent* event )
          || event->type() == QEvent::EnabledChange )
     {
         m_headerButton->update();
-        m_contentPanel->update();
+        for ( ContentPanel* panel : m_contentPanels )
+        {
+            panel->update();
+        }
     }
 }
 
@@ -822,8 +1033,8 @@ void ExExpander::finishTransition()
     m_expansionProgress = m_expanded ? 1.0 : 0.0;
     m_headerButton->setExpansionProgress( m_expansionProgress );
     m_contentContainer->setViewportProgress( m_expansionProgress );
-    m_contentPanel->setVisible( m_expanded );
-    m_contentContainer->setVisible( m_expanded );
+    m_contentStack->setVisible( m_expanded && hasContentWidgets() );
+    m_contentContainer->setVisible( m_expanded && hasContentWidgets() );
     updateGeometry();
     if ( !m_expanded )
     {

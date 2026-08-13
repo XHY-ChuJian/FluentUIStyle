@@ -3325,7 +3325,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->save();
                 painter->setRenderHint( QPainter::Antialiasing );
 
-                QRect r = option->rect.adjusted( 1, 1, -1, -1 );
+                const QRectF r = QRectF( option->rect ).adjusted( 0.5, 0.5, -0.5, -0.5 );
 
                 const bool isHovered = option->state & State_MouseOver;
 
@@ -3335,7 +3335,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
 #else
                                                         option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )
 #endif
-                                                        : winUI3Color( cardStrokeColorDefault );
+                                                        : winUI3Color( cardStrokeColorBalanced );
 
                 QPen pen( frameCol );
                 pen.setWidth( 1 );

@@ -448,15 +448,23 @@ void MainWindow::setupSettingsExpanders()
         QLabel* label;
         QWidget* content;
         QLayout* nestedLayout;
+        QList<QWidget*> rows;
         const char* objectName;
     };
 
     const SettingsSection sections[] = {
-        { ui->label_20, ui->widgetColorSheme, nullptr, "settingsThemeExpander" },
-        { ui->labelUiLanguage, ui->widgetUiLanguage, nullptr, "settingsLanguageExpander" },
-        { ui->label_21, ui->widgetWidgetMode, ui->verticalLayout_2, "settingsBackgroundExpander" },
-        { ui->label_22, ui->widgetNavMode, ui->verticalLayout_3, "settingsNavigationExpander" },
-        { ui->label_19, ui->widgetAccentColor, ui->verticalLayout, "settingsAccentExpander" }
+        { ui->label_20, ui->widgetColorSheme, nullptr,
+          { ui->rBLightTheme, ui->rBDarkTheme }, "settingsThemeExpander" },
+        { ui->labelUiLanguage, ui->widgetUiLanguage, nullptr,
+          { ui->rBLangZh_CN, ui->rBLangEn_US, ui->rBLangSystem }, "settingsLanguageExpander" },
+        { ui->label_21, ui->widgetWidgetMode, ui->verticalLayout_2,
+          { ui->rBWidgtModeNormal, ui->rBWidgetModePixmap, ui->rBWidgetModeDwmBlur },
+          "settingsBackgroundExpander" },
+        { ui->label_22, ui->widgetNavMode, ui->verticalLayout_3,
+          { ui->rBOnlyIcon, ui->rBIconAndText }, "settingsNavigationExpander" },
+        // 强调色内部是动态创建的按钮网格，仍作为一个完整 Content。
+        { ui->label_19, ui->widgetAccentColor, ui->verticalLayout,
+          {}, "settingsAccentExpander" }
     };
 
     // 先从 Designer 生成的布局中取出原有“标题 + Card”，保留控件本身及其信号连接。
@@ -477,7 +485,16 @@ void MainWindow::setupSettingsExpanders()
         section.label->hide();
         section.content->setProperty( "isCard", QVariant() );
         section.content->setAttribute( Qt::WA_StyledBackground, false );
-        if ( section.content->layout() )
+        if ( !section.rows.isEmpty() && section.content->layout() )
+        {
+            for ( QWidget* row : section.rows )
+            {
+                section.content->layout()->removeWidget( row );
+            }
+            // 原 Designer 容器只负责组合 RadioButton；拆行后不再显示。
+            section.content->hide();
+        }
+        else if ( section.content->layout() )
         {
             // ExExpander 的 ContentPanel 已提供统一的 16 px 内边距。
             section.content->layout()->setContentsMargins( 0, 0, 0, 0 );
@@ -495,7 +512,25 @@ void MainWindow::setupSettingsExpanders()
         auto* expander = new ExExpander( ui->scrollAreaWidgetContents );
         expander->setObjectName( QString::fromLatin1( section.objectName ) );
         expander->setHeader( section.label->text() );
-        expander->setContentWidget( section.content );
+        if ( section.rows.isEmpty() )
+        {
+            expander->addContentWidget( section.content );
+        }
+        else
+        {
+            // 各 RadioButton 进入独立 ContentPanel 后父对象不同，显式按钮组
+            // 用于保持 Designer 中原有的单选互斥行为。
+            auto* group = new QButtonGroup( expander );
+            group->setExclusive( true );
+            for ( QWidget* row : section.rows )
+            {
+                if ( auto* button = qobject_cast<QAbstractButton*>( row ) )
+                {
+                    group->addButton( button );
+                }
+                expander->addContentWidget( row );
+            }
+        }
         expander->setExpanded( true );
         ui->gridLayout_29->addWidget( expander, row++, 0, 1, 2 );
     }
