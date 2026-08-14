@@ -12,6 +12,7 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qpolygon.h>
 #include <QtWidgets/qwidget.h>
+#include <memory>
 
 #ifndef QSTYLEHELPER_P_H
 #    define QSTYLEHELPER_P_H

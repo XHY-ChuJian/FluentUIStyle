@@ -36,7 +36,7 @@ namespace
     constexpr int kPaletteRows = 6;
     constexpr int kTabBarHeight = 36;
     constexpr int kCheckerSize = 4;
-    constexpr QColor kCheckerColor(0x19, 0x80, 0x80, 0x80);
+    const QColor kCheckerColor(0x19, 0x80, 0x80, 0x80);
     constexpr int kCornerRadius = 8;
     constexpr int kShadowMargin = 8;
 

@@ -54,7 +54,7 @@ public:
     void setDefaultTimeout( int milliseconds );
 
     // timeout < 0 使用 defaultTimeout；timeout == 0 表示不自动关闭。
-    [[nodiscard]] ExInfoBar* showInfoBar( ExInfoBar::Severity severity,
+    ExInfoBar* showInfoBar( ExInfoBar::Severity severity,
                                           const QString& title,
                                           const QString& message,
                                           Position position = TopRight,

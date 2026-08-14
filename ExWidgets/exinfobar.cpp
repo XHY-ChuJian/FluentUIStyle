@@ -13,6 +13,7 @@
 #include <QToolButton>
 #include <QTextLayout>
 #include <QVariantAnimation>
+#include <qmath.h>
 
 namespace
 {

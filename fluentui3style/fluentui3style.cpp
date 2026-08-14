@@ -1508,7 +1508,11 @@ static QScreen* screenOf( const QWidget* w )
 {
     if ( w )
     {
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
         if ( auto screen = w->screen() )
+#else
+        if ( auto screen = QGuiApplication::screenAt( w->mapToGlobal( w->rect().center() ) ) )
+#endif
         {
             return screen;
         }
@@ -6648,7 +6652,11 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     QRect textRect( tl, br );
                     QRect vRect( visualMenuRect( textRect ) );
 
-                    qsizetype t    = s.indexOf( u'\t' );
+#    if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
+                    qsizetype t = s.indexOf( u'\t' );
+#    else
+                    qsizetype t = menuitem->text.indexOf( QLatin1Char( '\t' ) );
+#    endif
                     int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
                     if ( !proxy()->styleHint( SH_UnderlineShortcut, menuitem, widget ) )
                     {

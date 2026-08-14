@@ -7,6 +7,7 @@
 #include <QEasingCurve>
 #include <QEvent>
 #include <QGraphicsProxyWidget>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QParallelAnimationGroup>
 #include <QPointer>
@@ -645,10 +646,19 @@ void ComboBoxPopupAnimator::positionPopupForShadow( QWidget* popup )
     // Before its first native show the popup can still report the primary
     // screen even when its ComboBox is on another monitor.  Clamp against the
     // anchor widget's screen so the corrected geometry stays on that monitor.
-    QScreen* targetScreen = comboBox->screen();
+    QScreen* targetScreen = nullptr;
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
+    targetScreen = comboBox->screen();
+#else
+    targetScreen = QGuiApplication::screenAt( comboBox->mapToGlobal( comboBox->rect().center() ) );
+#endif
     if ( !targetScreen )
     {
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
         targetScreen = popup->screen();
+#else
+        targetScreen = QGuiApplication::screenAt( popup->mapToGlobal( popup->rect().center() ) );
+#endif
     }
     if ( targetScreen )
     {
