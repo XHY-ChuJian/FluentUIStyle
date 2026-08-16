@@ -104,6 +104,7 @@ static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 
 static constexpr int ProgressBarThickness         = 4;
 static constexpr int ProgressBarThinThickness     = 3;
+static constexpr int ProgressBarIndeterminateFrameIntervalMs = 16;
 static constexpr int NavigationSettingsSpinRole   = Qt::UserRole + 1001;
 static constexpr int NavigationIconRole           = Qt::UserRole + 1;
 
@@ -5530,6 +5531,27 @@ void FluentUI3Style::drawTreeViewIndicator( const QStyleOptionViewItem* option, 
     }
 }
 
+static void scheduleIndeterminateProgressBarRefresh( const QWidget* widget )
+{
+    if ( !widget )
+    {
+        return;
+    }
+
+    constexpr const char scheduledProperty[] = "_q_fluent_indeterminate_progress_scheduled";
+    auto* target = const_cast<QWidget*>( widget );
+    if ( target->property( scheduledProperty ).toBool() )
+    {
+        return;
+    }
+
+    target->setProperty( scheduledProperty, true );
+    QTimer::singleShot( ProgressBarIndeterminateFrameIntervalMs, target, [ target ]() {
+        target->setProperty( "_q_fluent_indeterminate_progress_scheduled", false );
+        target->update();
+    } );
+}
+
 void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
                                        QPainter* painter,
                                        const QWidget* widget,
@@ -5599,7 +5621,7 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
         // Qt angles are CCW; use negative to rotate clockwise.
         startAngle = -360.0 * t;
         spanAngle  = 90.0;
-        const_cast<QWidget*>( widget )->update();
+        scheduleIndeterminateProgressBarRefresh( widget );
     }
     else
     {
@@ -6162,7 +6184,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     const auto barBegin     = begin * rect.width();
                     const auto barEnd       = end * rect.width();
                     rect = QRectF( QPointF( rect.left() + barBegin, rect.top() ), QPointF( rect.left() + barEnd, rect.bottom() ) );
-                    const_cast<QWidget*>( widget )->update();
+                    scheduleIndeterminateProgressBarRefresh( widget );
                 }
                 else
                 {
