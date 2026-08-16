@@ -114,7 +114,7 @@ git clone --recursive https://github.com/XHY-ChuJian/FluentUIStyle.git
 
 - `BUILD_LIBRARY`：编译样式库（默认 ON）
 - `BUILD_PLUGIN`：编译 Qt Style 插件（默认 ON）
-- `BUILD_GALLERY`：编译 Gallery（默认 ON）
+- `BUILD_EXAMPLES`：编译示例程序（默认 ON，包含 Gallery 与 Win11Clock）
 - `EXWIDGETS_BUILD_FRAMELESS`：编译 `ExWidgets::Frameless` 并引入 QWindowKit（Qt ≥ 5.15.2 默认 **ON**，旧版 Qt 默认 **OFF**）
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR`：构建后将插件复制到 Qt 的 `plugins/styles`（默认 **ON**）
 

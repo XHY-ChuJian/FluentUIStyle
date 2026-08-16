@@ -14,8 +14,14 @@ win32-msvc {
     }
 }
 
-DESTDIR_BIN = $$OUT_PWD/../bin
-DESTDIR_LIB = $$OUT_PWD/../lib
+# 由顶层 subdirs 工程写入的构建根目录；存在时保证嵌套子项目也输出到同一个 bin/lib
+!isEmpty(FLUENT_BUILD_ROOT) {
+    DESTDIR_BIN = $$FLUENT_BUILD_ROOT/bin
+    DESTDIR_LIB = $$FLUENT_BUILD_ROOT/lib
+} else {
+    DESTDIR_BIN = $$OUT_PWD/../bin
+    DESTDIR_LIB = $$OUT_PWD/../lib
+}
 
 isEmpty(PREFIX) {
     PREFIX = $$PWD/install

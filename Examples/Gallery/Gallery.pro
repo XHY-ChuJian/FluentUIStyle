@@ -75,7 +75,7 @@ HEADERS += $$PWD/mainwindow.h \
 FORMS   += $$PWD/mainwindow.ui
 
 win32 {
-    LIBS += -ldbghelp -liphlpapi -lpdh
+    LIBS += -ldbghelp -liphlpapi -lpdh -luser32
     SOURCES += $$PWD/applanguage.cpp
     HEADERS += $$PWD/applanguage.h
 
@@ -83,7 +83,7 @@ win32 {
     #   lupdate Gallery.pro && python tools/fill_en_ts.py && lrelease translations/Gallery_en_US.ts -qm translations/Gallery_en_US.qm
     TRANSLATIONS += translations/Gallery_en_US.ts
 
-    LRELEASE = $$clean_path($$[QT_INSTALL_BINS]/lrelease.exe)
+    LRELEASE = $$shell_path($$[QT_INSTALL_BINS]/lrelease.exe)
 
     gallery_qm.target = $$shell_path($$PWD/translations/Gallery_en_US.qm)
     gallery_qm.commands = $$quote($$LRELEASE) $$quote($$PWD/translations/Gallery_en_US.ts) -qm $$quote($$PWD/translations/Gallery_en_US.qm)
