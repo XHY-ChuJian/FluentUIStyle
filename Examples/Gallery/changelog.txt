@@ -1,3 +1,10 @@
+【更新内容2026-8-17】
+1. 新增 ExInfoBar 消息通知条控件，支持多种消息类型与自定义目标挂载
+2. 新增 ExExpander 折叠/展开面板控件，支持多内容组合
+3. 新增基于 PySide6 的 Gallery 演示项目（位于 PyExamples），还原 C++ 版本动态交互特性
+4. 新增对 Qt 5.12 版本的编译与高 DPI 适配支持
+5. 优化 QWindowKit 为本地源码引入，并在各支持的 Qt 版本中默认启用无边框组件
+
 【更新内容2026-8-10】
 1.新增 ExBorderBeam / ExBorderBeamButton 动态渐变边框控件，支持 Light / Dark 主题、方向、光束数量与颜色配置
 2.新增 ExAudioLevelMeter 音频电平表控件，支持多声道、dBFS 刻度、峰值保持与衰减动画
