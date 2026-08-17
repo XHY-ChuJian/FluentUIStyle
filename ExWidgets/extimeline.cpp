@@ -588,9 +588,23 @@ private:
         }
 
         const bool outlined = event->status() == ExTimelineEvent::Normal || event->status() == ExTimelineEvent::Pending;
-        painter->setPen( QPen( color, outlined ? 2.0 : 1.0 ) );
-        painter->setBrush( outlined ? palette.color( colorGroup, QPalette::Base ) : color );
-        painter->drawEllipse( center, radius, radius );
+        QPen pen( color, 1.0 );
+        QBrush brush( color );
+        if ( event->status() == ExTimelineEvent::Normal )
+        {
+            pen.setWidthF( 4.0 );
+            brush = palette.color( colorGroup, QPalette::Base );
+        }
+        else if ( event->status() == ExTimelineEvent::Pending )
+        {
+            pen.setWidthF( 2.0 );
+            brush = palette.color( colorGroup, QPalette::Base );
+        }
+        
+        painter->setPen( pen );
+        painter->setBrush( brush );
+        const qreal adjustedRadius = qMax( 0.0, radius - pen.widthF() * 0.5 );
+        painter->drawEllipse( center, adjustedRadius, adjustedRadius );
 
         QColor symbolColor = outlined ? color : QColor( Qt::white );
         if ( !event->icon().isEmpty() )
