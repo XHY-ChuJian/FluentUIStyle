@@ -99,12 +99,12 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 ## 编译步骤
 
-### 1. 获取源码（含子模块）
+### 1. 获取源码
 
-若需要无边框组件支持（依赖 QWindowKit），请在克隆时初始化子模块：
+直接克隆项目代码：
 
 ```powershell
-git clone --recursive https://github.com/XHY-ChuJian/FluentUIStyle.git
+git clone https://github.com/XHY-ChuJian/FluentUIStyle.git
 ```
 
 ### 2. 编译工程

@@ -86,28 +86,17 @@ Happy coding.
 
 ## Build (detailed)
 
-### Get the source (including submodules)
+### Get the source
 
-The optional `ExWidgets::Frameless` component uses **[QWindowKit](https://github.com/stdware/qwindowkit)** for frameless windows and DWM backdrops. The submodule lives at `3rd/qwindowkit/`.
-It is enabled by default. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
+The optional `ExWidgets::Frameless` component uses **[QWindowKit](https://github.com/stdware/qwindowkit)** for frameless windows and DWM backdrops. The source code is directly included in the repository at `3rd/qwindowkit/`.
+It is enabled by default. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to disable the frameless component if needed.
 
-To enable the frameless component, initialize the submodule after cloning; otherwise CMake falls back to finding an installed QWindowKit package.
-
-#### First-time clone (recommended)
+#### Clone the repository
 
 ```powershell
-git clone --recursive https://github.com/XHY-ChuJian/FluentUIStyle.git
+git clone https://github.com/XHY-ChuJian/FluentUIStyle.git
 cd FluentUIStyle
 ```
-
-#### Already cloned the repo
-
-```powershell
-git pull
-git submodule update --init --recursive
-```
-
-> **Note:** `git pull` alone does **not** update submodules. QWindowKit is needed only with `EXWIDGETS_BUILD_FRAMELESS=ON`; run `git submodule update --init --recursive` if `3rd/qwindowkit` is missing.
 
 Other third-party code (e.g. `3rd/kissfft`) is committed directly in this repo.
 
