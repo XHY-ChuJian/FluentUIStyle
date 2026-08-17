@@ -5592,6 +5592,13 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     qreal spanAngle                 = 0.0;
     if ( isIndeterminate )
     {
+        auto anim = getAnimation( option->styleObject );
+        if ( !anim )
+        {
+            anim = new QStyleAnimation( option->styleObject );
+            anim->setFrameRate( QStyleAnimation::SixtyFps );
+            startAnimation( anim );
+        }
         const int loopDurationMSec      = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
         const auto elapsedTime          = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
         const auto elapsed              = elapsedTime.time_since_epoch().count();
@@ -5599,10 +5606,10 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
         // Qt angles are CCW; use negative to rotate clockwise.
         startAngle = -360.0 * t;
         spanAngle  = 90.0;
-        const_cast<QWidget*>( widget )->update();
     }
     else
     {
+        stopAnimation( option->styleObject );
         const auto fillPercentage = ( float( option->progress - option->minimum ) ) / ( float( option->maximum - option->minimum ) );
         spanAngle                 = 360.0 * qBound( 0.0f, fillPercentage, 1.0f );
     }
@@ -6151,7 +6158,14 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 if ( isIndeterminate )
                 {
-                    constexpr auto loopDurationMSec = 3000;
+                    auto anim = getAnimation( option->styleObject );
+                    if ( !anim )
+                    {
+                        anim = new QStyleAnimation( option->styleObject );
+                        anim->setFrameRate( QStyleAnimation::SixtyFps );
+                        startAnimation( anim );
+                    }
+                    constexpr auto loopDurationMSec = 4000;
                     const auto elapsedTime  = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
                     const auto elapsed      = elapsedTime.time_since_epoch().count();
                     const auto handleCenter = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
@@ -6162,10 +6176,10 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     const auto barBegin     = begin * rect.width();
                     const auto barEnd       = end * rect.width();
                     rect = QRectF( QPointF( rect.left() + barBegin, rect.top() ), QPointF( rect.left() + barEnd, rect.bottom() ) );
-                    const_cast<QWidget*>( widget )->update();
                 }
                 else
                 {
+                    stopAnimation( option->styleObject );
                     const auto fillPercentage =
                         ( float( baropt->progress - baropt->minimum ) ) / ( float( baropt->maximum - baropt->minimum ) );
                     rect.setWidth( rect.width() * fillPercentage );
