@@ -61,8 +61,8 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 目前仅对 **CMake** 进行维护更新，推荐使用 CMake 构建本项目。
 ### 使用说明
 
-- **版本兼容性**：样式库在 Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC 环境）下测试正常
-- **可选无边框组件**：Qt ≥ 5.15.2 时默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）；旧版 Qt 自动关闭。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
+- **版本兼容性**：样式库在 Qt 5.12、Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC/MinGW 环境）下测试正常
+- **可选无边框组件**：默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
 - **MinGW注意**：在MinGW环境下，菜单弹出可能需要特殊处理
 - **版本差异**：不同Qt版本间的差异主要体现在右键菜单的显示效果上，可能存在渲染或布局的细微差别
 - **兼容性建议**：由于Qt版本众多且自身兼容性差异，建议在使用时针对具体版本进行适当调整。完全兼容所有Qt版本不现实，但会确保对Qt最新稳定版的支持
@@ -72,7 +72,8 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 
 | Qt版本     | 样式库 | Gallery（CMake） | 窗口边框 |
 | -------- | ---- | -------------- | ---- |
-| Qt5.14.2 | ✅ 支持 | ✅ 支持 | **系统边框**（无 QWindowKit 无边框） |
+| Qt5.12.x | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
+| Qt5.14.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt5.15.2 | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.6.3  | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.8+   | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |

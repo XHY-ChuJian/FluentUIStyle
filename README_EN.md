@@ -67,8 +67,8 @@ Happy coding.
 
 ### Notes
 
-- **Tested versions:** Style library on Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC).
-- **Optional frameless component:** `ExWidgets::Frameless` is ON by default with Qt ≥ 5.15.2 (and requires CMake ≥ 3.19); older Qt versions disable it automatically. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to keep base `ExWidgets` free of QWindowKit.
+- **Tested versions:** Style library on Qt 5.12, Qt 5.14.2, Qt 5.15.2, Qt 6.5.3 / 6.6.3 (MSVC/MinGW).
+- **Optional frameless component:** `ExWidgets::Frameless` is ON by default (requires CMake ≥ 3.19). Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to keep base `ExWidgets` free of QWindowKit.
 - **MinGW:** Menus may need extra handling in some MinGW setups.
 - **Version differences:** Mostly visible in context menus (rendering/layout nuances).
 - **Compatibility:** Qt has many versions; full parity everywhere is unrealistic, but recent stable Qt releases are the priority.
@@ -77,7 +77,8 @@ Happy coding.
 
 | Qt version | Style library | Gallery (CMake) | Window chrome |
 | ---------- | ------------- | --------------- | ------------- |
-| Qt 5.14.2  | Supported | Supported | **System frame** (no QWindowKit frameless) |
+| Qt 5.12.x  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
+| Qt 5.14.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 5.15.2  | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 6.6.3   | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
 | Qt 6.8+    | Supported | Supported | Optional QWindowKit frameless + DWM backdrop |
@@ -88,7 +89,7 @@ Happy coding.
 ### Get the source (including submodules)
 
 The optional `ExWidgets::Frameless` component uses **[QWindowKit](https://github.com/stdware/qwindowkit)** for frameless windows and DWM backdrops. The submodule lives at `3rd/qwindowkit/`.
-It is enabled by default with Qt ≥ 5.15.2. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
+It is enabled by default. Set `EXWIDGETS_BUILD_FRAMELESS=OFF` to skip the QWindowKit submodule.
 
 To enable the frameless component, initialize the submodule after cloning; otherwise CMake falls back to finding an installed QWindowKit package.
 
@@ -177,7 +178,7 @@ cmake --build build --config Debug
 - `BUILD_LIBRARY` — build the style library (default **ON**).
 - `BUILD_PLUGIN` — build the Qt style plugin (default **ON**).
 - `BUILD_EXAMPLES` — build all examples supported by the selected Qt version (default **ON**).
-- `EXWIDGETS_BUILD_FRAMELESS` — build `ExWidgets::Frameless` and bring in QWindowKit (default **ON** with Qt ≥ 5.15.2; **OFF** with older Qt).
+- `EXWIDGETS_BUILD_FRAMELESS` — build `ExWidgets::Frameless` and bring in QWindowKit (default **ON**).
 - `FLUENTUI3STYLE_COPY_TO_QT_DIR` — copy the plugin into Qt’s `plugins/styles` after build (default **OFF**, avoids writing into a protected Qt install).
 
 For example, to build only the library and plugin:
@@ -186,11 +187,10 @@ For example, to build only the library and plugin:
 cmake -S . -B build -DBUILD_EXAMPLES=OFF
 ```
 
-#### 6) Qt 5.14.2 notes
+#### 6) Qt 5.12 / 5.14 notes
 
 - **Style library, plugin, and Gallery all build with CMake**
-- Gallery uses the **system title bar and system window frame** (no QWindowKit)
-- No need to init the `3rd/qwindowkit` submodule unless you build QWindowKit-dependent targets on Qt ≥ 5.15.2
+- QWindowKit frameless component is supported and enabled by default
 
 ---
 
