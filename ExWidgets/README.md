@@ -31,7 +31,7 @@ add_subdirectory(path/to/Window11Style/ExWidgets)
 target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
 ```
 
-`ExWidgets::Frameless` 提供 `FluentTitleBar` / `FluentWindowFrame`，并会传递 QWindowKit 依赖。Qt ≥ 5.15.2 时该 option 默认 ON，旧版 Qt 自动关闭；显式设为 OFF 时不影响基础 `ExWidgets` DLL。安装后也可显式请求组件：
+`ExWidgets::Frameless` 提供 `FluentTitleBar` / `FluentWindowFrame`，并会传递 QWindowKit 依赖。Qt ≥ 5.12 时该 option 默认 ON；显式设为 OFF 时不影响基础 `ExWidgets` DLL。安装后也可显式请求组件：
 
 ```cmake
 find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)

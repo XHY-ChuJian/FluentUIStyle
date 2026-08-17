@@ -52,25 +52,10 @@ set(EXWIDGETS_SOURCES
     extabwidget.h
 )
 
-set(_exwidgets_frameless_default ON)
-if(QT_VERSION VERSION_LESS "5.15.2")
-    set(_exwidgets_frameless_default OFF)
-endif()
-
 option(EXWIDGETS_BUILD_FRAMELESS
     "Build the optional QWindowKit-based frameless window component"
-    ${_exwidgets_frameless_default}
+    ON
 )
-
-if(EXWIDGETS_BUILD_FRAMELESS AND QT_VERSION VERSION_LESS "5.15.2")
-    message(STATUS
-        "ExWidgets frameless component disabled: Qt ${QT_VERSION} < 5.15.2."
-    )
-    set(EXWIDGETS_BUILD_FRAMELESS OFF CACHE BOOL
-        "Build the optional QWindowKit-based frameless window component"
-        FORCE
-    )
-endif()
 
 if(EXWIDGETS_BUILD_FRAMELESS)
     if(CMAKE_VERSION VERSION_LESS "3.19")

@@ -74,7 +74,7 @@ private slots:
 private:
     void initializeFluentBorderWidgets();
     void initializeComponents();
-    void setupSettingsExpanders();
+    void setupSettingsPage();
     void setupComboBox();
     void initializeNavigationView();
     void rebuildMenuAndToolBar();

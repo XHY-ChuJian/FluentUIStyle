@@ -1192,6 +1192,58 @@ li.checked::marker { content: "\2612"; }
         <source>Audiomatic Mini</source>
         <translation>Audiomatic Mini</translation>
     </message>
+    <message>
+        <source>跟随系统</source>
+        <translation>Use system setting</translation>
+    </message>
+    <message>
+        <source>仅图标</source>
+        <translation>Icons only</translation>
+    </message>
+    <message>
+        <source>图标和文本</source>
+        <translation>Icons and text</translation>
+    </message>
+    <message>
+        <source>外观和行为</source>
+        <translation>Appearance &amp; behavior</translation>
+    </message>
+    <message>
+        <source>应用主题</source>
+        <translation>App theme</translation>
+    </message>
+    <message>
+        <source>选择应用显示的主题</source>
+        <translation>Select which app theme to display</translation>
+    </message>
+    <message>
+        <source>选择应用使用的显示语言</source>
+        <translation>Select the app display language</translation>
+    </message>
+    <message>
+        <source>选择内容区域的背景效果</source>
+        <translation>Select the content area background effect</translation>
+    </message>
+    <message>
+        <source>导航样式</source>
+        <translation>Navigation style</translation>
+    </message>
+    <message>
+        <source>选择导航栏的显示方式</source>
+        <translation>Select how the navigation pane is displayed</translation>
+    </message>
+    <message>
+        <source>选择控件使用的系统强调色</source>
+        <translation>Select the accent color used by controls</translation>
+    </message>
+    <message>
+        <source>查看项目信息</source>
+        <translation>View project information</translation>
+    </message>
+    <message>
+        <source>FluentUI3 Style 与扩展控件示例程序</source>
+        <translation>FluentUI3 Style and extended controls sample</translation>
+    </message>
 </context>
 <context>
     <name>ProgressRingShowcaseWidget</name>

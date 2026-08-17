@@ -10,6 +10,7 @@
 #include <QIcon>
 #include <QLabel>
 #include <QMainWindow>
+#include <QMenu>
 #include <QPainter>
 #include <QPixmap>
 #include <QToolButton>
@@ -93,6 +94,17 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
     m_searchLineEdit->setMinimumWidth(300);
     m_searchLineEdit->setPlaceholderText(tr("搜索..."));
     m_searchLineEdit->setClearButtonEnabled(true);
+
+    m_searchLineEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    //默认是popup, 会触发系统阴影
+    connect(m_searchLineEdit, &QLineEdit::customContextMenuRequested, this, [this](const QPoint &pos) {
+        if (QMenu *menu = m_searchLineEdit->createStandardContextMenu()) {
+            menu->setAttribute(Qt::WA_DeleteOnClose);
+            menu->exec(m_searchLineEdit->mapToGlobal(pos));
+        }
+    });
+    // ========================
+
     m_searchAction = m_searchLineEdit->addAction(searchIcon(m_themeDark), QLineEdit::TrailingPosition);
 
     auto *layout = new QHBoxLayout(this);

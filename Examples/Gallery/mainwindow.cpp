@@ -61,6 +61,7 @@
 #include <QAbstractSpinBox>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -77,6 +78,8 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSignalBlocker>
+#include <QSizePolicy>
 #include <QSpinBox>
 #include <QStatusBar>
 #include <QStyle>
@@ -340,7 +343,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ExInfoBarHost::setDefaultTarget( this );
 
-    setupSettingsExpanders();
+    setupSettingsPage();
 
     m_menuBar = new QMenuBar(this);
     m_menuBar->setObjectName(QStringLiteral("win-menu-bar"));
@@ -376,10 +379,10 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef GALLERY_ENABLE_I18N
     syncLanguageRadios();
 #else
-    if ( QWidget* languageExpander = ui->pageSetting->findChild<QWidget*>(
-             QStringLiteral( "settingsLanguageExpander" ) ) )
+    if ( QWidget* languageCard = ui->pageSetting->findChild<QWidget*>(
+             QStringLiteral( "settingsLanguageCard" ) ) )
     {
-        languageExpander->hide();
+        languageCard->hide();
     }
 #endif
 
@@ -441,7 +444,7 @@ void MainWindow::initializeFluentBorderWidgets()
     }
 }
 
-void MainWindow::setupSettingsExpanders()
+void MainWindow::setupSettingsPage()
 {
     struct SettingsSection
     {
@@ -449,25 +452,24 @@ void MainWindow::setupSettingsExpanders()
         QWidget* content;
         QLayout* nestedLayout;
         QList<QWidget*> rows;
-        const char* objectName;
     };
 
     const SettingsSection sections[] = {
         { ui->label_20, ui->widgetColorSheme, nullptr,
-          { ui->rBLightTheme, ui->rBDarkTheme }, "settingsThemeExpander" },
+          { ui->rBLightTheme, ui->rBDarkTheme } },
         { ui->labelUiLanguage, ui->widgetUiLanguage, nullptr,
-          { ui->rBLangZh_CN, ui->rBLangEn_US, ui->rBLangSystem }, "settingsLanguageExpander" },
+          { ui->rBLangZh_CN, ui->rBLangEn_US, ui->rBLangSystem } },
         { ui->label_21, ui->widgetWidgetMode, ui->verticalLayout_2,
-          { ui->rBWidgtModeNormal, ui->rBWidgetModePixmap, ui->rBWidgetModeDwmBlur },
-          "settingsBackgroundExpander" },
+          { ui->rBWidgtModeNormal, ui->rBWidgetModePixmap, ui->rBWidgetModeDwmBlur } },
         { ui->label_22, ui->widgetNavMode, ui->verticalLayout_3,
-          { ui->rBOnlyIcon, ui->rBIconAndText }, "settingsNavigationExpander" },
+          { ui->rBOnlyIcon, ui->rBIconAndText } },
         // 强调色内部是动态创建的按钮网格，仍作为一个完整 Content。
         { ui->label_19, ui->widgetAccentColor, ui->verticalLayout,
-          {}, "settingsAccentExpander" }
+          {} }
     };
 
-    // 先从 Designer 生成的布局中取出原有“标题 + Card”，保留控件本身及其信号连接。
+    // 从 Designer 布局中取出原有控件。RadioButton 继续作为设置状态和
+    // 已有槽函数的桥接层，但不再直接显示在设置页中。
     for ( const SettingsSection& section : sections )
     {
         if ( section.nestedLayout )
@@ -485,55 +487,266 @@ void MainWindow::setupSettingsExpanders()
         section.label->hide();
         section.content->setProperty( "isCard", QVariant() );
         section.content->setAttribute( Qt::WA_StyledBackground, false );
-        if ( !section.rows.isEmpty() && section.content->layout() )
+        if ( !section.rows.isEmpty() )
         {
-            for ( QWidget* row : section.rows )
-            {
-                section.content->layout()->removeWidget( row );
-            }
-            // 原 Designer 容器只负责组合 RadioButton；拆行后不再显示。
             section.content->hide();
         }
         else if ( section.content->layout() )
         {
-            // ExExpander 的 ContentPanel 已提供统一的 16 px 内边距。
             section.content->layout()->setContentsMargins( 0, 0, 0, 0 );
         }
     }
 
     ui->gridLayout_29->removeItem( ui->verticalSpacer );
     delete ui->verticalSpacer;
+    ui->gridLayout_29->setContentsMargins( 48, 32, 48, 40 );
     ui->gridLayout_29->setHorizontalSpacing( 0 );
     ui->gridLayout_29->setVerticalSpacing( 8 );
 
-    int row = 0;
-    for ( const SettingsSection& section : sections )
+    ui->scrollArea->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->scrollAreaWidgetContents->setAutoFillBackground( false );
+
+    auto makeTextBlock = [this]( const QString& title,
+                                 const QString& description,
+                                 QWidget* parent ) -> QWidget*
     {
-        auto* expander = new ExExpander( ui->scrollAreaWidgetContents );
-        expander->setObjectName( QString::fromLatin1( section.objectName ) );
-        expander->setHeader( section.label->text() );
-        if ( section.rows.isEmpty() )
+        auto* textWidget = new QWidget( parent );
+        textWidget->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+        auto* textLayout = new QVBoxLayout( textWidget );
+        textLayout->setContentsMargins( 0, 0, 0, 0 );
+        textLayout->setSpacing( 1 );
+
+        auto* titleLabel = new QLabel( title, textWidget );
+        titleLabel->setObjectName( QStringLiteral( "settingsCardTitle" ) );
+        QFont titleFont = titleLabel->font();
+        titleFont.setPixelSize( 15 );
+        titleLabel->setFont( titleFont );
+        textLayout->addWidget( titleLabel );
+
+        if ( !description.isEmpty() )
         {
-            expander->addContentWidget( section.content );
+            auto* descriptionLabel = new QLabel( description, textWidget );
+            descriptionLabel->setObjectName( QStringLiteral( "settingsCardDescription" ) );
+            QPalette descriptionPalette = descriptionLabel->palette();
+            descriptionPalette.setColor( QPalette::WindowText,
+                                         descriptionPalette.color( QPalette::Mid ) );
+            descriptionLabel->setPalette( descriptionPalette );
+            descriptionLabel->setWordWrap( true );
+            textLayout->addWidget( descriptionLabel );
         }
-        else
+        return textWidget;
+    };
+
+    auto makeIconLabel = []( int icon, QWidget* parent ) -> QLabel*
+    {
+        auto* iconLabel = new QLabel( parent );
+        QFont iconFont( QString::fromLatin1( SegoeFontName ) );
+        iconFont.setPixelSize( 22 );
+        iconLabel->setFont( iconFont );
+        iconLabel->setText( QString( QChar( static_cast<ushort>( icon ) ) ) );
+        iconLabel->setObjectName( QStringLiteral( "settingsCardIcon" ) );
+        iconLabel->setAlignment( Qt::AlignCenter );
+        iconLabel->setFixedWidth( 36 );
+        return iconLabel;
+    };
+
+    auto makeCardContents = [&]( int icon,
+                                 const QString& title,
+                                 const QString& description,
+                                 QWidget* trailing,
+                                 QWidget* parent ) -> QWidget*
+    {
+        auto* contents = new QWidget( parent );
+        auto* layout = new QHBoxLayout( contents );
+        layout->setContentsMargins( 18, 12, 18, 12 );
+        layout->setSpacing( 14 );
+        layout->addWidget( makeIconLabel( icon, contents ) );
+        layout->addWidget( makeTextBlock( title, description, contents ), 1 );
+        if ( trailing )
         {
-            // 各 RadioButton 进入独立 ContentPanel 后父对象不同，显式按钮组
-            // 用于保持 Designer 中原有的单选互斥行为。
-            auto* group = new QButtonGroup( expander );
-            group->setExclusive( true );
-            for ( QWidget* row : section.rows )
+            layout->addSpacing( 16 );
+            layout->addWidget( trailing, 0, Qt::AlignVCenter );
+        }
+        return contents;
+    };
+
+    auto makeCard = [&]( const QString& objectName,
+                         int icon,
+                         const QString& title,
+                         const QString& description,
+                         QWidget* trailing ) -> QWidget*
+    {
+        auto* card = makeCardContents( icon, title, description, trailing,
+                                       ui->scrollAreaWidgetContents );
+        card->setObjectName( objectName );
+        card->setAttribute( Qt::WA_StyledBackground );
+        card->setProperty( "isCard", true );
+        card->setMinimumHeight( 72 );
+        card->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+        return card;
+    };
+
+    auto makeCombo = [this]( const QString& objectName,
+                             const QStringList& items ) -> ExComboBox*
+    {
+        auto* combo = new ExComboBox( ui->scrollAreaWidgetContents );
+        combo->setObjectName( objectName );
+        combo->addItems( items );
+        combo->setMinimumWidth( 170 );
+        combo->setMinimumHeight( 32 );
+        combo->setView( new QListView( combo ) );
+        return combo;
+    };
+
+    auto bindComboToButtons = [this]( QComboBox* combo,
+                                      const QList<QAbstractButton*>& buttons )
+    {
+        int initialIndex = 0;
+        for ( int index = 0; index < buttons.size(); ++index )
+        {
+            QAbstractButton* button = buttons.at( index );
+            if ( button->isChecked() )
             {
-                if ( auto* button = qobject_cast<QAbstractButton*>( row ) )
-                {
-                    group->addButton( button );
-                }
-                expander->addContentWidget( row );
+                initialIndex = index;
             }
+            connect( button, &QAbstractButton::toggled, combo,
+                     [combo, index]( bool checked )
+                     {
+                         if ( checked && combo->currentIndex() != index )
+                         {
+                             const QSignalBlocker blocker( combo );
+                             combo->setCurrentIndex( index );
+                         }
+                     } );
         }
-        expander->setExpanded( true );
-        ui->gridLayout_29->addWidget( expander, row++, 0, 1, 2 );
+        combo->setCurrentIndex( initialIndex );
+        connect( combo, QOverload<int>::of( &QComboBox::currentIndexChanged ), this,
+                 [buttons]( int index )
+                 {
+                     if ( index >= 0 && index < buttons.size()
+                          && !buttons.at( index )->isChecked() )
+                     {
+                         buttons.at( index )->click();
+                     }
+                 } );
+    };
+
+    auto* pageTitle = new QLabel( tr( "设置" ), ui->scrollAreaWidgetContents );
+    QFont pageTitleFont = pageTitle->font();
+    pageTitleFont.setPixelSize( 28 );
+    pageTitleFont.setBold( true );
+    pageTitle->setFont( pageTitleFont );
+
+    auto makeSectionTitle = [this]( const QString& text ) -> QLabel*
+    {
+        auto* label = new QLabel( text, ui->scrollAreaWidgetContents );
+        QFont font = label->font();
+        font.setPixelSize( 14 );
+        font.setBold( true );
+        label->setFont( font );
+        return label;
+    };
+
+    auto* themeCombo = makeCombo( QStringLiteral( "settingsThemeCombo" ),
+                                  { tr( "浅色" ), tr( "暗色" ) } );
+    bindComboToButtons( themeCombo, { ui->rBLightTheme, ui->rBDarkTheme } );
+
+    auto* languageCombo = makeCombo( QStringLiteral( "settingsLanguageCombo" ),
+                                     { tr( "简体中文" ), QStringLiteral( "English" ),
+                                       tr( "跟随系统" ) } );
+    bindComboToButtons( languageCombo,
+                        { ui->rBLangZh_CN, ui->rBLangEn_US, ui->rBLangSystem } );
+
+    auto* backgroundCombo = makeCombo( QStringLiteral( "settingsBackgroundCombo" ),
+                                       { tr( "正常" ), tr( "图片" ),
+                                         QStringLiteral( "DWM blur" ) } );
+    bindComboToButtons( backgroundCombo,
+                        { ui->rBWidgtModeNormal, ui->rBWidgetModePixmap,
+                          ui->rBWidgetModeDwmBlur } );
+
+    auto* navigationCombo = makeCombo( QStringLiteral( "settingsNavigationCombo" ),
+                                       { tr( "仅图标" ), tr( "图标和文本" ) } );
+    bindComboToButtons( navigationCombo, { ui->rBOnlyIcon, ui->rBIconAndText } );
+
+    auto* appearanceTitle = makeSectionTitle( tr( "外观和行为" ) );
+    auto* themeCard = makeCard( QStringLiteral( "settingsThemeCard" ), static_cast<int>( SegoeIcon::Color ),
+                                tr( "应用主题" ), tr( "选择应用显示的主题" ), themeCombo );
+    auto* languageCard = makeCard( QStringLiteral( "settingsLanguageCard" ), static_cast<int>( SegoeIcon::Globe ),
+                                   tr( "界面语言" ), tr( "选择应用使用的显示语言" ),
+                                   languageCombo );
+    auto* backgroundCard = makeCard( QStringLiteral( "settingsBackgroundCard" ), static_cast<int>( SegoeIcon::Picture ),
+                                     tr( "窗口背景" ), tr( "选择内容区域的背景效果" ),
+                                     backgroundCombo );
+    auto* navigationCard = makeCard( QStringLiteral( "settingsNavigationCard" ), static_cast<int>( SegoeIcon::TaskView ),
+                                     tr( "导航样式" ), tr( "选择导航栏的显示方式" ),
+                                     navigationCombo );
+
+    auto* accentExpander = new ExExpander( ui->scrollAreaWidgetContents );
+    accentExpander->setObjectName( QStringLiteral( "settingsAccentExpander" ) );
+    auto* accentHeader = makeCardContents( static_cast<int>( SegoeIcon::SettingsDisplaySound ), tr( "强调色" ),
+                                           tr( "选择控件使用的系统强调色" ),
+                                           nullptr, accentExpander );
+    accentHeader->layout()->setContentsMargins( 0, 12, 0, 12 );
+    accentExpander->setHeaderWidget( accentHeader );
+    accentExpander->addContentWidget( ui->widgetAccentColor );
+    accentExpander->setExpanded( false );
+
+    auto* aboutTitle = makeSectionTitle( tr( "关于" ) );
+    auto* aboutButton = new QToolButton( ui->scrollAreaWidgetContents );
+    QFont chevronFont( QString::fromLatin1( SegoeFontName ) );
+    chevronFont.setPixelSize( 16 );
+    aboutButton->setFont( chevronFont );
+    aboutButton->setText( QString( QChar( static_cast<ushort>( SegoeIcon::ChevronRight ) ) ) );
+    aboutButton->setToolTip( tr( "查看项目信息" ) );
+    aboutButton->setAutoRaise( true );
+    aboutButton->setFixedSize( 36, 36 );
+
+    auto* versionLabel = new QLabel( QStringLiteral( "v0.1" ), ui->scrollAreaWidgetContents );
+    QPalette versionPalette = versionLabel->palette();
+    versionPalette.setColor( QPalette::WindowText, versionPalette.color( QPalette::Mid ) );
+    versionLabel->setPalette( versionPalette );
+
+    auto* aboutTrailing = new QWidget( ui->scrollAreaWidgetContents );
+    auto* aboutTrailingLayout = new QHBoxLayout( aboutTrailing );
+    aboutTrailingLayout->setContentsMargins( 0, 0, 0, 0 );
+    aboutTrailingLayout->setSpacing( 8 );
+    aboutTrailingLayout->addWidget( versionLabel );
+    aboutTrailingLayout->addWidget( aboutButton );
+
+    auto* aboutCard = makeCard( QStringLiteral( "settingsAboutCard" ), static_cast<int>( SegoeIcon::AppIconDefault ),
+                                QStringLiteral( "FluentUI3 Gallery" ),
+                                tr( "FluentUI3 Style 与扩展控件示例程序" ), aboutTrailing );
+    if ( auto* aboutIcon = aboutCard->findChild<QLabel*>(
+             QStringLiteral( "settingsCardIcon" ) ) )
+    {
+        aboutIcon->setText( QString() );
+        aboutIcon->setPixmap( QIcon( QStringLiteral( ":/appicon.ico" ) ).pixmap( 24, 24 ) );
     }
+    connect( aboutButton, &QToolButton::clicked, this,
+             [this]
+             {
+                 if ( m_winUINavigationView )
+                 {
+                     m_winUINavigationView->setSelectedPageIndex( 8 );
+                 }
+                 else
+                 {
+                     ui->stackedWidget->setCurrentIndex( 8 );
+                 }
+             } );
+
+    int row = 0;
+    ui->gridLayout_29->addWidget( pageTitle, row++, 0 );
+    ui->gridLayout_29->setRowMinimumHeight( row++, 22 );
+    ui->gridLayout_29->addWidget( appearanceTitle, row++, 0 );
+    ui->gridLayout_29->addWidget( themeCard, row++, 0 );
+    ui->gridLayout_29->addWidget( languageCard, row++, 0 );
+    ui->gridLayout_29->addWidget( backgroundCard, row++, 0 );
+    ui->gridLayout_29->addWidget( navigationCard, row++, 0 );
+    ui->gridLayout_29->addWidget( accentExpander, row++, 0 );
+    ui->gridLayout_29->setRowMinimumHeight( row++, 28 );
+    ui->gridLayout_29->addWidget( aboutTitle, row++, 0 );
+    ui->gridLayout_29->addWidget( aboutCard, row++, 0 );
     ui->gridLayout_29->setRowStretch( row, 1 );
 }
 
@@ -1023,6 +1236,15 @@ void MainWindow::setupThemeSelector(QToolBar *toolBar)
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             [this](int index) { applyThemeIndex(index); });
+
+    if ( themeComboBox->currentIndex() == 1 )
+    {
+        ui->rBDarkTheme->setChecked( true );
+    }
+    else
+    {
+        ui->rBLightTheme->setChecked( true );
+    }
 
     toolBar->addWidget(themeComboBox);
 }
@@ -2001,6 +2223,14 @@ void MainWindow::syncLanguageRadios()
     ui->rBLangZh_CN->blockSignals(false);
     ui->rBLangEn_US->blockSignals(false);
     ui->rBLangSystem->blockSignals(false);
+
+    if ( auto* languageCombo = ui->pageSetting->findChild<QComboBox*>(
+             QStringLiteral( "settingsLanguageCombo" ) ) )
+    {
+        const QSignalBlocker blocker( languageCombo );
+        languageCombo->setCurrentIndex( pref == AppUiLanguage::Zh_CN ? 0
+                                       : pref == AppUiLanguage::En_US ? 1 : 2 );
+    }
 }
 
 #else

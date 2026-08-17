@@ -6,12 +6,14 @@
 
 int main(int argc, char* argv[])
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#else
+    //改成屏幕实际缩放的
+    qputenv("QT_SCREEN_SCALE_FACTORS", "1.25");
 #endif
 #endif
 

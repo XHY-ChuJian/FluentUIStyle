@@ -22,7 +22,7 @@ add_subdirectory(path/to/Window11Style/ExWidgets)
 target_link_libraries(MyApp PRIVATE ExWidgets::Frameless)
 ```
 
-Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)`. The option defaults to ON with Qt ≥ 5.15.2 and OFF with older Qt; explicitly setting it OFF keeps base `ExWidgets` free of QWindowKit.
+Installed packages support `find_package(ExWidgets CONFIG REQUIRED COMPONENTS Frameless)`. The option defaults to ON with Qt ≥ 5.12; explicitly setting it OFF keeps base `ExWidgets` free of QWindowKit.
 
 ```cpp
 #include "exspectrumwidget.h"
