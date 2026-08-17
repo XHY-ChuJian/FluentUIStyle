@@ -443,6 +443,10 @@ The style can follow the OS theme on Windows 11 via system APIs; on other platfo
 - Further performance and animation polish.
 - Additional color schemes.
 
+## Contributing
+
+Due to the nature of this project, we currently **do not accept Pull Requests (PRs)**. If you encounter any bugs or have suggestions, please open an Issue. Thank you for your understanding and support.
+
 ## License
 
 FluentUI3Style is released under the **MIT License**. You may use it in any kind of project, but **any redistribution must retain this project’s MIT license text**. Redistribution without the license notice is not permitted and may infringe the license terms.

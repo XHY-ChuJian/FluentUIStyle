@@ -188,6 +188,10 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 - [FluentUI](https://github.com/zhuzichu520/FluentUI)
 - [ElaWidgetTools](https://github.com/Liniyous/ElaWidgetTools)
 
+## 参与贡献
+
+因项目性质原因，当前**暂不接受 Pull Request (PR)**。如在使用过程中发现 Bug 或有任何建议，请直接提交 Issue 进行反馈，感谢您的理解与支持。
+
 ## 协议说明
 
 FluentUI3Style 采用 MIT 许可证开源，允许所有类型项目使用，但要求所有分发的软件中必须保留本项目的MIT授权许可；所有未保留授权分发的商业行为均将被视为侵权行为。
