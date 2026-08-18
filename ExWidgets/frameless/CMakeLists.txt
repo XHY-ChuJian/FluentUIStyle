@@ -1,9 +1,9 @@
+file(GLOB FRAMELESS_SOURCES
+    "*.cpp"
+    "*.h"
+)
 add_library(ExWidgetsFrameless SHARED
-    exwidgetsframeless_global.h
-    fluenttitlebar.cpp
-    fluenttitlebar.h
-    fluentwindowframe.cpp
-    fluentwindowframe.h
+    ${FRAMELESS_SOURCES}
 )
 
 add_library(ExWidgets::Frameless ALIAS ExWidgetsFrameless)

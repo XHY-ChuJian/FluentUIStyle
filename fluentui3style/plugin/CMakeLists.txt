@@ -1,24 +1,10 @@
-set(PLUGIN_SOURCES
-    ../comboboxpopupanimation_p.cpp
-    ../comboboxpopupanimation_p.h
-    ../menupopupanimation_p.cpp
-    ../menupopupanimation_p.h
-    ../fluentui3style.cpp
-    ../fluentui3style.h
-    ../fluentui3styleproperties.h
-    ../fluentuiappearance.cpp
-    ../fluentuiappearance.h
-    ../palettemanager.cpp
-    ../palettemanager.h
-    ../qhexstring_p.h
-    ../qstyleanimation.cpp
-    ../qstyleanimation_p.h
-    ../qstylehelper.cpp
-    ../qstylehelper_p.h
-    ../resource.qrc
-    ../fluentui3styleplugin.cpp
-    ../fluentui3styleplugin.h
-    ../fluentui3styleplugin.json
+file(GLOB PLUGIN_SOURCES
+    "../*.cpp"
+    "../*.h"
+    "../*.qrc"
+    "*.cpp"
+    "*.h"
+    "*.json"
 )
 
 
@@ -33,7 +19,7 @@ else()
     )
 endif()
 
-target_compile_definitions(FluentUI3StylePlugin PRIVATE FLUENT_USE_QT_STYLE FLUENTUI3STYLE_LIBRARY)
+target_compile_definitions(FluentUI3StylePlugin PRIVATE FLUENTUI3STYLE_LIBRARY)
 
 target_include_directories(FluentUI3StylePlugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..

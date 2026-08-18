@@ -1,29 +1,14 @@
-set(LIBRARY_SOURCES
-    fluentui3style_global.h
-    fluentui3styleproperties.h
-    comboboxpopupanimation_p.cpp
-    comboboxpopupanimation_p.h
-    menupopupanimation_p.cpp
-    menupopupanimation_p.h
-    fluentui3style.cpp
-    fluentui3style.h
-    fluentuiappearance.cpp
-    fluentuiappearance.h
-    palettemanager.cpp
-    palettemanager.h
-    qhexstring_p.h
-    qstyleanimation.cpp
-    qstyleanimation_p.h
-    qstylehelper.cpp
-    qstylehelper_p.h
-    resource.qrc
+file(GLOB LIBRARY_SOURCES
+    "*.cpp"
+    "*.h"
+    "*.qrc"
 )
 
 add_library(FluentUI3Style SHARED
     ${LIBRARY_SOURCES}
 )
 
-target_compile_definitions(FluentUI3Style PRIVATE FLUENT_USE_QT_STYLE FLUENTUI3STYLE_LIBRARY)
+target_compile_definitions(FluentUI3Style PRIVATE FLUENTUI3STYLE_LIBRARY)
 
 target_include_directories(FluentUI3Style PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

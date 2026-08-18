@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
 #endif
 
     QApplication application(argc, argv);
+    QApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/../plugins");
+    
     application.setApplicationName(QStringLiteral("Win11 Clock"));
     application.setOrganizationName(QStringLiteral("Window11Style"));
 

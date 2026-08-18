@@ -15,7 +15,7 @@ INCLUDEPATH += $$PWD/../../fluentui3style
 INCLUDEPATH += $$PWD/../../FluentUI3Colors
 
 win32 {
-    DEFINES += FLUENT_USE_QT_STYLE GALLERY_ENABLE_I18N
+    DEFINES +=  GALLERY_ENABLE_I18N
 } else {
     LIBS += -L$$DESTDIR_LIB -lFluentUI3Style
     QMAKE_RPATHDIR += \$$ORIGIN/../lib

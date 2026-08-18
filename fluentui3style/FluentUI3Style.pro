@@ -6,7 +6,7 @@ TARGET = FluentUI3Style
 
 CONFIG += use_qt_style
 use_qt_style {
-    DEFINES += FLUENT_USE_QT_STYLE
+    DEFINES += 
 }
 
 include(fluentui3style.pri)

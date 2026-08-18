@@ -5,10 +5,10 @@ CONFIG += plugin
 TARGET = FluentUI3StylePlugin
 CONFIG(debug, debug|release): TARGET = $${TARGET}d
 
-# 编译插件默认开启 FLUENT_USE_QT_STYLE 宏
+# 编译插件默认开启  宏
 CONFIG += use_qt_style
 use_qt_style {
-    DEFINES += FLUENT_USE_QT_STYLE
+    DEFINES += 
 }
 
 include(../fluentui3style.pri)

@@ -118,12 +118,6 @@
 #include <fluentwindowframe.h>
 #endif
 
-#ifndef FLUENT_USE_QT_STYLE
-#include <fluentui3style.h>
-#include <palettemanager.h>
-
-#include "fluentuiappearance.h"
-#endif
 
 //=============================================================================
 // Forward Declarations
@@ -133,11 +127,7 @@ void applyStandardMenuIcons(QMenu *menu, QWidget *widget);
 
 static void refreshFluentStyle()
 {
-#ifdef FLUENT_USE_QT_STYLE
     qApp->setStyle(QStringLiteral("FluentUI3"));
-#else
-    fluentUIAppearance.setTheme(fluentUIAppearance.theme());
-#endif
 }
 
 #ifdef Q_OS_WIN
@@ -289,11 +279,7 @@ QIcon createFluentIcon(const QString &unicode, QColor color = QColor())
 
     // Determine if we're using dark theme
     bool isDarkTheme = false;
-#ifdef FLUENT_USE_QT_STYLE
     isDarkTheme = qApp->property("_q_colorscheme").toInt() == 1;
-#else
-    isDarkTheme = fluentUIAppearance.theme() == Theme::Dark;
-#endif
 
     // Create pixmap
     QPixmap pixmap(30 * devicePixelRatio, 30 * devicePixelRatio);
@@ -1156,19 +1142,11 @@ void MainWindow::setupTitleBarChrome()
         return;
     }
 
-#ifdef FLUENT_USE_QT_STYLE
     const bool isDark = qApp->property("_q_colorscheme").toInt() == 1;
-#else
-    const bool isDark = fluentUIAppearance.theme() == Theme::Dark;
-#endif
     titleBar->setThemeDark(isDark);
 
     connect(titleBar->themeButton(), &QToolButton::clicked, this, [this]() {
-#ifdef FLUENT_USE_QT_STYLE
         const int current = qApp->property("_q_colorscheme").toInt();
-#else
-        const int current = fluentUIAppearance.theme() == Theme::Dark ? 1 : 0;
-#endif
         applyThemeIndex(current == 1 ? 0 : 1);
     });
 
@@ -1189,12 +1167,8 @@ void MainWindow::applyThemeIndex(int index)
         themeComboBox->blockSignals(false);
     }
 
-#ifdef FLUENT_USE_QT_STYLE
     qApp->setProperty("_q_colorscheme", index);
     qApp->setStyle(QStringLiteral("FluentUI3"));
-#else
-    fluentUIAppearance.setTheme(index == 0 ? Theme::Light : Theme::Dark);
-#endif
     updateActionIcons();
 
     if (index == 0)
@@ -1226,11 +1200,7 @@ void MainWindow::setupThemeSelector(QToolBar *toolBar)
     themeComboBox->blockSignals(false);
     themeComboBox->setView(new QListView());
 
-#ifdef FLUENT_USE_QT_STYLE
     themeComboBox->setCurrentIndex(qApp->property("_q_colorscheme").toInt() == 1 ? 1 : 0);
-#else
-    themeComboBox->setCurrentIndex(fluentUIAppearance.theme() == Theme::Dark ? 1 : 0);
-#endif
 
     connect(themeComboBox,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -1266,13 +1236,8 @@ void MainWindow::setupColorSchemeSelector(QToolBar *toolBar)
             this,
             [this](int index)
             {
-#ifdef FLUENT_USE_QT_STYLE
                 qApp->setProperty("_q_themestyle", index);
                 qApp->setStyle("FluentUI3");
-#else
-            PaletteManager::instance().setThemeStyle(index == 0 ? ThemeStyle::Fluent : ThemeStyle::Teams);
-            fluentUIAppearance.setTheme(fluentUIAppearance.theme());
-#endif
                 updateActionIcons();
             });
 

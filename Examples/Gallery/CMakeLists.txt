@@ -1,49 +1,19 @@
-set(GALLERY_SOURCES
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    installedsoftwaretablewidget.cpp
-    installedsoftwaretablewidget.h
-    tabshowcasewidget.cpp
-    tabshowcasewidget.h
-    dialogshowcasewidget.cpp
-    dialogshowcasewidget.h
-    feedbackshowcasewidget.cpp
-    feedbackshowcasewidget.h
-    colorshowcasewidget.cpp
-    colorshowcasewidget.h
-    borderbeamshowcasewidget.cpp
-    borderbeamshowcasewidget.h
-    audiolevelmetershowcasewidget.cpp
-    audiolevelmetershowcasewidget.h
-    rangeslidershowcasewidget.cpp
-    rangeslidershowcasewidget.h
-    liquidgaugeshowcasewidget.cpp
-    liquidgaugeshowcasewidget.h
-    radialgaugeshowcasewidget.cpp
-    radialgaugeshowcasewidget.h
-    progressringshowcasewidget.cpp
-    progressringshowcasewidget.h
-    timelineshowcasewidget.cpp
-    timelineshowcasewidget.h
-    changelogtimelinewidget.cpp
-    changelogtimelinewidget.h
-    systemresourceswidget.cpp
-    systemresourceswidget.h
-    systemresources/systemresourceprovider.cpp
-    systemresources/systemresourceprovider.h
-    systemresources/systemresourcesnapshot.h
-    diagnostics/crashdump.cpp
-    diagnostics/crashdump.h
-    aboutprojectwidget.cpp
-    aboutprojectwidget.h
-    segoeicongallerywidget.cpp
-    segoeicongallerywidget.h
-    font-icon/fonticon.cpp
-    font-icon/fonticon.h
-    font-icon/resource.qrc
-    resources.qrc
+file(GLOB_RECURSE GALLERY_SOURCES
+    "*.cpp"
+    "*.h"
+    "*.ui"
+    "*.qrc"
+)
+
+# Remove conditional sources so they aren't compiled unless their conditions are met
+list(REMOVE_ITEM GALLERY_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/applanguage.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/applanguage.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/translations/i18n_embed.qrc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/spectrumshowcasewidget.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/spectrumshowcasewidget.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sinewavegenerator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sinewavegenerator.h"
 )
 
 if(WIN32)
@@ -93,7 +63,7 @@ else()
 endif()
 
 if(WIN32)
-    target_compile_definitions(Gallery PRIVATE FLUENT_USE_QT_STYLE GALLERY_ENABLE_I18N)
+    target_compile_definitions(Gallery PRIVATE GALLERY_ENABLE_I18N)
     target_link_libraries(Gallery PRIVATE dbghelp iphlpapi pdh)
 else()
     target_link_libraries(Gallery PRIVATE FluentUI3Style)
@@ -141,24 +111,7 @@ if(WIN32 AND GALLERY_LUPDATE)
         gallery-update-translations
         COMMAND
             "${GALLERY_LUPDATE}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.ui"
-            "${CMAKE_CURRENT_SOURCE_DIR}/tabshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/dialogshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/feedbackshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/colorshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/borderbeamshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/audiolevelmetershowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/rangeslidershowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/liquidgaugeshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/radialgaugeshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/progressringshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/timelineshowcasewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/changelogtimelinewidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/systemresourceswidget.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/systemresources/systemresourceprovider.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-            "${CMAKE_CURRENT_SOURCE_DIR}/applanguage.cpp"
+            ${GALLERY_SOURCES}
             -ts
             "${_gallery_ts}"
             -locations

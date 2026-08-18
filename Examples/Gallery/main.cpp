@@ -7,11 +7,6 @@
 #include <QStyle>
 #include <QPainter>
 
-#ifndef FLUENT_USE_QT_STYLE
-#include "fluentui3style.h"
-#include "fluentuiappearance.h"
-#endif
-
 #include "qabstractitemview.h"
 #include "qboxlayout.h"
 #include "qcombobox.h"
@@ -51,14 +46,12 @@ int main(int argc, char *argv[])
         qInfo() << "Crash dumps:" << crashDumpDirectory;
     }
 
-#ifdef FLUENT_USE_QT_STYLE
+    QApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/../plugins");
+
     qDebug() << QStyleFactory::keys();
     qApp->setProperty("_q_scrollHint_center", false); //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
     qApp->setProperty("_q_themestyle", 0);            //控制配色方案，默认0-Fluent, 1-Teams
     qApp->setStyle("FluentUI3");
-#else
-    fluentUIAppearance.initialize();
-#endif
 
 #ifdef GALLERY_ENABLE_I18N
     AppLanguage::applyTranslator(AppLanguage::effectiveUiLanguage());
@@ -72,10 +65,6 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
-
-#ifndef FLUENT_USE_QT_STYLE
-    fluentUIAppearance.setMainWindow(&w); //动态切换标题栏颜色建议重启软件
-#endif
 
     return a.exec();
 }

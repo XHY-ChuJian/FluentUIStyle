@@ -25,32 +25,10 @@ if(NOT TARGET ExWidgets::ExWidgets)
                      "${CMAKE_CURRENT_BINARY_DIR}/dependencies/ExWidgets")
 endif()
 
-set(WIN11_CLOCK_SOURCES
-    src/main.cpp
-    appicon.rc
-    appicon.ico
-    src/mainwindow.cpp
-    src/mainwindow.h
-    src/common/fluenthelpers.cpp
-    src/common/fluenthelpers.h
-    src/widgets/cardwidget.cpp
-    src/widgets/cardwidget.h
-    src/widgets/timercard.cpp
-    src/widgets/timercard.h
-    src/widgets/alarmcard.cpp
-    src/widgets/alarmcard.h
-    src/dialogs/timereditdialog.cpp
-    src/dialogs/timereditdialog.h
-    src/dialogs/alarmeditdialog.cpp
-    src/dialogs/alarmeditdialog.h
-    src/pages/timerpage.cpp
-    src/pages/timerpage.h
-    src/pages/alarmpage.cpp
-    src/pages/alarmpage.h
-    src/pages/clockpages.cpp
-    src/pages/clockpages.h
-    src/pages/settingspage.cpp
-    src/pages/settingspage.h
+file(GLOB_RECURSE WIN11_CLOCK_SOURCES
+    "src/*.cpp"
+    "src/*.h"
+    "*.rc"
 )
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)

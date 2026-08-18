@@ -46,7 +46,7 @@ if(BUILD_EXAMPLES)
         ${AUDIOMATIC_MINI_APP_SOURCES}
     )
 
-    target_compile_definitions(AudiomaticMini PRIVATE FLUENT_USE_QT_STYLE)
+    target_compile_definitions(AudiomaticMini PRIVATE)
 
     target_include_directories(AudiomaticMini PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}

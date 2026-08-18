@@ -1579,9 +1579,6 @@ inline bool isWin11()
 
 inline int getColorSchemeIndex()  // 0 = Light, 1 = Dark
 {
-#if !defined( FLUENT_USE_QT_STYLE )
-    return static_cast<int>( fluentUIAppearance.theme() );
-#else
     const QVariant pColorScheme = qApp->property( "_q_colorscheme" );
     if ( pColorScheme.isValid() )
     {
@@ -1599,7 +1596,6 @@ inline int getColorSchemeIndex()  // 0 = Light, 1 = Dark
     return 0;
 #    endif
 
-#endif
 }
 
 inline bool isHighContrastTheme()
@@ -1664,14 +1660,12 @@ FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle( createBaseStyle( 
         qDebug() << "[FluentUI3Style] set secondLevelRoundingRadius:" << secondLevelRoundingRadius;
     }
 
-#ifdef FLUENT_USE_QT_STYLE
     bool ok        = false;
     int themeStyle = qApp->property( "_q_themestyle" ).toInt( &ok );
     if ( ok )
     {
         PaletteManager::instance().setThemeStyle( (ThemeStyle)themeStyle );
     }
-#endif
     qDebug() << "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
 }
 
