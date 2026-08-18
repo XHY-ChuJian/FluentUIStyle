@@ -117,6 +117,9 @@
 #include <fluenttitlebar.h>
 #include <fluentwindowframe.h>
 #endif
+#ifndef WIN32
+#include "fluentui3style.h"
+#endif
 
 
 //=============================================================================
@@ -127,7 +130,11 @@ void applyStandardMenuIcons(QMenu *menu, QWidget *widget);
 
 static void refreshFluentStyle()
 {
-    qApp->setStyle(QStringLiteral("FluentUI3"));
+#ifdef WIN32
+    qApp->setStyle("FluentUI3");
+#else
+    qApp->setStyle(new FluentUI3Style);
+#endif
 }
 
 #ifdef Q_OS_WIN
@@ -1168,7 +1175,11 @@ void MainWindow::applyThemeIndex(int index)
     }
 
     qApp->setProperty("_q_colorscheme", index);
-    qApp->setStyle(QStringLiteral("FluentUI3"));
+#ifdef WIN32
+    qApp->setStyle("FluentUI3");
+#else
+    qApp->setStyle(new FluentUI3Style);
+#endif
     updateActionIcons();
 
     if (index == 0)
@@ -1237,7 +1248,11 @@ void MainWindow::setupColorSchemeSelector(QToolBar *toolBar)
             [this](int index)
             {
                 qApp->setProperty("_q_themestyle", index);
-                qApp->setStyle("FluentUI3");
+#ifdef WIN32
+    qApp->setStyle("FluentUI3");
+#else
+    qApp->setStyle(new FluentUI3Style);
+#endif
                 updateActionIcons();
             });
 

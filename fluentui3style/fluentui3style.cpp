@@ -4161,7 +4161,7 @@ void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* 
     const int previousTabIndex = styleObject->property( "_q_pivot_grow_selected_tab_index" ).toInt();
 
     bool isMovingTab = false;
-#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
     isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
 #    endif
 
@@ -4368,7 +4368,7 @@ void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainte
 
     const int previousTabIndex = styleObject->property( "_q_pivot_selected_tab_index" ).toInt();
     bool isMovingTab           = false;
-#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
     isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
 #    endif
 
@@ -4502,7 +4502,7 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
 
     const int previousTabIndex = styleObject->property( "_q_pivot_slide_selected_tab_index" ).toInt();
     bool isMovingTab           = false;
-#    if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
     isMovingTab = tab->position == QStyleOptionTab::TabPosition::Moving;
 #    endif
 
