@@ -56,18 +56,17 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 - **即插即用**：项目中使用时直接调用`app.setStyle("FluentUI3")`
 - **无需依赖**：不需要在项目中链接源码或手动加载库文件
 
-### 构建方式说明
+## 兼容性说明
 
-目前仅对 **CMake** 进行维护更新，推荐使用 CMake 构建本项目。
-### 使用说明
+### 注意事项
 
 - **版本兼容性**：样式库在 Qt 5.12、Qt 5.14.2、Qt 5.15.2、Qt 6.5.3、Qt 6.6.3（MSVC/MinGW 环境）下测试正常
 - **可选无边框组件**：默认构建 `ExWidgets::Frameless`（需 CMake ≥ 3.19）。可显式设置 `EXWIDGETS_BUILD_FRAMELESS=OFF` 使基础 `ExWidgets` 不引入 QWindowKit。
-- **MinGW注意**：在MinGW环境下，菜单弹出可能需要特殊处理
-- **版本差异**：不同Qt版本间的差异主要体现在右键菜单的显示效果上，可能存在渲染或布局的细微差别
-- **兼容性建议**：由于Qt版本众多且自身兼容性差异，建议在使用时针对具体版本进行适当调整。完全兼容所有Qt版本不现实，但会确保对Qt最新稳定版的支持
+- **MinGW注意**：在 MinGW 环境下，菜单弹出可能需要特殊处理
+- **版本差异**：不同 Qt 版本间的差异主要体现在右键菜单的显示效果上，可能存在渲染或布局的细微差别
+- **兼容性建议**：由于 Qt 版本众多且自身兼容性差异，建议在使用时针对具体版本进行适当调整。完全兼容所有 Qt 版本不现实，但会确保对 Qt 最新稳定版的支持
 
-### Qt版本兼容性
+### Qt 版本兼容性
 
 
 | Qt版本     | 样式库 | Gallery（CMake） | 窗口边框 |
@@ -79,6 +78,15 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 | Qt6.8+   | ✅ 支持 | ✅ 支持 | 可选 QWindowKit 无边框 + DWM 背景 |
 | Qt6.10   | ✅ 支持 | ✅ 支持 | 样式代码基于 Qt 6.10 Win11 样式移植 |
 
+### 系统兼容性
+
+| 操作系统 | 兼容性状态 | 说明 |
+| --- | --- | --- |
+| Windows | ✅ 完美支持 | 推荐环境，支持所有功能（包含无边框及特效） |
+| Linux | ✅ 支持 | 已在 Ubuntu, Kylin (银河麒麟), Deepin 下测试通过 |
+
+> **⚠️ Linux 环境无边框建议：**
+> 在 Linux 系统下，建议**不要**折腾并使用无边框窗口功能（因为各发行版/桌面环境如 X11/Wayland 行为差异极大）。如果编译时遇到无边框相关的报错，请直接在 CMake 选项中将其关闭（如设置 `EXWIDGETS_BUILD_FRAMELESS=OFF`）。
 
 ## Python (PySide6) 支持与示例
 
@@ -97,7 +105,9 @@ PS:关于本项目自定义控件的问题，如果不改源码的话，本项�
 - **自定义 C++ 控件**（如 `ExRangeSlider`）对 Python 解释器来说是完全未知的。如果想要在 Python 中像原生 `QWidget` 一样创建和使用它们，必须使用 `Shiboken` 或 `sip` 等专门的工具为这些 C++ 源码生成专属的 Python 绑定包装库。
 由于本项目作为一个轻量级样式库，并未提供这些 C++ 扩展控件的 Python 包装工程，因此在 Python 中无法直接实例化与使用 `ExWidgets` 组件。如果你的 Python 项目只需要对基础控件进行 FluentUI 美化，现有的样式插件机制就已经完全足够了。
 
-## 编译步骤
+## 编译与构建
+
+> **注：** 目前仅对 **CMake** 进行维护更新，推荐使用 CMake 构建本项目。
 
 ### 1. 获取源码
 
@@ -124,39 +134,44 @@ git clone https://github.com/XHY-ChuJian/FluentUIStyle.git
 完整的使用说明、控件属性设置以及不同的接入方式，请参阅单独的文档：**[使用方法 (USAGE.md)](USAGE.md)**。
 
 **最简单的加载方式：**
-若已将插件部署到 Qt 目录，在项目启动后直接调用即可应用样式：
 
-```cpp
-QApplication app(argc, argv);
-app.setStyle("FluentUI3");
-```
+- **在 Windows 下**（若已将插件部署到 Qt 目录），直接通过字符串名称调用即可：
+  ```cpp
+  QApplication app(argc, argv);
+  app.setStyle("FluentUI3");
+  ```
+
+- **在 Linux 下**，由于各发行版的系统环境较复杂，使用样式插件（`.so`）动态加载的方式极易引发动态库符号链接冲突问题。因此，强烈建议在 CMake 中链接 `FluentUI3Style` 库，并通过 `new` 直接实例化的方式加载：
+  ```cpp
+  #include "fluentui3style.h"
+  
+  QApplication app(argc, argv);
+  app.setStyle(new FluentUI3Style);
+  ```
 
 ## 支持的控件样式
 
-FluentUI3Style通过属性设置的方式支持以下控件的FluentUI3风格：
+FluentUI3Style 深度定制了 Qt 基础控件的渲染逻辑。以下是主要支持的控件及其特性（**具体的属性设置与代码示例请查阅 [使用方法 (USAGE.md)](USAGE.md)**）：
 
+| 控件大类 | 控件类名 | FluentUI 特性摘要 |
+| --- | --- | --- |
+| **按钮类** | `QPushButton` | 支持强调色主题 (Accent Button) 及悬浮响应动效 |
+| | `QCheckBox` | 可通过属性切换为圆润的 Switch 拨动开关 |
+| | `QRadioButton` | 标准间距与流畅的选中动画 |
+| | `QToolButton` | 支持菜单箭头展开动画 |
+| **输入控件** | `QLineEdit` | 支持底边线动画（获取焦点时从中心向两侧展开） |
+| | `QSpinBox` / `QDoubleSpinBox` | 提供四种加减按钮排布方式（垂直、水平两侧、右侧、加减号） |
+| **选择与视图** | `QComboBox` | 支持 Win11 风格的下拉弹出动画和阴影边框 |
+| | `QListView` / `QListWidget` | 支持列表项的选中指示器及悬浮动画 |
+| | `QTreeView` | 可选配类似 NavigationView 的左侧圆角竖条选中指示器 |
+| | `QTableView` | 标准的网格线控制与美化 |
+| **导航与进度** | `QTabBar` / `QTabWidget` | 预置高达 9 种现代标签页样式（如 Capsule, Pivot, Segmented 等） |
+| | `QProgressBar` | 提供细条、粗条及环形 (Ring) 进度条渲染 |
+| | `QSlider` / `QDial` | 流畅滑块动效，支持悬浮气泡显示数值；Dial 提供多种表盘外观 |
+| **滚动与菜单** | `QScrollBar` | 极简设计风格，悬浮时平滑展开 |
+| | `QMenu` / `QMenuBar` | 支持圆角、阴影边缘及平滑弹出动画 |
+| | `QMessageBox` | 现代感对话框及标准的按钮布局对齐 |
 
-| 控件类型 | 控件名称           | 说明     | 属性设置                                                                                                                                                                  |
-| ---- | -------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 按钮   | QPushButton    | 普通按钮   |                                                                                                                                                                       |
-| 按钮   | QCheckBox      | 复选框    | `switchButton=true`：启用开关按钮样式                                                                                                                                          |
-| 按钮   | QRadioButton   | 单选按钮   |                                                                                                                                                                       |
-| 输入控件 | QLineEdit      | 文本框    | 支持底边线动画                                                                                                                                                               |
-| 输入控件 | QSpinBox       | 数字输入框  | `spinBoxButtonLayout`属性： `0`：垂直箭头（默认） `1`：水平两侧箭头 `2`：水平右侧箭头 `3`：水平两侧加减号                                                                                               |
-| 输入控件 | QDoubleSpinBox | 浮点数输入框 | `spinBoxButtonLayout`属性： `0`：垂直箭头（默认） `1`：水平两侧箭头 `2`：水平右侧箭头 `3`：水平两侧加减号                                                                                               |
-| 选择控件 | QComboBox      | 下拉组合框  | 支持下拉动画和阴影效果                                                                                                                                                           |
-| 选择控件 | QListWidget    | 列表框    | 支持选中指示器动画                                                                                                                                                             |
-| 选择控件 | QListView      | 列表视图   | 支持选中指示器动画                                                                                                                                                             |
-| 滑块   | QSlider        | 滑块     | 支持水平和垂直方向                                                                                                                                                             |
-| 进度条  | QProgressBar   | 进度条    | `progressBarStyle`属性： `0`：细条样式（默认） `1`：粗条样式 `2`：环形样式                                                                                                                  |
-| 标签页  | QTabBar        | 标签栏    | `tabBarStyle`属性： `1`：Capsule `2`：Pivot_Grow `3`：Pivot_Slide `4`：Pivot_Stretch `5`：PillTabs `6`：Segmented_Slide `7`：Segmented_Fade `8`：Navigation `9`：Segmented_WinUI3 |
-| 滚动条  | QScrollBar     | 滚动条    | 支持水平和垂直方向                                                                                                                                                             |
-| 菜单   | QMenu          | 上下文菜单  | 支持阴影效果                                                                                                                                                                |
-| 菜单   | QMenuBar       | 菜单栏    |                                                                                                                                                                       |
-| 对话框  | QMessageBox    | 消息框    |                                                                                                                                                                       |
-| 工具栏  | QToolButton    | 工具按钮   | 支持菜单箭头动画                                                                                                                                                              |
-| 树形控件 | QTreeView      | 树型视图   | 支持FluentUI导航控件样式                                                                                                                                                      |
-| 表格控件 | QTableView     | 表格视图   |                                                                                                                                                                       |
 
 
 ## 技术实现
@@ -171,8 +186,6 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 - 增强了跨版本兼容性
 - 其他问题
 
-
-## 示例效果
 
 ## 未来计划
 
@@ -196,4 +209,4 @@ FluentUI3Style是基于Qt 6.10自带的Windows 11样式代码移植而来，在�
 
 FluentUI3Style 采用 MIT 许可证开源，允许所有类型项目使用，但要求所有分发的软件中必须保留本项目的MIT授权许可；所有未保留授权分发的商业行为均将被视为侵权行为。
 
-本项目部分代码由 AI 工具辅助生成或修改。如认为相关内容侵犯了您的合法权益，请通过项目 Issue 联系维护者，我们会及时核查并处理。
+本项目ExWidgets部分代码由 AI 工具辅助生成或修改。如认为相关内容侵犯了您的合法权益，请通过项目 Issue 联系维护者，我们会及时核查并处理。
