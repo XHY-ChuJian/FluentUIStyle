@@ -66,6 +66,7 @@ if(WIN32)
     target_compile_definitions(Gallery PRIVATE GALLERY_ENABLE_I18N)
     target_link_libraries(Gallery PRIVATE dbghelp iphlpapi pdh)
 else()
+    target_link_libraries(Gallery PRIVATE FluentUI3Style)
     set_target_properties(Gallery PROPERTIES
         BUILD_RPATH "$ORIGIN/../lib"
         INSTALL_RPATH "$ORIGIN/../lib"

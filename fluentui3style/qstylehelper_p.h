@@ -38,7 +38,7 @@ class QStyleOptionSlider;
 class QStyleOption;
 class QWindow;
 
-namespace FluentStyleHelper {
+namespace QStyleHelper {
  QString uniqueName( const QString& key, const QStyleOption* option, const QSize& size, qreal dpr );
 
  qreal dpi( const QStyleOption* option );
@@ -129,15 +129,15 @@ static inline QPainterPath buildRoundedPolyline( const QList<QPointF>& points, q
 
     return path;
 }
-}  // namespace FluentStyleHelper
+}  // namespace QStyleHelper
 
 // small helper to read out the pixmap to paint from QPixmapCache or re-draw
 // it and put it into the QPixmapCache for later usage
-class FluentCachedPainter
+class QCachedPainter
 {
 public:
-    FluentCachedPainter( QPainter* painter, const QString& cachePrefix, const QStyleOption* option, QSize size = {}, QRect paintRect = {} );
-    ~FluentCachedPainter();
+    QCachedPainter( QPainter* painter, const QString& cachePrefix, const QStyleOption* option, QSize size = {}, QRect paintRect = {} );
+    ~QCachedPainter();
     void finish();
 
     bool needsPainting() const { return !m_alreadyCached; }
