@@ -13,61 +13,61 @@ QT_BEGIN_NAMESPACE
 static const qreal ScrollBarFadeOutDuration = 200.0;
 static const qreal ScrollBarFadeOutDelay = 450.0;
 
-QStyleAnimation::QStyleAnimation(QObject *target)
+FluentStyleAnimation::FluentStyleAnimation(QObject *target)
     : QVariantAnimation(target), _delay(0), _duration(-1), _startTime(QTime::currentTime()), _fps(DefaultFps), _skip(0)
 {
 }
 
-QStyleAnimation::~QStyleAnimation()
+FluentStyleAnimation::~FluentStyleAnimation()
 {
 }
 
-QObject *QStyleAnimation::target() const
+QObject *FluentStyleAnimation::target() const
 {
     return parent();
 }
 
-int QStyleAnimation::duration() const
+int FluentStyleAnimation::duration() const
 {
     return _duration;
 }
 
-void QStyleAnimation::setDuration(int duration)
+void FluentStyleAnimation::setDuration(int duration)
 {
     _duration = duration;
 }
 
-int QStyleAnimation::delay() const
+int FluentStyleAnimation::delay() const
 {
     return _delay;
 }
 
-void QStyleAnimation::setDelay(int delay)
+void FluentStyleAnimation::setDelay(int delay)
 {
     _delay = delay;
 }
 
-QTime QStyleAnimation::startTime() const
+QTime FluentStyleAnimation::startTime() const
 {
     return _startTime;
 }
 
-void QStyleAnimation::setStartTime(QTime time)
+void FluentStyleAnimation::setStartTime(QTime time)
 {
     _startTime = time;
 }
 
-QStyleAnimation::FrameRate QStyleAnimation::frameRate() const
+FluentStyleAnimation::FrameRate FluentStyleAnimation::frameRate() const
 {
     return _fps;
 }
 
-void QStyleAnimation::setFrameRate(FrameRate fps)
+void FluentStyleAnimation::setFrameRate(FrameRate fps)
 {
     _fps = fps;
 }
 
-void QStyleAnimation::updateTarget()
+void FluentStyleAnimation::updateTarget()
 {
     QEvent event(QEvent::StyleAnimationUpdate);
     event.setAccepted(false);
@@ -78,18 +78,18 @@ void QStyleAnimation::updateTarget()
     }
 }
 
-void QStyleAnimation::start()
+void FluentStyleAnimation::start()
 {
     _skip = 0;
     QAbstractAnimation::start(DeleteWhenStopped);
 }
 
-bool QStyleAnimation::isUpdateNeeded() const
+bool FluentStyleAnimation::isUpdateNeeded() const
 {
     return currentTime() > _delay;
 }
 
-void QStyleAnimation::updateCurrentTime(int time)
+void FluentStyleAnimation::updateCurrentTime(int time)
 {
     if (++_skip >= _fps || time >= duration())
     {
@@ -101,17 +101,17 @@ void QStyleAnimation::updateCurrentTime(int time)
     }
 }
 
-QProgressStyleAnimation::QProgressStyleAnimation(int speed, QObject *target)
-    : QStyleAnimation(target), _speed(speed), _step(-1)
+FluentProgressStyleAnimation::FluentProgressStyleAnimation(int speed, QObject *target)
+    : FluentStyleAnimation(target), _speed(speed), _step(-1)
 {
 }
 
-int QProgressStyleAnimation::animationStep() const
+int FluentProgressStyleAnimation::animationStep() const
 {
     return currentTime() / (1000.0 / _speed);
 }
 
-int QProgressStyleAnimation::progressStep(int width) const
+int FluentProgressStyleAnimation::progressStep(int width) const
 {
     int step = animationStep();
     int progress = (step * width / _speed) % width;
@@ -122,19 +122,19 @@ int QProgressStyleAnimation::progressStep(int width) const
     return progress;
 }
 
-int QProgressStyleAnimation::speed() const
+int FluentProgressStyleAnimation::speed() const
 {
     return _speed;
 }
 
-void QProgressStyleAnimation::setSpeed(int speed)
+void FluentProgressStyleAnimation::setSpeed(int speed)
 {
     _speed = speed;
 }
 
-bool QProgressStyleAnimation::isUpdateNeeded() const
+bool FluentProgressStyleAnimation::isUpdateNeeded() const
 {
-    if (QStyleAnimation::isUpdateNeeded())
+    if (FluentStyleAnimation::isUpdateNeeded())
     {
         int current = animationStep();
         if (_step == -1 || _step != current)
@@ -146,41 +146,41 @@ bool QProgressStyleAnimation::isUpdateNeeded() const
     return false;
 }
 
-QNumberStyleAnimation::QNumberStyleAnimation(QObject *target)
-    : QStyleAnimation(target), _start(0.0), _end(1.0), _prev(0.0)
+FluentNumberStyleAnimation::FluentNumberStyleAnimation(QObject *target)
+    : FluentStyleAnimation(target), _start(0.0), _end(1.0), _prev(0.0)
 {
     setDuration(250);
 }
 
-qreal QNumberStyleAnimation::startValue() const
+qreal FluentNumberStyleAnimation::startValue() const
 {
     return _start;
 }
 
-void QNumberStyleAnimation::setStartValue(qreal value)
+void FluentNumberStyleAnimation::setStartValue(qreal value)
 {
     _start = value;
 }
 
-qreal QNumberStyleAnimation::endValue() const
+qreal FluentNumberStyleAnimation::endValue() const
 {
     return _end;
 }
 
-void QNumberStyleAnimation::setEndValue(qreal value)
+void FluentNumberStyleAnimation::setEndValue(qreal value)
 {
     _end = value;
 }
 
-qreal QNumberStyleAnimation::currentValue() const
+qreal FluentNumberStyleAnimation::currentValue() const
 {
     qreal step = qreal(currentTime() - delay()) / (duration() - delay());
     return _start + qMax(qreal(0), step) * (_end - _start);
 }
 
-bool QNumberStyleAnimation::isUpdateNeeded() const
+bool FluentNumberStyleAnimation::isUpdateNeeded() const
 {
-    if (QStyleAnimation::isUpdateNeeded())
+    if (FluentStyleAnimation::isUpdateNeeded())
     {
         qreal current = currentValue();
         if (!qFuzzyCompare(_prev, current))
@@ -192,33 +192,33 @@ bool QNumberStyleAnimation::isUpdateNeeded() const
     return false;
 }
 
-QBlendStyleAnimation::QBlendStyleAnimation(Type type, QObject *target)
-    : QStyleAnimation(target), _type(type)
+FluentBlendStyleAnimation::FluentBlendStyleAnimation(Type type, QObject *target)
+    : FluentStyleAnimation(target), _type(type)
 {
     setDuration(250);
 }
 
-QImage QBlendStyleAnimation::startImage() const
+QImage FluentBlendStyleAnimation::startImage() const
 {
     return _start;
 }
 
-void QBlendStyleAnimation::setStartImage(const QImage &image)
+void FluentBlendStyleAnimation::setStartImage(const QImage &image)
 {
     _start = image;
 }
 
-QImage QBlendStyleAnimation::endImage() const
+QImage FluentBlendStyleAnimation::endImage() const
 {
     return _end;
 }
 
-void QBlendStyleAnimation::setEndImage(const QImage &image)
+void FluentBlendStyleAnimation::setEndImage(const QImage &image)
 {
     _end = image;
 }
 
-QImage QBlendStyleAnimation::currentImage() const
+QImage FluentBlendStyleAnimation::currentImage() const
 {
     return _current;
 }
@@ -278,9 +278,9 @@ static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
     return blended;
 }
 
-void QBlendStyleAnimation::updateCurrentTime(int time)
+void FluentBlendStyleAnimation::updateCurrentTime(int time)
 {
-    QStyleAnimation::updateCurrentTime(time);
+    FluentStyleAnimation::updateCurrentTime(time);
 
     float alpha = 1.0;
     if (duration() > 0)
@@ -310,8 +310,8 @@ void QBlendStyleAnimation::updateCurrentTime(int time)
     _current = blendedImage(_start, _end, alpha);
 }
 
-QScrollbarStyleAnimation::QScrollbarStyleAnimation(Mode mode, QObject *target)
-    : QNumberStyleAnimation(target), _mode(mode), _active(false)
+FluentScrollbarStyleAnimation::FluentScrollbarStyleAnimation(Mode mode, QObject *target)
+    : FluentNumberStyleAnimation(target), _mode(mode), _active(false)
 {
     switch (mode)
     {
@@ -329,24 +329,24 @@ QScrollbarStyleAnimation::QScrollbarStyleAnimation(Mode mode, QObject *target)
     }
 }
 
-QScrollbarStyleAnimation::Mode QScrollbarStyleAnimation::mode() const
+FluentScrollbarStyleAnimation::Mode FluentScrollbarStyleAnimation::mode() const
 {
     return _mode;
 }
 
-bool QScrollbarStyleAnimation::wasActive() const
+bool FluentScrollbarStyleAnimation::wasActive() const
 {
     return _active;
 }
 
-void QScrollbarStyleAnimation::setActive(bool active)
+void FluentScrollbarStyleAnimation::setActive(bool active)
 {
     _active = active;
 }
 
-void QScrollbarStyleAnimation::updateCurrentTime(int time)
+void FluentScrollbarStyleAnimation::updateCurrentTime(int time)
 {
-    QNumberStyleAnimation::updateCurrentTime(time);
+    FluentNumberStyleAnimation::updateCurrentTime(time);
     if (_mode == Deactivating && qFuzzyIsNull(currentValue()))
     {
         target()->setProperty("visible", false);

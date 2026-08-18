@@ -33,10 +33,10 @@ inline QPixmap styleCachePixmap(const QSize& size)
 
 
 //
-// QCachedPainter
-QSet<QString> QCachedPainter::s_pixmapCacheKeys;
+// FluentCachedPainter
+QSet<QString> FluentCachedPainter::s_pixmapCacheKeys;
 
-QCachedPainter::QCachedPainter( QPainter* painter,
+FluentCachedPainter::FluentCachedPainter( QPainter* painter,
                                 const QString& cachePrefix,
                                 const QStyleOption* option,
                                 QSize size,
@@ -46,8 +46,8 @@ QCachedPainter::QCachedPainter( QPainter* painter,
     , m_paintRect( paintRect )
 {
     const auto sz   = size.isEmpty() ? option->rect.size() : size;
-    const qreal dpr = QStyleHelper::getDpr( painter );
-    m_pixmapName    = QStyleHelper::uniqueName( cachePrefix, option, sz, dpr );
+    const qreal dpr = FluentStyleHelper::getDpr( painter );
+    m_pixmapName    = FluentStyleHelper::uniqueName( cachePrefix, option, sz, dpr );
     m_alreadyCached = QPixmapCache::find( m_pixmapName, &m_pixmap );
     if ( !m_alreadyCached )
     {
@@ -58,7 +58,7 @@ QCachedPainter::QCachedPainter( QPainter* painter,
     }
 }
 
-QCachedPainter::~QCachedPainter()
+FluentCachedPainter::~FluentCachedPainter()
 {
     finish();
     if ( !m_alreadyCached )
@@ -67,7 +67,7 @@ QCachedPainter::~QCachedPainter()
     }
 }
 
-void QCachedPainter::finish()
+void FluentCachedPainter::finish()
 {
     m_pixmapPainter.reset();
     if ( !m_pixmapDrawn )
@@ -84,7 +84,7 @@ void QCachedPainter::finish()
     }
 }
 
-void QCachedPainter::cleanupPixmapCache()
+void FluentCachedPainter::cleanupPixmapCache()
 {
     for ( const auto& key : s_pixmapCacheKeys )
     {
@@ -99,7 +99,7 @@ static const qreal Q_PI = qreal( M_PI );  // pi
 
 Q_GUI_EXPORT int qt_defaultDpiX();
 
-namespace QStyleHelper {
+namespace FluentStyleHelper {
 
 static inline bool usePixmapCache( const QStyleOption* opt )
 {
@@ -266,7 +266,7 @@ static QPointF calcRadialPos( const QStyleOptionSlider* dial, qreal offset )
     }
     qreal xc   = width / 2.0;
     qreal yc   = height / 2.0;
-    qreal len  = r - QStyleHelper::calcBigLineSize( r ) - 3;
+    qreal len  = r - FluentStyleHelper::calcBigLineSize( r ) - 3;
     qreal back = offset * len;
     QPointF pos( QPointF( xc + back * qCos( a ), yc - back * qSin( a ) ) );
     return pos + dial->rect.topLeft();
@@ -402,17 +402,17 @@ void drawDial( const QStyleOptionSlider* option, QPainter* painter )
         const QColor notchColor = inverted ? pal.light().color().lighter( 120 )
                                            : pal.dark().color().darker( 120 );
         painter->setPen( notchColor );
-        painter->drawLines( QStyleHelper::calcLines( option ) );
+        painter->drawLines( FluentStyleHelper::calcLines( option ) );
     }
 
-    // setting color before QCachedPainter since
+    // setting color before FluentCachedPainter since
     // otherwise it is not set when the image is in the cache
     buttonColor.setHsv( buttonColor.hue(),
                         qMin( 140, buttonColor.saturation() ),
                         qMax( 180, buttonColor.value() ) );
 
     // Cache dial background
-    QCachedPainter p( painter, QLatin1String( "qdial" ), option );
+    FluentCachedPainter p( painter, QLatin1String( "qdial" ), option );
     if ( p.needsPainting() )
     {
         const qreal d_ = r / 6;
@@ -677,6 +677,6 @@ WidgetSizePolicy widgetSizePolicy( const QWidget* widget,
     return SizeDefault;
 }
 
-}  // namespace QStyleHelper
+}  // namespace FluentStyleHelper
 
 QT_END_NAMESPACE

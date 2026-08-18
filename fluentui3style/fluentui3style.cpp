@@ -335,8 +335,8 @@ static QColor resolveOpaque( const QColor& fluentColor, const QColor& base )
                    qRound( base.blue() * ( 1.0 - a ) + fluentColor.blue() * a ) );
 }
 
-QStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key );
-void startAnimationEx( QStyleAnimation* animation, QObject* target, const QByteArray& key );
+FluentStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key );
+void startAnimationEx( FluentStyleAnimation* animation, QObject* target, const QByteArray& key );
 
 static QByteArray navigationSettingsAnimKey( const QTreeView* treeView, const QModelIndex& index )
 {
@@ -401,16 +401,16 @@ static void startNavigationSettingsSpin( QObject* target,
 
     const QByteArray animKey = navigationSettingsAnimKey( treeView, index );
     qreal start              = 0.0;
-    if ( QNumberStyleAnimation* existAnim = qobject_cast<QNumberStyleAnimation*>( getAnimationEx( target, animKey ) ) )
+    if ( FluentNumberStyleAnimation* existAnim = qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( target, animKey ) ) )
     {
         start = existAnim->currentValue();
     }
 
-    QNumberStyleAnimation* t = new QNumberStyleAnimation( target );
+    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( target );
     t->setStartValue( start );
     t->setEndValue( start + deltaDegrees );
     t->setDuration( durationMs );
-    t->setFrameRate( QStyleAnimation::DefaultFps );
+    t->setFrameRate( FluentStyleAnimation::DefaultFps );
     startAnimationEx( t, target, animKey );
 }
 
@@ -967,7 +967,7 @@ static void drawArrow( const QStyle* style,
 QColor blend( const QColor& fg, const QColor& bg, double alpha );
 
 //------------------单动画-------------------------------//
-QHash<QObject*, QStyleAnimation*> animations;
+QHash<QObject*, FluentStyleAnimation*> animations;
 
 template <typename K, typename V>
 V takeValue( QHash<K, V>& h, K key )
@@ -984,7 +984,7 @@ void removeAnimation( QObject* target )
 
 void stopAnimation( QObject* target )
 {
-    QStyleAnimation* animation = takeValue( animations, target );
+    FluentStyleAnimation* animation = takeValue( animations, target );
     if ( animation )
     {
         animation->stop();
@@ -992,16 +992,16 @@ void stopAnimation( QObject* target )
     }
 }
 
-void startAnimation( QStyleAnimation* animation )
+void startAnimation( FluentStyleAnimation* animation )
 {
     const auto target = animation->target();
     stopAnimation( target );
-    QObject::connect( animation, &QStyleAnimation::destroyed, [ target ]() { removeAnimation( target ); } );
+    QObject::connect( animation, &FluentStyleAnimation::destroyed, [ target ]() { removeAnimation( target ); } );
     animations.insert( target, animation );
     animation->start();
 }
 
-QStyleAnimation* getAnimation( QObject* target )
+FluentStyleAnimation* getAnimation( QObject* target )
 {
     return animations.value( target );
 }
@@ -1009,9 +1009,9 @@ QStyleAnimation* getAnimation( QObject* target )
 //--------------------------------------------------//
 
 //--------------------多动画------------------------------//
-QHash<QObject*, QHash<QByteArray, QPointer<QStyleAnimation>>> extraAnimations;
+QHash<QObject*, QHash<QByteArray, QPointer<FluentStyleAnimation>>> extraAnimations;
 
-QStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key )
+FluentStyleAnimation* getAnimationEx( QObject* target, const QByteArray& key )
 {
     if ( !target )
     {
@@ -1053,7 +1053,7 @@ void clearAnimationsEx( QObject* target )
     }
 }
 
-void removeAnimationEx( QObject* target, const QByteArray& key, QStyleAnimation* animation )
+void removeAnimationEx( QObject* target, const QByteArray& key, FluentStyleAnimation* animation )
 {
     auto it = extraAnimations.find( target );
     if ( it == extraAnimations.end() )
@@ -1088,7 +1088,7 @@ void stopAnimationEx( QObject* target, const QByteArray& key )
         return;
     }
 
-    QPointer<QStyleAnimation> animation = it->take( key );
+    QPointer<FluentStyleAnimation> animation = it->take( key );
     if ( animation )
     {
         animation->stop();
@@ -1101,7 +1101,7 @@ void stopAnimationEx( QObject* target, const QByteArray& key )
     }
 }
 
-void startAnimationEx( QStyleAnimation* animation, QObject* target, const QByteArray& key )
+void startAnimationEx( FluentStyleAnimation* animation, QObject* target, const QByteArray& key )
 {
     if ( !animation || !target )
     {
@@ -1124,7 +1124,7 @@ void startAnimationEx( QStyleAnimation* animation, QObject* target, const QByteA
 
 float animationValue( QObject* target, const QByteArray& key, float defaultValue )
 {
-    auto anim = qobject_cast<QNumberStyleAnimation*>( getAnimationEx( target, key ) );
+    auto anim = qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( target, key ) );
 
     return anim ? anim->currentValue() : defaultValue;
 }
@@ -1286,7 +1286,7 @@ void qDrawShadeRect( QPainter* p,
     }
 
     PainterStateGuard painterGuard( p );
-    const qreal devicePixelRatio = QStyleHelper::getDpr( p );
+    const qreal devicePixelRatio = FluentStyleHelper::getDpr( p );
     if ( !qFuzzyCompare( devicePixelRatio, qreal( 1 ) ) )
     {
         const qreal inverseScale = qreal( 1 ) / devicePixelRatio;
@@ -1405,7 +1405,7 @@ void qDrawShadePanel( QPainter* p,
     }
 
     PainterStateGuard painterGuard( p );
-    const qreal devicePixelRatio = QStyleHelper::getDpr( p );
+    const qreal devicePixelRatio = FluentStyleHelper::getDpr( p );
     bool isTranslated            = false;
     if ( !qFuzzyCompare( devicePixelRatio, qreal( 1 ) ) )
     {
@@ -1769,7 +1769,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 
                 if ( doTransition )
                 {
-                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                     t->setStartValue( styleObject->property( "_q_inner_radius" ).toFloat() );
                     t->setEndValue( outerRadius * sliderInnerRadius( state, isInsideHandle ) );
                     styleObject->setProperty( "_q_end_radius", t->endValue() );
@@ -1795,13 +1795,13 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             bool doTransition = ( state & State_Sunken ) != ( oldState & State_Sunken ) || ( state & State_On ) != ( oldState & State_On );
             if ( doTransition && ( state & State_Enabled ) && ( tb->features & QStyleOptionToolButton::HasMenu ) )
             {
-                QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
+                FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( obj );
                 qreal start              = ( state & State_Sunken ) ? 0 : 180;
                 qreal end                = ( state & State_Sunken ) ? 180.0 : 0.0;
                 t->setStartValue( start );
                 t->setEndValue( end );
                 t->setDuration( 300 );
-                t->setFrameRate( QStyleAnimation::DefaultFps );
+                t->setFrameRate( FluentStyleAnimation::DefaultFps );
                 startAnimation( t );
             }
         }
@@ -1822,12 +1822,12 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
             bool doTransition = ( state & State_On ) != ( oldState & State_On );
             if ( doTransition && ( state & State_Enabled ) )
             {
-                QNumberStyleAnimation* t = new QNumberStyleAnimation( obj );
+                FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( obj );
                 qreal start              = ( state & State_On ) ? 0 : 180;
                 qreal end                = ( state & State_On ) ? 180.0 : 0.0;
                 t->setStartValue( start );
                 t->setEndValue( end );
-                t->setFrameRate( QStyleAnimation::DefaultFps );
+                t->setFrameRate( FluentStyleAnimation::DefaultFps );
                 t->setDuration( 300 );
                 // 普通QComboBox没有收起动画，这里让收起动画快一点
                 if ( !widget->inherits( "ExComboBox" ) && !( state & State_On ) && ( oldState & State_On ) )
@@ -1852,7 +1852,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 const auto* spinBox   = qobject_cast<const QAbstractSpinBox*>( widget );
                 const bool isEditable = spinBox ? !spinBox->isReadOnly() : !( state & State_ReadOnly );
 
-                QCachedPainter cp(
+                FluentCachedPainter cp(
                     painter,
                     QLatin1String( "win11_spinbox" ) % HexString<uint8_t>( colorSchemeIndex ) % HexString<uint8_t>( buttonLayout ),
                     sb,
@@ -2074,8 +2074,8 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 
                     if ( option->styleObject )
                     {
-                        const QNumberStyleAnimation* animation =
-                            qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                        const FluentNumberStyleAnimation* animation =
+                            qobject_cast<FluentNumberStyleAnimation*>( getAnimation( option->styleObject ) );
                         if ( animation != nullptr )
                         {
                             innerRadius = animation->currentValue();
@@ -2169,7 +2169,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     f.setPixelSize( 15 );
                     painter->setFont( f );
                     painter->setPen( controlTextColor( option ) );
-                    QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                    FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( option->styleObject ) );
                     qreal angle                      = 0;
                     if ( state & State_On )
                     {
@@ -2213,14 +2213,14 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 
                     if ( ( state & State_MouseOver ) != ( oldState & State_MouseOver ) && ( state & State_Enabled ) )
                     {
-                        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                         t->setStartValue( ( state & State_MouseOver ) ? 0.0 : 1.0 );
                         t->setEndValue( ( state & State_MouseOver ) ? 1.0 : 0.0 );
                         t->setDuration( 167 );
                         startAnimation( t );
                     }
 
-                    if ( QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) ) )
+                    if ( FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( styleObject ) ) )
                     {
                         progress = animation->currentValue();
                     }
@@ -2228,7 +2228,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
 
                 int progressInt = qRound( progress * 100 );
 
-                QCachedPainter cp( painter,
+                FluentCachedPainter cp( painter,
                                    QLatin1String( "win11_scrollbar" ) % HexString<uint8_t>( colorSchemeIndex )
                                        % HexString<int>( scrollbar->minimum ) % HexString<int>( scrollbar->maximum )
                                        % HexString<int>( scrollbar->sliderPosition ) % HexString<int>( progressInt ),
@@ -2417,7 +2417,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         {
                             QStyleOption tool = *titlebar;
                             const auto extent = proxy()->pixelMetric( PM_SmallIconSize, &tool, widget );
-                            const auto dpr    = QStyleHelper::getDpr( widget );
+                            const auto dpr    = FluentStyleHelper::getDpr( widget );
                             const auto icon   = proxy()->standardIcon( SP_TitleBarMenuButton, &tool, widget );
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
                             QPixmap pm = icon.pixmap( QSize( extent, extent ), dpr );
@@ -2545,7 +2545,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                     painter->setFont( font );
                     painter->setPen( controlTextColor( option ) );
 
-                    QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                    FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( option->styleObject ) );
                     qreal angle                      = 0;
                     if ( state & State_Sunken )
                     {
@@ -2701,7 +2701,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
         {
             if ( element == PE_IndicatorRadioButton )
             {
-                QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                 t->setStartValue( styleObject->property( "_q_inner_radius" ).toFloat() );
                 int indicatorSize = proxy()->pixelMetric( QStyle::PM_ExclusiveIndicatorWidth, option, widget );
                 t->setEndValue( radioButtonInnerRadius( state, option, widget, indicatorSize ) );
@@ -2713,7 +2713,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 if ( ( oldState & State_Off && state & State_On ) || ( oldState & State_NoChange && state & State_On ) )
                 {
-                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                     t->setStartValue( 0.0f );
                     t->setEndValue( 1.0f );
                     t->setDuration( 150 );
@@ -2724,16 +2724,16 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 if ( ( state & State_On ) != ( oldState & State_On ) )
                 {
-                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                     t->setStartValue( animationValue( styleObject, "_q_thumb_pos", oldState & State_On ? 1.0f : 0.0f ) );
                     t->setEndValue( state & State_On ? 1.0f : 0.0f );
                     t->setDuration( 150 );
-                    t->setFrameRate( QStyleAnimation::DefaultFps );
+                    t->setFrameRate( FluentStyleAnimation::DefaultFps );
                     startAnimationEx( t, styleObject, "_q_thumb_pos" );
                 }
                 if ( ( state & State_MouseOver ) != ( oldState & State_MouseOver ) )
                 {
-                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                     t->setStartValue( animationValue( styleObject, "_q_thumb_scale", oldState & State_MouseOver ? 1.1f : 0.9f ) );
                     t->setEndValue( state & State_MouseOver ? 1.1f : 0.9f );
                     t->setDuration( 180 );
@@ -2741,7 +2741,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
                 if ( ( state & State_Sunken ) != ( oldState & State_Sunken ) )
                 {
-                    QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                    FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                     t->setStartValue( animationValue( styleObject, "_q_thumb_stretch", oldState & State_Sunken ? 1.3f : 1.0f ) );
                     t->setEndValue( state & State_Sunken ? 1.3f : 1.0f );
                     t->setDuration( 120 );
@@ -2893,8 +2893,8 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->setPen( option->palette.color( isOpen ? QPalette::Active : QPalette::Disabled, QPalette::WindowText ) );
                 // 用每行唯一的 key 读取动画值，避免节点间动画状态共享
                 const QByteArray animKey = QByteArrayLiteral( "_q_branch_anim_" ) + QByteArray::number( option->rect.y() );
-                QNumberStyleAnimation* animation =
-                    widget ? qobject_cast<QNumberStyleAnimation*>( getAnimationEx( const_cast<QWidget*>( widget ), animKey ) ) : nullptr;
+                FluentNumberStyleAnimation* animation =
+                    widget ? qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( const_cast<QWidget*>( widget ), animKey ) ) : nullptr;
                 qreal angle = isOpen ? ( isReverse ? -90.0 : 90.0 ) : 0.0;
                 if ( animation )
                 {
@@ -2924,7 +2924,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 {
                     option->styleObject->setProperty( "_q_end_radius", innerRadius );
                 }
-                QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+                FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( option->styleObject ) );
                 innerRadius = animation ? animation->currentValue() : option->styleObject->property( "_q_end_radius" ).toFloat();
                 option->styleObject->setProperty( "_q_inner_radius", innerRadius );
             }
@@ -4173,7 +4173,7 @@ void FluentUI3Style::drawPivotGrowingTab( const QStyleOptionTab* tab, QPainter* 
 
     if ( selectionChanged )
     {
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 300 );
@@ -4410,7 +4410,7 @@ void FluentUI3Style::drawPivotStretchingTab( const QStyleOptionTab* tab, QPainte
         toW      = targetW;
         toH      = targetH;
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 450 );
@@ -4538,7 +4538,7 @@ void FluentUI3Style::drawPivotSlidingTab( const QStyleOptionTab* tab, QPainter* 
         toRight   = targetRight;
         toTop     = targetTop;
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 200 );
@@ -4731,7 +4731,7 @@ void FluentUI3Style::drawSegmentedSlideTab( const QStyleOptionTab* tab, QPainter
         previousRect = currentRect;
         currentRect  = targetRect;
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 300 );
@@ -4848,11 +4848,11 @@ void FluentUI3Style::drawSegmentedFadeTab( const QStyleOptionTab* tab, QPainter*
         fadingFromIndex  = selectedTabIndex;
         selectedTabIndex = currentTabIndex;
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 600 );
-        t->setFrameRate( QStyleAnimation::DefaultFps );
+        t->setFrameRate( FluentStyleAnimation::DefaultFps );
         t->setEasingCurve( QEasingCurve::InOutCubic );
         startAnimationEx( t, styleObject, animKey );
     }
@@ -4960,7 +4960,7 @@ void FluentUI3Style::drawSegmentedWinUI3Tab( const QStyleOptionTab* tab, QPainte
         styleObject->setProperty( "_q_segmented_winui3_prev_sel", previousTabIndex );
         styleObject->setProperty( "_q_segmented_winui3_curr_sel", activeTabIndex );
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 120 );
@@ -4984,7 +4984,7 @@ void FluentUI3Style::drawSegmentedWinUI3Tab( const QStyleOptionTab* tab, QPainte
         styleObject->setProperty( "_q_segmented_winui3_prev_press", previousPressedIndex );
         styleObject->setProperty( "_q_segmented_winui3_curr_press", activePressedIndex );
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 120 );
@@ -5131,7 +5131,7 @@ void FluentUI3Style::drawNavigationTab( const QStyleOptionTab* tab, QPainter* pa
 
         if ( currentTabIndex >= 0 && previousTabIndex >= 0 && currentTabIndex != previousTabIndex && tabIndex == currentTabIndex )
         {
-            QNumberStyleAnimation* t = new QNumberStyleAnimation( tab->styleObject );
+            FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( tab->styleObject );
             t->setStartValue( 0.0 );
             t->setEndValue( 1.0 );
             t->setDuration( 160 );
@@ -5192,7 +5192,7 @@ void FluentUI3Style::drawListViewIndicator( const QStyleOptionViewItem* option, 
     {
         stateObject->setProperty( "_q_list_indicator_selected_row", currentRow );
 
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( stateObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( stateObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 120 );
@@ -5298,11 +5298,11 @@ void FluentUI3Style::drawNavigationViewIndicator( const QStyleOptionViewItem* op
 
     auto kickSlideAnim = [ & ]()
     {
-        QNumberStyleAnimation* t = new QNumberStyleAnimation( stateObject );
+        FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( stateObject );
         t->setStartValue( 0.0 );
         t->setEndValue( 1.0 );
         t->setDuration( 550 );
-        t->setFrameRate( QStyleAnimation::DefaultFps );
+        t->setFrameRate( FluentStyleAnimation::DefaultFps );
         startAnimationEx( t, stateObject, slideKey );
     };
 
@@ -5589,8 +5589,8 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
         auto anim = getAnimation( option->styleObject );
         if ( !anim )
         {
-            anim = new QStyleAnimation( option->styleObject );
-            anim->setFrameRate( QStyleAnimation::SixtyFps );
+            anim = new FluentStyleAnimation( option->styleObject );
+            anim->setFrameRate( FluentStyleAnimation::SixtyFps );
             startAnimation( anim );
         }
         const int loopDurationMSec      = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
@@ -5717,7 +5717,7 @@ void FluentUI3Style::drawTabBarTabLabel( const QStyleOption* option, QPainter* p
         {
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
             QPixmap tabIcon = tab->icon.pixmap( tab->iconSize,
-                                                QStyleHelper::getDpr( painter ),
+                                                FluentStyleHelper::getDpr( painter ),
                                                 ( tab->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
                                                 ( tab->state & State_Selected ) ? QIcon::On : QIcon::Off );
 #else
@@ -6155,8 +6155,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     auto anim = getAnimation( option->styleObject );
                     if ( !anim )
                     {
-                        anim = new QStyleAnimation( option->styleObject );
-                        anim->setFrameRate( QStyleAnimation::SixtyFps );
+                        anim = new FluentStyleAnimation( option->styleObject );
+                        anim->setFrameRate( FluentStyleAnimation::SixtyFps );
                         startAnimation( anim );
                     }
                     constexpr auto loopDurationMSec = 4000;
@@ -6365,7 +6365,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         if ( oldBtnState != currentBtnState )
                         {
                             QColor fromColor;
-                            if ( QNumberStyleAnimation* prevAnim = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) ) )
+                            if ( FluentNumberStyleAnimation* prevAnim = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( styleObject ) ) )
                             {
                                 const QColor prevFromColor   = styleObject->property( "_q_btn_from_color" ).value<QColor>();
                                 const QColor prevTargetColor = styleObject->property( "_q_btn_target_color" ).value<QColor>();
@@ -6391,7 +6391,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             styleObject->setProperty( "_q_btn_from_color", fromColor );
                             styleObject->setProperty( "_q_btn_target_color", targetBgColor );
 
-                            QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                            FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                             t->setStartValue( 0.0f );
                             t->setEndValue( 1.0f );
                             t->setDuration( 200 );
@@ -6399,7 +6399,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             startAnimation( t );
                         }
 
-                        if ( QNumberStyleAnimation* anim = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) ) )
+                        if ( FluentNumberStyleAnimation* anim = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( styleObject ) ) )
                         {
                             const qreal progress   = anim->currentValue();
                             const QColor fromColor = styleObject->property( "_q_btn_from_color" ).value<QColor>();
@@ -6497,10 +6497,10 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 {
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
                     const auto pix = btn->icon.pixmap(
-                        btn->iconSize, QStyleHelper::getDpr( painter ), ( btn->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled );
+                        btn->iconSize, FluentStyleHelper::getDpr( painter ), ( btn->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled );
 #else
                     QPixmap pix = btn->icon.pixmap( btn->iconSize, ( btn->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled );
-                    pix.setDevicePixelRatio( QStyleHelper::getDpr( painter ) );
+                    pix.setDevicePixelRatio( FluentStyleHelper::getDpr( painter ) );
 #endif
 
                     proxy()->drawItemPixmap( painter, btn->rect, alignment, pix );
@@ -7031,8 +7031,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         PainterStateGuard psg( painter );
                         const QByteArray animKey = navigationSettingsAnimKey( itemTreeView, vopt->index );
                         qreal iconAngle          = 0.0;
-                        if ( const QNumberStyleAnimation* animation =
-                                 qobject_cast<QNumberStyleAnimation*>( getAnimationEx( const_cast<QTreeView*>( itemTreeView ), animKey ) ) )
+                        if ( const FluentNumberStyleAnimation* animation =
+                                 qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( const_cast<QTreeView*>( itemTreeView ), animKey ) ) )
                         {
                             iconAngle = animation->currentValue();
                         }
@@ -7094,8 +7094,8 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         const QRect arrowRect = rect.adjusted( rect.width() - 22, 0, -6, 0 );
 
                         const QByteArray animKey = QByteArrayLiteral( "_q_nav_branch_anim_" ) + QByteArray::number( vopt->rect.y() );
-                        const QNumberStyleAnimation* animation =
-                            qobject_cast<QNumberStyleAnimation*>( getAnimationEx( const_cast<QWidget*>( widget ), animKey ) );
+                        const FluentNumberStyleAnimation* animation =
+                            qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( const_cast<QWidget*>( widget ), animKey ) );
                         qreal angle = isOpen ? 180.0 : 0.0;
                         if ( animation )
                         {
@@ -7345,10 +7345,10 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             if ( const auto* spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox*>( option ) )
             {
                 // Add button + frame widths
-                // const qreal dpi       = QStyleHelper::dpi( option );
+                // const qreal dpi       = FluentStyleHelper::dpi( option );
                 const bool hasButtons = ( spinBoxOpt->buttonSymbols != QAbstractSpinBox::NoButtons );
                 const int margins     = 8;
-                // const int buttonWidth = hasButtons ? qRound( QStyleHelper::dpiScaled( 16, dpi ) ) : 0;
+                // const int buttonWidth = hasButtons ? qRound( FluentStyleHelper::dpiScaled( 16, dpi ) ) : 0;
                 const int buttonWidth = hasButtons ? 16 + contentItemHMargin : 0;
                 const int frameWidth  = spinBoxOpt->frame ? pixelMetric( PM_SpinBoxFrameWidth, spinBoxOpt, widget ) : 0;
 
@@ -8043,14 +8043,14 @@ void FluentUI3Style::polish( QWidget* widget )
             const qreal closedAngle = 0.0;
             const qreal openAngle   = isNavView ? 180.0 : ( isReverse ? -90.0 : 90.0 );
 
-            QNumberStyleAnimation* existAnim = qobject_cast<QNumberStyleAnimation*>( getAnimationEx( treeView, animKey ) );
+            FluentNumberStyleAnimation* existAnim = qobject_cast<FluentNumberStyleAnimation*>( getAnimationEx( treeView, animKey ) );
             qreal startAngle                 = existAnim ? existAnim->currentValue() : ( opening ? closedAngle : openAngle );
 
-            QNumberStyleAnimation* t = new QNumberStyleAnimation( treeView );
+            FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( treeView );
             t->setStartValue( startAngle );
             t->setEndValue( opening ? openAngle : closedAngle );
             t->setDuration( 200 );
-            t->setFrameRate( QStyleAnimation::DefaultFps );
+            t->setFrameRate( FluentStyleAnimation::DefaultFps );
             startAnimationEx( t, treeView, animKey );
         };
 
@@ -8358,7 +8358,7 @@ void FluentUI3Style::drawCheckBox( const QStyleOption* option, QPainter* painter
         QRectF clipRect = fm.boundingRect( AcceptMedium );
         if ( transitionsEnabled() && option->styleObject )
         {
-            QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( option->styleObject ) );
+            FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( option->styleObject ) );
             if ( animation )
             {
                 clipWidth = animation->currentValue();
@@ -8624,7 +8624,7 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
             styleObject->setProperty( "_q_stylestate", state );
             if ( ( oldState & State_HasFocus ) != ( state & State_HasFocus ) )
             {
-                QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                 t->setStartValue( state & State_HasFocus ? 0 : 1 );
                 t->setEndValue( state & State_HasFocus ? 1 : 0 );
                 t->setDuration( 300 );
@@ -8634,7 +8634,7 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
         }
 
         qreal progress                   = 1.0f;
-        QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) );
+        FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( styleObject ) );
         if ( animation )
         {
             progress          = animation->currentValue();
@@ -9187,7 +9187,7 @@ void FluentUI3Style::drawFluentDial( const QStyleOptionSlider* dial, QPainter* p
 
             if ( doTransition )
             {
-                QNumberStyleAnimation* t = new QNumberStyleAnimation( styleObject );
+                FluentNumberStyleAnimation* t = new FluentNumberStyleAnimation( styleObject );
                 t->setStartValue( styleObject->property( "_q_inner_radius" ).toFloat() );
                 t->setEndValue( outerRadius * sliderInnerRadius( simulatedState, isThumbHovered ) );
                 styleObject->setProperty( "_q_end_radius", t->endValue() );
@@ -9195,7 +9195,7 @@ void FluentUI3Style::drawFluentDial( const QStyleOptionSlider* dial, QPainter* p
                 startAnimation( t );
             }
 
-            const QNumberStyleAnimation* animation = qobject_cast<QNumberStyleAnimation*>( getAnimation( styleObject ) );
+            const FluentNumberStyleAnimation* animation = qobject_cast<FluentNumberStyleAnimation*>( getAnimation( styleObject ) );
             if ( animation )
             {
                 innerRadius = animation->currentValue();

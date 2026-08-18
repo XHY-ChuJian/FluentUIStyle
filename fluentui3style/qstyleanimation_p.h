@@ -25,13 +25,13 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
-class QStyleAnimation : public QVariantAnimation
+class FluentStyleAnimation : public QVariantAnimation
 {
     Q_OBJECT
 
 public:
-    QStyleAnimation(QObject *target);
-    virtual ~QStyleAnimation();
+    FluentStyleAnimation(QObject *target);
+    virtual ~FluentStyleAnimation();
 
     QObject *target() const;
 
@@ -73,12 +73,12 @@ private:
     int _skip;
 };
 
-class QProgressStyleAnimation : public QStyleAnimation
+class FluentProgressStyleAnimation : public FluentStyleAnimation
 {
     Q_OBJECT
 
 public:
-    QProgressStyleAnimation(int speed, QObject *target);
+    FluentProgressStyleAnimation(int speed, QObject *target);
 
     int animationStep() const;
     int progressStep(int width) const;
@@ -94,12 +94,12 @@ private:
     mutable int _step;
 };
 
-class QNumberStyleAnimation : public QStyleAnimation
+class FluentNumberStyleAnimation : public FluentStyleAnimation
 {
     Q_OBJECT
 
 public:
-    QNumberStyleAnimation(QObject *target);
+    FluentNumberStyleAnimation(QObject *target);
 
     qreal startValue() const;
     void setStartValue(qreal value);
@@ -118,7 +118,7 @@ private:
     mutable qreal _prev;
 };
 
-class QBlendStyleAnimation : public QStyleAnimation
+class FluentBlendStyleAnimation : public FluentStyleAnimation
 {
     Q_OBJECT
 
@@ -129,7 +129,7 @@ public:
         Pulse
     };
 
-    QBlendStyleAnimation(Type type, QObject *target);
+    FluentBlendStyleAnimation(Type type, QObject *target);
 
     QImage startImage() const;
     void setStartImage(const QImage &image);
@@ -149,7 +149,7 @@ private:
     QImage _current;
 };
 
-class QScrollbarStyleAnimation : public QNumberStyleAnimation
+class FluentScrollbarStyleAnimation : public FluentNumberStyleAnimation
 {
     Q_OBJECT
 
@@ -160,7 +160,7 @@ public:
         Deactivating
     };
 
-    QScrollbarStyleAnimation(Mode mode, QObject *target);
+    FluentScrollbarStyleAnimation(Mode mode, QObject *target);
 
     Mode mode() const;
 
