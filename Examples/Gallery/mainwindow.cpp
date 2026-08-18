@@ -218,7 +218,7 @@ static QMap<QMenu *, QString> g_menuIconMap;
 // MinGW Context Menu Hooks
 //=============================================================================
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined(Q_OS_LINUX)
 static void hookContextMenu(QWidget *widget)
 {
     if (!widget)
@@ -379,7 +379,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 #endif
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined(Q_OS_LINUX)
     // Hook context menus for MinGW
     for (QWidget *widget : findChildren<QWidget *>())
     {
