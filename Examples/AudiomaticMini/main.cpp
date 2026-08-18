@@ -8,6 +8,10 @@
 #include "playerwindow.h"
 #include "spectrumdemowindow.h"
 
+#ifndef WIN32
+#include "fluentui3style.h"
+#endif
+
 namespace {
 
 void setupBundledQtPlugins()
@@ -36,7 +40,11 @@ int main(int argc, char *argv[])
     app.setProperty("_q_colorscheme", 1);
     if (!demoMode)
     {
+#ifdef WIN32
         app.setStyle(QStringLiteral("FluentUI3"));
+#else
+        app.setStyle(new FluentUI3Style);
+#endif
     }
 
     QFont font = app.font();

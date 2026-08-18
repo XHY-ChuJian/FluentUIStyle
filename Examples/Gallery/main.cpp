@@ -6,6 +6,9 @@
 #include <QIcon>
 #include <QStyle>
 #include <QPainter>
+#ifndef WIN32
+#include "fluentui3style.h"
+#endif
 
 #include "qabstractitemview.h"
 #include "qboxlayout.h"
@@ -51,7 +54,11 @@ int main(int argc, char *argv[])
     qDebug() << QStyleFactory::keys();
     qApp->setProperty("_q_scrollHint_center", false); //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
     qApp->setProperty("_q_themestyle", 0);            //控制配色方案，默认0-Fluent, 1-Teams
+#ifdef WIN32
     qApp->setStyle("FluentUI3");
+#else
+    qApp->setStyle(new FluentUI3Style);
+#endif
 
 #ifdef GALLERY_ENABLE_I18N
     AppLanguage::applyTranslator(AppLanguage::effectiveUiLanguage());

@@ -131,6 +131,10 @@ option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLES "Build example applications" ON)
 
+if(NOT WIN32)
+    set(BUILD_PLUGIN OFF)
+endif()
+
 add_subdirectory(ExWidgets)
 
 if(BUILD_LIBRARY)

@@ -47,6 +47,10 @@ target_link_libraries(Win11Clock PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
 )
 
+if(NOT WIN32)
+    target_link_libraries(Win11Clock PRIVATE FluentUI3Style)
+endif()
+
 if(TARGET ExWidgets::Frameless)
     target_compile_definitions(Win11Clock PRIVATE WIN11CLOCK_ENABLE_FRAMELESS)
     target_link_libraries(Win11Clock PRIVATE ExWidgets::Frameless)
@@ -56,6 +60,13 @@ set_target_properties(Win11Clock PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
     DEBUG_POSTFIX d
 )
+
+if(NOT WIN32)
+    set_target_properties(Win11Clock PROPERTIES
+        BUILD_RPATH "$ORIGIN/../lib"
+        INSTALL_RPATH "$ORIGIN/../lib"
+    )
+endif()
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_finalize_executable(Win11Clock)

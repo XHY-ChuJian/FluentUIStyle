@@ -64,6 +64,13 @@ if(BUILD_EXAMPLES)
         Qt6::Network
         ${FLUENT_QT_PRIVATE_LIBS}
     )
+    if(NOT WIN32)
+        target_link_libraries(AudiomaticMini PRIVATE FluentUI3Style)
+        set_target_properties(AudiomaticMini PROPERTIES
+            BUILD_RPATH "$ORIGIN/../lib"
+            INSTALL_RPATH "$ORIGIN/../lib"
+        )
+    endif()
     if(TARGET ExWidgets::Frameless)
         target_compile_definitions(AudiomaticMini PRIVATE AUDIOMATIC_ENABLE_FRAMELESS)
         target_link_libraries(AudiomaticMini PRIVATE ExWidgets::Frameless)

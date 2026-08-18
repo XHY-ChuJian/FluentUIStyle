@@ -1,8 +1,11 @@
 #include <QApplication>
 #include <QFont>
 #include <QGuiApplication>
-
 #include "mainwindow.h"
+
+#ifndef WIN32
+#include "fluentui3style.h"
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -31,7 +34,11 @@ int main(int argc, char* argv[])
     application.setProperty("_q_scrollHint_center", false); //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
     application.setProperty("_q_colorscheme", 1);
     application.setProperty("_q_themestyle", 0);
+#ifdef WIN32
     application.setStyle(QStringLiteral("FluentUI3"));
+#else
+    application.setStyle(new FluentUI3Style);
+#endif
 
     MainWindow window;
     window.show();
