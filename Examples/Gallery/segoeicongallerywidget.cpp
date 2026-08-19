@@ -52,11 +52,6 @@ void SegoeIconGalleryWidget::initializeUi()
     m_tableWidget->horizontalHeader()->setVisible(false);
     m_tableWidget->horizontalHeader()->setDefaultSectionSize(110);
     m_tableWidget->horizontalHeader()->setMinimumSectionSize(78);
-    QWidget *corner = new QWidget(m_tableWidget);
-    corner->setObjectName(QStringLiteral("tableCornerSpacer"));
-    corner->setAttribute(Qt::WA_StyledBackground, true);
-    corner->setStyleSheet(QStringLiteral("#tableCornerSpacer { background: transparent; border: none; }"));
-    m_tableWidget->setCornerWidget(corner);
 
     QHBoxLayout *topBarLayout = new QHBoxLayout();
     topBarLayout->setContentsMargins(0, 0, 0, 0);

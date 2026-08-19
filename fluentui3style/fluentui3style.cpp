@@ -93,8 +93,8 @@ static constexpr int cBRoundingRadius                  = 4;
 static constexpr const char* cBPopupAnimatorProperty   = "_q_fluent_combo_popup_animator";
 static constexpr int menuPopupAnimationDuration        = 400;
 static constexpr const char* menuPopupAnimatorProperty = "_q_fluent_menu_popup_animator";
-static constexpr int sliderHandleDiameter    = 20;
-static constexpr int sliderShadowBorderWidth = 3;
+static constexpr int sliderHandleDiameter              = 20;
+static constexpr int sliderShadowBorderWidth           = 3;
 
 static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
 {
@@ -102,10 +102,10 @@ static QMarginsF comboBoxPopupPanelMargins( const QWidget* popup )
     return QMarginsF( FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth, FlyoutShadowBorderWidth );
 }
 
-static constexpr int ProgressBarThickness         = 4;
-static constexpr int ProgressBarThinThickness     = 3;
-static constexpr int NavigationSettingsSpinRole   = Qt::UserRole + 1001;
-static constexpr int NavigationIconRole           = Qt::UserRole + 1;
+static constexpr int ProgressBarThickness       = 4;
+static constexpr int ProgressBarThinThickness   = 3;
+static constexpr int NavigationSettingsSpinRole = Qt::UserRole + 1001;
+static constexpr int NavigationIconRole         = Qt::UserRole + 1;
 
 // The shared FluShadow profile extends four logical pixels beyond the panel.
 static constexpr int toolTipShadowBorderWidth      = FlyoutShadowBorderWidth;
@@ -226,7 +226,7 @@ static void showSliderValueTip( QSlider* slider, int value )
     {
         return;
     }
-    const qreal outerRadius = sliderHandleDiameter / 2.0 - 1.0;
+    const qreal outerRadius   = sliderHandleDiameter / 2.0 - 1.0;
     const QPoint globalCenter = slider->mapToGlobal( QRectF( handleRect ).center().toPoint() );
     int x                     = 0;
     int y                     = 0;
@@ -1586,16 +1586,15 @@ inline int getColorSchemeIndex()  // 0 = Light, 1 = Dark
     }
 
     // 如果没有设置，则根据系统主题色返回（QStyleHints::colorScheme / Qt::ColorScheme 仅 Qt 6.5+）
-#    if QT_VERSION >= QT_VERSION_CHECK( 6, 5, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 5, 0 )
     qDebug() << "[FluentUI3Style] No set _q_colorscheme, use system theme color" << qApp->styleHints()->colorScheme();
 
     qApp->setProperty( "_q_colorscheme", qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0 );
 
     return qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark ? 1 : 0;
-#    else
+#else
     return 0;
-#    endif
-
+#endif
 }
 
 inline bool isHighContrastTheme()
@@ -1615,7 +1614,7 @@ static QStyle* createBaseStyle( QStyle* style )
         return style;
     }
 
-    if ( QStyle* windowsVistaStyle = QStyleFactory::create(  "windowsvista" ) )
+    if ( QStyle* windowsVistaStyle = QStyleFactory::create( "windowsvista" ) )
     {
         return windowsVistaStyle;
     }
@@ -1623,7 +1622,8 @@ static QStyle* createBaseStyle( QStyle* style )
     return QStyleFactory::create( "fusion" );
 }
 
-FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle( createBaseStyle( style ) )
+FluentUI3Style::FluentUI3Style( QStyle* style )
+    : QProxyStyle( createBaseStyle( style ) )
 {
     static bool resourceInit = false;
     static int fontId        = -1;
@@ -1631,7 +1631,7 @@ FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle( createBaseStyle( 
     {
         Q_INIT_RESOURCE( resource );
         resourceInit = true;
-        fontId       = QFontDatabase::addApplicationFont( ":/resource/Segoe Fluent Icons.ttf");
+        fontId       = QFontDatabase::addApplicationFont( ":/resource/Segoe Fluent Icons.ttf" );
     }
 
     if ( fontId != -1 )
@@ -1744,7 +1744,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 QObject* styleObject = option->styleObject;  // Can be widget or qquickitem
 
                 const qreal outerRadius = sliderHandleDiameter / 2.0 - 1.0;
-                bool isInsideHandle = option->activeSubControls == SC_SliderHandle;
+                bool isInsideHandle     = option->activeSubControls == SC_SliderHandle;
 
                 bool oldIsInsideHandle        = styleObject->property( "_q_insidehandle" ).toBool();
                 State oldState                = State( styleObject->property( "_q_stylestate" ).toInt() );
@@ -3301,6 +3301,12 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
             }
             break;
+        case PE_PanelScrollAreaCorner :
+        {
+            const QBrush brush( option->palette.brush( QPalette::Base ) );
+            painter->fillRect( option->rect, brush );
+        }
+        break;
         case PE_Widget :
         {
 #if QT_CONFIG( dialogbuttonbox )
@@ -3350,9 +3356,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 else
                 {
                     const bool wallpaperMode = qApp && qApp->property( "_q_widget_mode" ).toInt() >= 1;
-                    brColor = winUI3CardBackgroundColor( option->palette,
-                                                         colorSchemeIndex == 1,
-                                                         wallpaperMode );
+                    brColor                  = winUI3CardBackgroundColor( option->palette, colorSchemeIndex == 1, wallpaperMode );
                 }
                 painter->setBrush( brColor );
                 painter->drawRoundedRect( r, 4, 4 );
@@ -3594,7 +3598,7 @@ QRect FluentUI3Style::subElementRect( SubElement element, const QStyleOption* op
                 }
 
                 // 不使用QProxyStyle，计算出来的opt->rect是错误的
-                QRect progressRect  = QCommonStyle::subElementRect( element, &optCopy, widget );
+                QRect progressRect   = QCommonStyle::subElementRect( element, &optCopy, widget );
                 const int styleValue = widget ? widget->property( ProgressBarStyleProperty ).toInt() : ProgressBarThin;
                 // Keep the full rect when the horizontal label is actually
                 // drawn, so the label and the bar share one geometric center.
@@ -3605,9 +3609,7 @@ QRect FluentUI3Style::subElementRect( SubElement element, const QStyleOption* op
                     // 3 px for the default indicator and 4 px for the thick style.
                     // Returning that shared grid here keeps Groove and Contents
                     // on exactly the same integer-aligned center.
-                    const int thickness = styleValue == ProgressBarThick
-                                              ? ProgressBarThickness
-                                              : ProgressBarThinThickness;
+                    const int thickness = styleValue == ProgressBarThick ? ProgressBarThickness : ProgressBarThinThickness;
                     if ( pb->state & QStyle::State_Horizontal )
                     {
                         progressRect.setTop( progressRect.top() + ( progressRect.height() - thickness ) / 2 );
@@ -4038,7 +4040,9 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
 {
     if ( const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>( option ) )
     {
-        TabBarStyle tabBarStyle = (widget && widget->property(TabBarStyleProperty).isValid()) ? (TabBarStyle)( widget->property(TabBarStyleProperty).toInt() ) : TabBarStyle::PillTabs;
+        TabBarStyle tabBarStyle = ( widget && widget->property( TabBarStyleProperty ).isValid() )
+                                      ? (TabBarStyle)( widget->property( TabBarStyleProperty ).toInt() )
+                                      : TabBarStyle::PillTabs;
         if ( tabBarStyle == TabBarStyle::Pivot_Grow )
         {
             drawPivotGrowingTab( tab, painter, widget );
@@ -4075,7 +4079,7 @@ void FluentUI3Style::drawTabBarTabShape( const QStyleOption* option, QPainter* p
         {
             drawNavigationTab( tab, painter, widget );
         }
-        //默认PillTab
+        // 默认PillTab
         else
         {
             drawPillTab( tab, painter, widget );
@@ -5596,10 +5600,10 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
             anim->setFrameRate( QStyleAnimation::SixtyFps );
             startAnimation( anim );
         }
-        const int loopDurationMSec      = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
-        const auto elapsedTime          = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
-        const auto elapsed              = elapsedTime.time_since_epoch().count();
-        const qreal t                   = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
+        const int loopDurationMSec = widget->property( ProgressBarRingIndeterminateDurationProperty ).toInt();
+        const auto elapsedTime     = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() );
+        const auto elapsed         = elapsedTime.time_since_epoch().count();
+        const qreal t              = ( elapsed % loopDurationMSec ) / float( loopDurationMSec );
         // Qt angles are CCW; use negative to rotate clockwise.
         startAngle = -360.0 * t;
         spanAngle  = 90.0;
@@ -5613,7 +5617,7 @@ void FluentUI3Style::drawProgressRing( const QStyleOptionProgressBar* option,
     spanAngle = -spanAngle;
 
     QColor ringColor;
-    if ( StyleOptionHelper::isDisabled(option) )
+    if ( StyleOptionHelper::isDisabled( option ) )
     {
         ringColor = winUI3Color( fillAccentDisabled );
     }
@@ -6114,7 +6118,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     break;
                 }
 
-                QRectF rect = option->rect;
+                QRectF rect            = option->rect;
                 const auto orientation = ( baropt->state & QStyle::State_Horizontal ) ? Qt::Horizontal : Qt::Vertical;
                 painter->translate( rect.topLeft() );
                 rect.translate( -rect.topLeft() );
@@ -7683,7 +7687,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
 
     switch ( metric )
     {
-        case PM_SpinBoxFrameWidth:
+        case PM_SpinBoxFrameWidth :
             res = 1;
             break;
         case PM_IndicatorWidth :
@@ -7831,11 +7835,10 @@ void FluentUI3Style::polish( QWidget* widget )
         const QVariant duration = progressBar->property( ProgressBarRingIndeterminateDurationProperty );
         if ( !duration.isValid() || duration.toInt() <= 0 )
         {
-            progressBar->setProperty( ProgressBarRingIndeterminateDurationProperty,
-                                      ProgressBarRingDefaultIndeterminateDuration );
+            progressBar->setProperty( ProgressBarRingIndeterminateDurationProperty, ProgressBarRingDefaultIndeterminateDuration );
         }
 
-        QPalette palette = progressBar->palette();
+        QPalette palette               = progressBar->palette();
         const bool hasCustomTrackColor = palette.isBrushSet( QPalette::Active, QPalette::Mid )
                                          || palette.isBrushSet( QPalette::Inactive, QPalette::Mid )
                                          || palette.isBrushSet( QPalette::Disabled, QPalette::Mid );
@@ -8371,7 +8374,7 @@ void FluentUI3Style::drawCheckBox( const QStyleOption* option, QPainter* painter
         // clipRect.setLeft( rect.x() + ( rect.width() - clipRect.width() ) / 2.0 + 0.5 );
         // clipRect.setWidth( clipWidth * clipRect.width() );
         const qreal fullWidth = clipRect.width();
-        clipRect.setWidth(clipWidth * fullWidth);
+        clipRect.setWidth( clipWidth * fullWidth );
 
         painter->drawText( clipRect, Qt::AlignVCenter | Qt::AlignLeft, AcceptMedium );
     }
@@ -8789,22 +8792,22 @@ void FluentUI3Style::drawSliderHandleShadow( QPainter* painter, const QPointF& c
 
 bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
 {
-    //实际项目有需要动态切换主题，可以使用下面这种方式，比触发setStyle()快
-    //只需要调用qApp->setProperty("_q_colorscheme");
-    //构造函数和析构函数记得把installEventFilter加上
-    //但项目其他地方可能需要自己写一个主题管理的全局信号通知使用了图标或者QSS的地方变化
-    // if (watched == qApp && event->type() == QEvent::DynamicPropertyChange)
-    // {
-    //     if (auto proEvent = static_cast<QDynamicPropertyChangeEvent*>(event); proEvent->propertyName() == "_q_colorscheme")
-    //     {
-    //         colorSchemeIndex = qApp->property("_q_colorscheme").toInt();
-    //         auto appPalette = qApp->palette();
-    //         polish(appPalette);
-    //         qApp->setPalette(appPalette);
-    //         qDebug()<< "[FluentUI3Style] _q_colorscheme changed" << colorSchemeIndex;
-    //     }
-    //     return QProxyStyle::eventFilter(watched, event);
-    // }
+    // 实际项目有需要动态切换主题，可以使用下面这种方式，比触发setStyle()快
+    // 只需要调用qApp->setProperty("_q_colorscheme");
+    // 构造函数和析构函数记得把installEventFilter加上
+    // 但项目其他地方可能需要自己写一个主题管理的全局信号通知使用了图标或者QSS的地方变化
+    //  if (watched == qApp && event->type() == QEvent::DynamicPropertyChange)
+    //  {
+    //      if (auto proEvent = static_cast<QDynamicPropertyChangeEvent*>(event); proEvent->propertyName() == "_q_colorscheme")
+    //      {
+    //          colorSchemeIndex = qApp->property("_q_colorscheme").toInt();
+    //          auto appPalette = qApp->palette();
+    //          polish(appPalette);
+    //          qApp->setPalette(appPalette);
+    //          qDebug()<< "[FluentUI3Style] _q_colorscheme changed" << colorSchemeIndex;
+    //      }
+    //      return QProxyStyle::eventFilter(watched, event);
+    //  }
 
     if ( auto* popup = qobject_cast<QWidget*>( watched );
          isComboBoxPopup( popup ) && ( event->type() == QEvent::Show || event->type() == QEvent::Hide ) )
@@ -8822,18 +8825,17 @@ bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
                 // scrollTo(PositionAtCenter)，并可能因滚动条再次设置几何。
                 // 在本轮事件结束后按最终布局再校正一次；这仍然只是
                 // 一次定位，不会创建 Animator 或任何过渡动画。
-                QTimer::singleShot(
-                    0,
-                    popup,
-                    [ popup ]
-                    {
-                        if ( !popup->isVisible() || !qApp || !qApp->property( "_q_scrollHint_center" ).toBool() )
-                        {
-                            return;
-                        }
+                QTimer::singleShot( 0,
+                                    popup,
+                                    [ popup ]
+                                    {
+                                        if ( !popup->isVisible() || !qApp || !qApp->property( "_q_scrollHint_center" ).toBool() )
+                                        {
+                                            return;
+                                        }
 
-                        ComboBoxPopupAnimator::positionPopupForShadow( popup );
-                    } );
+                                        ComboBoxPopupAnimator::positionPopupForShadow( popup );
+                                    } );
             }
         }
         else
