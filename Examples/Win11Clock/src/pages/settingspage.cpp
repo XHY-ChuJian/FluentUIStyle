@@ -80,7 +80,6 @@ bool systemUsesDarkTheme()
 void applyFluentStyle(bool dark)
 {
     qApp->setProperty("_q_colorscheme", dark ? 1 : 0);
-    qApp->setProperty("_q_themestyle", 0);
     qApp->setStyle(QStringLiteral("FluentUI3"));
 }
 }

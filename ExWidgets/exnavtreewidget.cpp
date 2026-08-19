@@ -71,10 +71,13 @@ ExNavTreeWidget::ExNavTreeWidget(QWidget *parent)
     setIconSize(QSize(20, 20));
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setRootIsDecorated(false);
+
+    viewport()->setAutoFillBackground(false);
+    viewport()->setAttribute(Qt::WA_StyledBackground, false);
     setFrameShape(QFrame::NoFrame);
+
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setTextElideMode(Qt::ElideRight);
-    setStyleSheet("ExNavTreeWidget{background:transparent;}");
     setProperty("navigationViewIndicator", true);
     setProperty("ItemHeight", 38);
     header()->setSectionResizeMode(0, QHeaderView::Fixed);

@@ -95,6 +95,7 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
     m_searchLineEdit->setPlaceholderText(tr("搜索..."));
     m_searchLineEdit->setClearButtonEnabled(true);
 
+#if !(defined (__MINGW32__) || defined(Q_OS_LINUX))
     m_searchLineEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     //默认是popup, 会触发系统阴影
     connect(m_searchLineEdit, &QLineEdit::customContextMenuRequested, this, [this](const QPoint &pos) {
@@ -104,6 +105,7 @@ FluentTitleBar::FluentTitleBar(QMainWindow *window)
         }
     });
     // ========================
+#endif
 
     m_searchAction = m_searchLineEdit->addAction(searchIcon(m_themeDark), QLineEdit::TrailingPosition);
 

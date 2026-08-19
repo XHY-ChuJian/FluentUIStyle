@@ -1667,10 +1667,13 @@ FluentUI3Style::FluentUI3Style( QStyle* style ) : QProxyStyle( createBaseStyle( 
         PaletteManager::instance().setThemeStyle( (ThemeStyle)themeStyle );
     }
     qDebug() << "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
+
+    // qApp->installEventFilter(this);
 }
 
 FluentUI3Style::~FluentUI3Style()
 {
+    // qApp->removeEventFilter(this);
     qDebug() << "[FluentUI3Style] destroyed";
 }
 
@@ -7804,7 +7807,6 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
 
 void FluentUI3Style::polish( QPalette& result )
 {
-    colorSchemeIndex = getColorSchemeIndex();
     PaletteManager::instance().applyPalette( result, colorSchemeIndex );
 }
 
@@ -8787,6 +8789,23 @@ void FluentUI3Style::drawSliderHandleShadow( QPainter* painter, const QPointF& c
 
 bool FluentUI3Style::eventFilter( QObject* watched, QEvent* event )
 {
+    //实际项目有需要动态切换主题，可以使用下面这种方式，比触发setStyle()快
+    //只需要调用qApp->setProperty("_q_colorscheme");
+    //构造函数和析构函数记得把installEventFilter加上
+    //但项目其他地方可能需要自己写一个主题管理的全局信号通知使用了图标或者QSS的地方变化
+    // if (watched == qApp && event->type() == QEvent::DynamicPropertyChange)
+    // {
+    //     if (auto proEvent = static_cast<QDynamicPropertyChangeEvent*>(event); proEvent->propertyName() == "_q_colorscheme")
+    //     {
+    //         colorSchemeIndex = qApp->property("_q_colorscheme").toInt();
+    //         auto appPalette = qApp->palette();
+    //         polish(appPalette);
+    //         qApp->setPalette(appPalette);
+    //         qDebug()<< "[FluentUI3Style] _q_colorscheme changed" << colorSchemeIndex;
+    //     }
+    //     return QProxyStyle::eventFilter(watched, event);
+    // }
+
     if ( auto* popup = qobject_cast<QWidget*>( watched );
          isComboBoxPopup( popup ) && ( event->type() == QEvent::Show || event->type() == QEvent::Hide ) )
     {
