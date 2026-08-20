@@ -108,8 +108,8 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
 };
 
 inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
-    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(4.19)),   // subtleHighlightColor (fillSubtleSecondary)
-    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(6.05)),   // subtlePressedColor (fillSubtleTertiary)
+    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(6.05)),   // subtleHighlightColor (fillSubtleSecondary)
+    QColor(0xFF, 0xFF, 0xFF, percentToAlpha(4.19)),   // subtlePressedColor (fillSubtleTertiary)
     QColor(0xFF, 0xFF, 0xFF, 0x12),                   // frameColorLight
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(60.47)), // frameColorStrong
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(15.81)), // frameColorStrongDisabled

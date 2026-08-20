@@ -64,6 +64,11 @@ enum DialStyle
 };
 
 [[maybe_unused]] constexpr const char *ButtonAccentStyleProperty = "accent";
+
+[[maybe_unused]] constexpr const char *ButtonShapeProperty = "buttonShape";
+[[maybe_unused]] constexpr const char *ButtonShapeCapsule = "capsule";
+[[maybe_unused]] constexpr const char *ButtonShapeCircle = "circle";
+
 [[maybe_unused]] constexpr const char *SwitchStyleProperty = "isSwitchButton";
 [[maybe_unused]] constexpr const char *NavigationViewStyleProperty = "navigationViewIndicator";
 [[maybe_unused]] constexpr const char *NoRoundedCorners = "noRoundedCorners";

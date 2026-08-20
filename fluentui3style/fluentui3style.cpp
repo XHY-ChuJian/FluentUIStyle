@@ -1614,12 +1614,17 @@ static QStyle* createBaseStyle( QStyle* style )
         return style;
     }
 
-    if ( QStyle* windowsVistaStyle = QStyleFactory::create( "windowsvista" ) )
+    const QString preferredKey = QStringLiteral( "windowsvista" );
+    const QString fallbackKey  = QStringLiteral( "fusion" );
+
+    if ( QStyle* base = QStyleFactory::create( preferredKey ) )
     {
-        return windowsVistaStyle;
+        qDebug() << "[FluentUI3] base style is" << preferredKey;
+        return base;
     }
 
-    return QStyleFactory::create( "fusion" );
+    qDebug() << "[FluentUI3] base style is" << fallbackKey;
+    return QStyleFactory::create( fallbackKey );
 }
 
 FluentUI3Style::FluentUI3Style( QStyle* style )
@@ -1916,7 +1921,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                         }
 
                         auto _font = assetFont;
-                        _font.setPixelSize( horizonal ? 17 : 15 );
+                        _font.setPixelSize( horizonal ? 15 : 15 );
                         cp->setFont( _font );
                         cp->setPen( sb->palette.buttonText().color() );
                         cp->setBrush( Qt::NoBrush );
@@ -2807,7 +2812,6 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             {
                 break;
             }
-
             drawPopupShadow( painter, panelRect, cBRoundingRadius, FlyoutShadowBorderWidth );
             drawRoundedBorderSurface( painter,
                                       panelRect,
@@ -3006,7 +3010,15 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
 
             drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
-            painter->setBrush( controlFillBrush( option, ControlType::Control ) );
+            bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+            if ( accent )
+            {
+                painter->setBrush( calculateAccentColor( option ) );
+            }
+            else
+            {
+                painter->setBrush( controlFillBrush( option, ControlType::Control ) );
+            }
             painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
             if ( isRaised )
@@ -3022,8 +3034,32 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             const bool isEnabled   = state & QStyle::State_Enabled;
             const bool isMouseOver = state & QStyle::State_MouseOver;
             const bool isRaised    = state & QStyle::State_Raised;
-            const QRectF rect      = option->rect.marginsRemoved(
+
+            qreal radius      = secondLevelRoundingRadius;
+            QRectF shadowRect = option->rect;
+            QRectF rect       = option->rect.marginsRemoved(
                 QMargins( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
+
+            QString shape = widget->property( ButtonShapeProperty ).toString();
+            if ( shape == ButtonShapeCapsule )
+            {
+                radius = option->rect.height() / 2.0;
+            }
+            else if ( shape == ButtonShapeCircle )
+            {
+                radius = qMin( option->rect.width(), option->rect.height() ) / 2.0;
+
+                qreal s = qMin( rect.width(), rect.height() );
+                QRectF centeredRect( 0, 0, s, s );
+                centeredRect.moveCenter( rect.center() );
+                rect = centeredRect;
+
+                qreal sShadow = qMin( shadowRect.width(), shadowRect.height() );
+                QRectF centeredShadow( 0, 0, sShadow, sShadow );
+                centeredShadow.moveCenter( shadowRect.center() );
+                shadowRect = centeredShadow;
+            }
+
             if ( element == PE_PanelButtonTool && ( ( !isMouseOver && !isRaised ) || !isEnabled ) )
             {
                 painter->setPen( Qt::NoPen );
@@ -3033,9 +3069,28 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 painter->setPen( winUI3Color( controlStrokePrimary ) );
             }
 
-            drawEffectShadow( painter, option->rect, cBShadowBorderWidth, secondLevelRoundingRadius );
-            painter->setBrush( controlFillBrush( option, ControlType::Control ) );
-            painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
+            drawEffectShadow( painter, shadowRect.toRect(), cBShadowBorderWidth, radius );
+            bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+            if ( accent )
+            {
+                painter->setBrush( calculateAccentColor( option ) );
+            }
+            else
+            {
+                painter->setBrush( controlFillBrush( option, ControlType::Control ) );
+            }
+            painter->drawRoundedRect( rect, radius, radius );
+
+            if (shape != ButtonShapeCircle)
+            {
+                PainterStateGuard bottomStrokeGuard( painter );
+                const QColor bottomStroke = winUI3Color( controlStrokeSecondary );
+                const QRectF bottomClip( rect.left(), rect.bottom() - 1.0, rect.width(), 1.5 );
+                painter->setClipRect( bottomClip );
+                painter->setPen( QPen( bottomStroke, 1.0 ) );
+                painter->setBrush( Qt::NoBrush );
+                painter->drawRoundedRect( rect, radius, radius );
+            }
         }
         break;
         case PE_FrameDefaultButton :
@@ -3303,8 +3358,8 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             break;
         case PE_PanelScrollAreaCorner :
         {
-            const QBrush brush( option->palette.brush( QPalette::Base ) );
-            painter->fillRect( option->rect, brush );
+            // const QBrush brush( option->palette.brush( QPalette::Base ) );
+            // painter->fillRect( option->rect, brush );
         }
         break;
         case PE_Widget :
@@ -5848,7 +5903,23 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     }
                     else
                     {
-                        painter->setPen( controlTextColor( option ) );
+                        bool checkable = false, checked = false;
+                        if ( const auto* button = qobject_cast<const QAbstractButton*>( widget ) )
+                        {
+                            checkable = button->isCheckable();
+                            checked   = button->isChecked();
+                        }
+                        bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+                        if ( accent || ( checkable && checked ) )
+                        {
+                            QColor penCol = option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary )
+                                                                                            : winUI3Color( textOnAccentDisabled );
+                            painter->setPen( penCol );
+                        }
+                        else
+                        {
+                            painter->setPen( controlTextColor( option ) );
+                        }
                     }
                     proxy()->drawItemText( painter, rect, alignment, toolbutton->palette, toolbutton->state & State_Enabled, text );
                 }
@@ -5945,7 +6016,17 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         }
                         tr.translate( shiftX + leftMargin, shiftY );
                         const QString text = toolButtonElideText( toolbutton, tr, alignment );
-                        painter->setPen( controlTextColor( option ) );
+                        bool accent        = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+                        if ( accent )
+                        {
+                            QColor penCol = option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary )
+                                                                                            : winUI3Color( textOnAccentDisabled );
+                            painter->setPen( penCol );
+                        }
+                        else
+                        {
+                            painter->setPen( controlTextColor( option ) );
+                        }
                         proxy()->drawItemText( painter,
                                                QStyle::visualRect( toolbutton->direction, rect, tr ),
                                                alignment,
@@ -6288,8 +6369,6 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                 auto vTextRect = visualRect( btn->direction, btn->rect, textRect );
                 bool accent    = widget && widget->property( ButtonAccentStyleProperty ).toBool();
-                // TODO， dark模式下，accent 字体是黑色，看着比较刺眼，有accent2，字体改成白色
-                bool accent2 = widget && widget->property( "accent2" ).toBool();
 
                 bool checkable = false, checked = false;
                 if ( const auto* button = qobject_cast<const QPushButton*>( widget ) )

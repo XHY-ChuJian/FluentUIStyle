@@ -1451,6 +1451,10 @@ void MainWindow::setupTabs()
 
 void MainWindow::setupButtonsAndIcons()
 {
+    // 追加胶囊和圆形按钮演示 (从UI文件读取)
+    ui->circleBtn->setIcon(createFluentIcon("\ue713"));
+    ui->circleBtn2->setIcon(createFluentIcon("\ue8c3"));
+
     // Setup tool button
     ui->toolButton->setIcon(createFluentIcon("\ue8c3"));
     ui->pushButton_10->setText(tr("工具按钮"));
@@ -1792,6 +1796,8 @@ void MainWindow::updateButtonIcons()
     ui->pushButton_10->setIcon(createFluentIcon("\ue713"));
     ui->toolButton_4->setIcon(createFluentIcon("\uE804"));
     ui->tBtnAutoRaise->setIcon(createFluentIcon("\ue804"));
+    ui->circleBtn->setIcon(createFluentIcon("\ue713"));
+    ui->circleBtn2->setIcon(createFluentIcon("\ue8c3"));
 }
 
 void MainWindow::updateMenuActionIcons()
