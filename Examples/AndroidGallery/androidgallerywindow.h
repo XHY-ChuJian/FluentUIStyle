@@ -6,8 +6,11 @@ class QButtonGroup;
 class QColor;
 class QCloseEvent;
 class ExInfoBar;
+class ExLiquidGauge;
+class ExMultiProgressRing;
 class ExProgressRing;
 class ExRadialGauge;
+class ExTimeline;
 class QKeyEvent;
 class QLabel;
 class QProgressBar;
@@ -45,6 +48,7 @@ private:
     QString deviceSummary() const;
     void updateSystemMonitor();
     void updateSafeAreaMargins();
+    void addAndroidHistoryEvent(const QString &title, const QString &description);
 
     QVBoxLayout *m_rootLayout = nullptr;
     QLabel *m_pageTitle = nullptr;
@@ -54,6 +58,8 @@ private:
     QTimer *m_monitorTimer = nullptr;
     ExRadialGauge *m_memoryGauge = nullptr;
     ExProgressRing *m_batteryRing = nullptr;
+    ExLiquidGauge *m_storageLiquidGauge = nullptr;
+    ExMultiProgressRing *m_systemMultiRing = nullptr;
     QProgressBar *m_storageProgress = nullptr;
     QProgressBar *m_downloadProgress = nullptr;
     QProgressBar *m_uploadProgress = nullptr;
@@ -63,6 +69,7 @@ private:
     QLabel *m_uploadDetails = nullptr;
     QLabel *m_batteryDetails = nullptr;
     ExInfoBar *m_monitorStatus = nullptr;
+    ExTimeline *m_historyTimeline = nullptr;
     qint64 m_lastReceivedBytes = -1;
     qint64 m_lastTransmittedBytes = -1;
     qint64 m_lastMonitorSampleMs = 0;

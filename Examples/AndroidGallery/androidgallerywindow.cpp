@@ -5,9 +5,12 @@
 #include "excombobox.h"
 #include "exexpander.h"
 #include "exinfobar.h"
+#include "exliquidgauge.h"
+#include "exmultiprogressring.h"
 #include "exprogressring.h"
 #include "exradialgauge.h"
 #include "exrangeslider.h"
+#include "extimeline.h"
 #include "fluentui3style.h"
 
 #include <QApplication>
@@ -28,8 +31,11 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QRandomGenerator>
 #include <QScrollArea>
 #include <QScreen>
+#include <QScroller>
+#include <QScrollerProperties>
 #include <QShowEvent>
 #include <QSlider>
 #include <QSizePolicy>
@@ -136,11 +142,100 @@ int logarithmicRateProgress(qint64 bytesPerSecond)
     if (bytesPerSecond <= 0)
         return 0;
 
-    // 1 KB/s 到约 100 MB/s 映射到 1–100，既能看到低速变化，
-    // 高速 Wi-Fi 也不会立即顶满进度条。
+    // 1 KB/s 到约 100 MB/s 映射到 1–100
     const qreal normalized = qLn(1.0 + bytesPerSecond / 1024.0) / qLn(1.0 + 100.0 * 1024.0);
     return qBound(1, qRound(normalized * 100.0), 100);
 }
+
+// 移动端标准底部导航栏项（Fluent 图标在上，文字在下）
+class BottomNavButton final : public QToolButton
+{
+public:
+    BottomNavButton(const QString &glyph, const QString &text, QWidget *parent = nullptr)
+        : QToolButton(parent)
+        , m_glyph(glyph)
+        , m_label(text)
+    {
+        setCheckable(true);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        setMinimumHeight(56);
+        setCursor(Qt::PointingHandCursor);
+
+        auto *layout = new QVBoxLayout(this);
+        layout->setContentsMargins(2, 6, 2, 6);
+        layout->setSpacing(2);
+        layout->setAlignment(Qt::AlignCenter);
+
+        m_iconLabel = new QLabel(m_glyph, this);
+        QFont iconFont(QStringLiteral("Segoe Fluent Icons"));
+        iconFont.setPixelSize(18);
+        m_iconLabel->setFont(iconFont);
+        m_iconLabel->setAlignment(Qt::AlignCenter);
+        m_iconLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+        layout->addWidget(m_iconLabel);
+
+        m_textLabel = new QLabel(m_label, this);
+        QFont textFont = m_textLabel->font();
+        textFont.setPixelSize(11);
+        m_textLabel->setFont(textFont);
+        m_textLabel->setAlignment(Qt::AlignCenter);
+        m_textLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+        layout->addWidget(m_textLabel);
+
+        updateVisualState();
+    }
+
+    void updateVisualState()
+    {
+        const bool checked = isChecked();
+        const QPalette pal = palette();
+        const QColor activeColor = pal.color(QPalette::Highlight);
+        const QColor inactiveColor = pal.color(QPalette::PlaceholderText);
+
+        if (m_iconLabel && m_textLabel)
+        {
+            QPalette iconPal = m_iconLabel->palette();
+            iconPal.setColor(QPalette::WindowText, checked ? activeColor : inactiveColor);
+            m_iconLabel->setPalette(iconPal);
+
+            QPalette textPal = m_textLabel->palette();
+            textPal.setColor(QPalette::WindowText, checked ? activeColor : inactiveColor);
+            m_textLabel->setPalette(textPal);
+
+            QFont f = m_textLabel->font();
+            f.setBold(checked);
+            m_textLabel->setFont(f);
+        }
+    }
+
+protected:
+    void checkStateSet() override
+    {
+        QToolButton::checkStateSet();
+        updateVisualState();
+    }
+
+    void nextCheckState() override
+    {
+        QToolButton::nextCheckState();
+        updateVisualState();
+    }
+
+    void changeEvent(QEvent *event) override
+    {
+        QToolButton::changeEvent(event);
+        if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange)
+        {
+            updateVisualState();
+        }
+    }
+
+private:
+    QString m_glyph;
+    QString m_label;
+    QLabel *m_iconLabel = nullptr;
+    QLabel *m_textLabel = nullptr;
+};
 
 } // namespace
 
@@ -211,15 +306,24 @@ QWidget *AndroidGalleryWindow::createShell()
 
     m_navigationGroup = new QButtonGroup(this);
     m_navigationGroup->setExclusive(true);
-    const QStringList labels{tr("首页"), tr("控件"), tr("监控"), tr("系统"), tr("设置")};
-    for (int index = 0; index < labels.size(); ++index)
+
+    struct NavItem
     {
-        auto *button = new QToolButton(navigation);
-        button->setText(labels.at(index));
-        button->setCheckable(true);
-        button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        button->setMinimumHeight(52);
-        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        QString glyph;
+        QString text;
+    };
+    const QList<NavItem> navItems{
+        {QStringLiteral("\uE80F"), tr("首页")},
+        {QStringLiteral("\uE790"), tr("控件")},
+        {QStringLiteral("\uE9D9"), tr("监控")},
+        {QStringLiteral("\uE770"), tr("系统")},
+        {QStringLiteral("\uE713"), tr("设置")}
+    };
+
+    for (int index = 0; index < navItems.size(); ++index)
+    {
+        const auto &item = navItems.at(index);
+        auto *button = new BottomNavButton(item.glyph, item.text, navigation);
         m_navigationGroup->addButton(button, index);
         navigationLayout->addWidget(button, 1);
     }
@@ -253,7 +357,7 @@ QWidget *AndroidGalleryWindow::createHomePage()
     auto *status = new ExInfoBar(content);
     status->setSeverity(ExInfoBar::Success);
     status->setTitle(tr("Android 模式已启用"));
-    status->setMessage(tr("桌面标题栏与固定窗口尺寸已关闭，内容会自动避开系统安全区。"));
+    status->setMessage(tr("桌面标题栏与固定窗口尺寸已关闭，支持触控惯性滑动并自动避开系统安全区。"));
     status->setClosable(false);
     status->setOpen(true);
     layout->addWidget(status);
@@ -261,8 +365,9 @@ QWidget *AndroidGalleryWindow::createHomePage()
     auto *principles = createCard(tr("移动端设计原则"));
     auto *principlesLayout = cardLayout(principles);
     principlesLayout->addWidget(createTextLabel(tr("• 48dp 级触控目标，减少误触"), true, principles));
-    principlesLayout->addWidget(createTextLabel(tr("• 单列滚动，避免横向拥挤"), true, principles));
-    principlesLayout->addWidget(createTextLabel(tr("• 底部导航，常用页面单手可达"), true, principles));
+    principlesLayout->addWidget(createTextLabel(tr("• 惯性手势滚动与动量回弹，顺畅浏览"), true, principles));
+    principlesLayout->addWidget(createTextLabel(tr("• 单列响应式卡片，避免横向拥挤"), true, principles));
+    principlesLayout->addWidget(createTextLabel(tr("• 底部导航栏，核心功能单手可达"), true, principles));
     layout->addWidget(principles);
 
     auto *expander = new ExExpander(content);
@@ -288,6 +393,7 @@ QWidget *AndroidGalleryWindow::createControlsPage()
     layout->setContentsMargins(0, 8, 0, 12);
     layout->setSpacing(kPageSpacing);
 
+    // 1. 按钮卡片
     auto *buttons = createCard(tr("按钮"), tr("主要操作突出显示，次要操作保持安静。"));
     auto *primaryButton = new QPushButton(tr("主要操作"), buttons);
     primaryButton->setProperty("accent", true);
@@ -307,6 +413,7 @@ QWidget *AndroidGalleryWindow::createControlsPage()
     cardLayout(buttons)->addWidget(buttonRow);
     layout->addWidget(buttons);
 
+    // 2. 输入控件
     auto *inputs = createCard(tr("输入"), tr("输入控件使用整行宽度，便于软键盘和触控操作。"));
     auto *lineEdit = new QLineEdit(inputs);
     lineEdit->setPlaceholderText(tr("搜索组件"));
@@ -327,6 +434,7 @@ QWidget *AndroidGalleryWindow::createControlsPage()
     cardLayout(inputs)->addWidget(spinBox);
     layout->addWidget(inputs);
 
+    // 3. 选择控件
     auto *selection = createCard(tr("选择"));
     auto *switchButton = new QCheckBox(tr("启用实时预览"), selection);
     switchButton->setProperty("isSwitchButton", true);
@@ -352,6 +460,7 @@ QWidget *AndroidGalleryWindow::createControlsPage()
     cardLayout(selection)->addWidget(radioRow);
     layout->addWidget(selection);
 
+    // 4. 滑块控件
     auto *sliders = createCard(tr("滑块"));
     auto *valueLabel = createTextLabel(tr("音量：64"), true, sliders);
     cardLayout(sliders)->addWidget(valueLabel);
@@ -379,6 +488,106 @@ QWidget *AndroidGalleryWindow::createControlsPage()
     cardLayout(sliders)->addWidget(rangeSlider);
     layout->addWidget(sliders);
 
+    // 5. ExLiquidGauge 水球波浪图
+    auto *liquidCard = createCard(
+        tr("水球波浪图 (ExLiquidGauge)"),
+        tr("流动水波展示进度或容量，适合电量、存储和健康类移动端卡片。"));
+    auto *liquidGauge = new ExLiquidGauge(liquidCard);
+    liquidGauge->setRange(0, 100);
+    liquidGauge->setValue(65);
+    liquidGauge->setFixedSize(160, 160);
+    cardLayout(liquidCard)->addWidget(centeredWidget(liquidGauge));
+
+    auto *liquidSliderLabel = createTextLabel(tr("调节当前水位：65%"), true, liquidCard);
+    cardLayout(liquidCard)->addWidget(liquidSliderLabel);
+    auto *liquidSlider = new QSlider(Qt::Horizontal, liquidCard);
+    liquidSlider->setRange(0, 100);
+    liquidSlider->setValue(65);
+    liquidSlider->setMinimumHeight(48);
+    connect(liquidSlider, &QSlider::valueChanged, liquidGauge,
+            [liquidGauge, liquidSliderLabel](int val) {
+                liquidGauge->setValue(val);
+                liquidSliderLabel->setText(QObject::tr("调节当前水位：%1%").arg(val));
+            });
+    cardLayout(liquidCard)->addWidget(liquidSlider);
+
+    auto *shapeCombo = new ExComboBox(liquidCard);
+    shapeCombo->addItem(tr("圆形轮廓 (Circle)"), QVariant::fromValue(int(ExLiquidGauge::CircleShape)));
+    shapeCombo->addItem(tr("矩形轮廓 (Rect)"), QVariant::fromValue(int(ExLiquidGauge::RectShape)));
+    shapeCombo->addItem(tr("水滴气泡 (Pin)"), QVariant::fromValue(int(ExLiquidGauge::PinShape)));
+    shapeCombo->addItem(tr("三角轮廓 (Triangle)"), QVariant::fromValue(int(ExLiquidGauge::TriangleShape)));
+    makeTouchFriendly(shapeCombo);
+    connect(shapeCombo, qOverload<int>(&QComboBox::currentIndexChanged), liquidGauge,
+            [liquidGauge, shapeCombo](int idx) {
+                const auto shape = static_cast<ExLiquidGauge::Shape>(shapeCombo->itemData(idx).toInt());
+                liquidGauge->setShape(shape);
+            });
+    cardLayout(liquidCard)->addWidget(shapeCombo);
+
+    auto *waveAnimCheck = new QCheckBox(tr("波浪流动动画"), liquidCard);
+    waveAnimCheck->setProperty("isSwitchButton", true);
+    waveAnimCheck->setChecked(true);
+    makeTouchFriendly(waveAnimCheck);
+    connect(waveAnimCheck, &QCheckBox::toggled, liquidGauge, &ExLiquidGauge::setAnimationEnabled);
+    cardLayout(liquidCard)->addWidget(waveAnimCheck);
+    layout->addWidget(liquidCard);
+
+    // 6. ExMultiProgressRing 多环进度条
+    auto *multiRingCard = createCard(
+        tr("多环进度环 (ExMultiProgressRing)"),
+        tr("同心圆环展示多维指标，支持中心数值、徽标与平滑过渡。"));
+    auto *multiRing = new ExMultiProgressRing(multiRingCard);
+    multiRing->setRange(0, 100);
+    multiRing->setFixedSize(180, 180);
+    auto *activityItem = multiRing->addItem(tr("活动"), 78, QColor(QStringLiteral("#FF5722")));
+    auto *exerciseItem = multiRing->addItem(tr("锻炼"), 55, QColor(QStringLiteral("#4CAF50")));
+    auto *standItem = multiRing->addItem(tr("站立"), 90, QColor(QStringLiteral("#00BCD4")));
+    cardLayout(multiRingCard)->addWidget(centeredWidget(multiRing));
+
+    auto *randomRingButton = new QPushButton(tr("随机更新多环数值"), multiRingCard);
+    randomRingButton->setProperty("accent", true);
+    makeTouchFriendly(randomRingButton);
+    connect(randomRingButton, &QPushButton::clicked, multiRing,
+            [activityItem, exerciseItem, standItem] {
+                auto *rng = QRandomGenerator::global();
+                activityItem->setValue(rng->bounded(20, 100));
+                exerciseItem->setValue(rng->bounded(10, 100));
+                standItem->setValue(rng->bounded(30, 100));
+            });
+    cardLayout(multiRingCard)->addWidget(randomRingButton);
+    layout->addWidget(multiRingCard);
+
+    // 7. ExTimeline 移动端时间轴
+    auto *timelineCard = createCard(
+        tr("时间轴 (ExTimeline)"),
+        tr("单列流式时间轴，适用于移动端任务节点、物流轨迹与版本日志。"));
+    auto *timeline = new ExTimeline(timelineCard);
+    timeline->setLayoutMode(ExTimeline::ContentOnRight);
+    timeline->setMinimumHeight(240);
+    timeline->addEvent(
+        QDateTime::currentDateTime().addSecs(-7200),
+        tr("应用构建完成"),
+        tr("针对 Android ARM64 架构打包与签名"),
+        ExTimelineEvent::Completed);
+    timeline->addEvent(
+        QDateTime::currentDateTime().addSecs(-3600),
+        tr("触控手势配置"),
+        tr("注入 QScroller 惯性滚动与回弹阻尼"),
+        ExTimelineEvent::Completed);
+    timeline->addEvent(
+        QDateTime::currentDateTime(),
+        tr("当前运行中"),
+        tr("FluentUI3Style 移动主题渲染就绪"),
+        ExTimelineEvent::Current);
+    timeline->addEvent(
+        QDateTime::currentDateTime().addSecs(3600),
+        tr("后台资源优化"),
+        tr("准备休眠和低功耗监听"),
+        ExTimelineEvent::Pending);
+    cardLayout(timelineCard)->addWidget(timeline);
+    layout->addWidget(timelineCard);
+
+    // 8. 即时反馈
     auto *feedback = createCard(tr("即时反馈"));
     auto *infoBar = new ExInfoBar(feedback);
     infoBar->setSeverity(ExInfoBar::Informational);
@@ -414,6 +623,20 @@ QWidget *AndroidGalleryWindow::createSystemMonitorPage()
     summary->setOpen(true);
     layout->addWidget(summary);
 
+    // 1. 综合指标多环卡片
+    auto *multiCard = createCard(
+        tr("整机综合健康环"),
+        tr("外环：内存占用 · 中环：电池电量 · 内环：存储空间"));
+    m_systemMultiRing = new ExMultiProgressRing(multiCard);
+    m_systemMultiRing->setRange(0, 100);
+    m_systemMultiRing->setFixedSize(200, 200);
+    m_systemMultiRing->addItem(tr("内存"), 0, QColor(QStringLiteral("#FF5252")));
+    m_systemMultiRing->addItem(tr("电池"), 0, QColor(QStringLiteral("#4CAF50")));
+    m_systemMultiRing->addItem(tr("存储"), 0, QColor(QStringLiteral("#2196F3")));
+    cardLayout(multiCard)->addWidget(centeredWidget(m_systemMultiRing));
+    layout->addWidget(multiCard);
+
+    // 2. 运行内存表盘
     auto *memoryCard = createCard(
         tr("运行内存"), tr("仪表盘显示整机已用内存比例，并标记 Android 的低内存状态。"));
     m_memoryGauge = new ExRadialGauge(memoryCard);
@@ -424,13 +647,14 @@ QWidget *AndroidGalleryWindow::createSystemMonitorPage()
     m_memoryGauge->setInteractive(false);
     m_memoryGauge->setNeedleStyle(ExRadialGauge::NoNeedle);
     m_memoryGauge->setLabelsVisible(true);
-    m_memoryGauge->setFixedSize(230, 230);
+    m_memoryGauge->setFixedSize(220, 220);
     cardLayout(memoryCard)->addWidget(centeredWidget(m_memoryGauge));
     m_memoryDetails = createTextLabel(tr("正在读取内存信息…"), true, memoryCard);
     m_memoryDetails->setAlignment(Qt::AlignCenter);
     cardLayout(memoryCard)->addWidget(m_memoryDetails);
     layout->addWidget(memoryCard);
 
+    // 3. 实时网速
     auto *networkCard = createCard(
         tr("实时网速"),
         tr("根据 Android TrafficStats 的累计流量计算整机当前下载和上传速度。"));
@@ -453,29 +677,43 @@ QWidget *AndroidGalleryWindow::createSystemMonitorPage()
     cardLayout(networkCard)->addWidget(m_uploadProgress);
     layout->addWidget(networkCard);
 
-    auto *capacityCard = createCard(
-        tr("电池与存储"), tr("ProgressRing 显示电量，进度条显示应用所在存储卷的使用情况。"));
-    m_batteryRing = new ExProgressRing(capacityCard);
+    // 4. 存储与水波容量卡片
+    auto *storageCard = createCard(
+        tr("存储空间 (水波容量展示)"),
+        tr("水波图显示应用所在存储卷的使用情况。"));
+    m_storageLiquidGauge = new ExLiquidGauge(storageCard);
+    m_storageLiquidGauge->setRange(0, 100);
+    m_storageLiquidGauge->setValue(0);
+    m_storageLiquidGauge->setFixedSize(150, 150);
+    cardLayout(storageCard)->addWidget(centeredWidget(m_storageLiquidGauge));
+
+    m_storageDetails = createTextLabel(tr("正在读取存储信息…"), true, storageCard);
+    m_storageDetails->setAlignment(Qt::AlignCenter);
+    cardLayout(storageCard)->addWidget(m_storageDetails);
+    m_storageProgress = new QProgressBar(storageCard);
+    m_storageProgress->setRange(0, 100);
+    m_storageProgress->setValue(0);
+    m_storageProgress->setFormat(tr("已使用 %p%"));
+    m_storageProgress->setMinimumHeight(28);
+    cardLayout(storageCard)->addWidget(m_storageProgress);
+    layout->addWidget(storageCard);
+
+    // 5. 电池状态
+    auto *batteryCard = createCard(
+        tr("电池状态"), tr("ProgressRing 呈现当前电量与充电连接。"));
+    m_batteryRing = new ExProgressRing(batteryCard);
     m_batteryRing->setRange(0, 100);
     m_batteryRing->setValue(0);
     m_batteryRing->setTitle(tr("电池"));
     m_batteryRing->setFormat(QStringLiteral("%p%"));
-    m_batteryRing->setFixedSize(180, 180);
-    cardLayout(capacityCard)->addWidget(centeredWidget(m_batteryRing));
-    m_batteryDetails = createTextLabel(tr("正在读取电池状态…"), true, capacityCard);
+    m_batteryRing->setFixedSize(160, 160);
+    cardLayout(batteryCard)->addWidget(centeredWidget(m_batteryRing));
+    m_batteryDetails = createTextLabel(tr("正在读取电池状态…"), true, batteryCard);
     m_batteryDetails->setAlignment(Qt::AlignCenter);
-    cardLayout(capacityCard)->addWidget(m_batteryDetails);
+    cardLayout(batteryCard)->addWidget(m_batteryDetails);
+    layout->addWidget(batteryCard);
 
-    m_storageDetails = createTextLabel(tr("正在读取存储信息…"), true, capacityCard);
-    cardLayout(capacityCard)->addWidget(m_storageDetails);
-    m_storageProgress = new QProgressBar(capacityCard);
-    m_storageProgress->setRange(0, 100);
-    m_storageProgress->setValue(0);
-    m_storageProgress->setFormat(tr("存储已使用 %p%"));
-    m_storageProgress->setMinimumHeight(28);
-    cardLayout(capacityCard)->addWidget(m_storageProgress);
-    layout->addWidget(capacityCard);
-
+    // 6. 采样设置
     auto *refreshCard = createCard(
         tr("采样设置"), tr("自动刷新仅在当前页面生效，以减少后台耗电。"));
     auto *autoRefresh = new QCheckBox(tr("自动刷新"), refreshCard);
@@ -555,9 +793,11 @@ QWidget *AndroidGalleryWindow::createSettingsPage()
 
     auto *accentCard = createCard(tr("强调色"));
     const QList<QPair<QString, QColor>> accents{
-        {tr("蓝色"), QColor(QStringLiteral("#0067C0"))},
-        {tr("紫色"), QColor(QStringLiteral("#744DA9"))},
-        {tr("绿色"), QColor(QStringLiteral("#0F7B0F"))}
+        {tr("Fluent 经典蓝"), QColor(QStringLiteral("#0067C0"))},
+        {tr("微软紫"), QColor(QStringLiteral("#744DA9"))},
+        {tr("森林绿"), QColor(QStringLiteral("#0F7B0F"))},
+        {tr("活力橙"), QColor(QStringLiteral("#D83B01"))},
+        {tr("青瓷绿"), QColor(QStringLiteral("#038387"))}
     };
     for (const auto &accent : accents)
     {
@@ -604,15 +844,17 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
     auto *toastButton = new QPushButton(tr("显示 Android Toast"), feedbackCard);
     toastButton->setProperty("accent", true);
     makeTouchFriendly(toastButton);
-    connect(toastButton, &QPushButton::clicked, this, [] {
+    connect(toastButton, &QPushButton::clicked, this, [this] {
         AndroidIntegration::showToast(QObject::tr("来自 Fluent Android Gallery 的问候"));
+        addAndroidHistoryEvent(tr("弹出原生 Toast"), tr("展示轻量提示消息"));
     });
     cardLayout(feedbackCard)->addWidget(toastButton);
 
     auto *hapticButton = new QPushButton(tr("触发轻触反馈"), feedbackCard);
     makeTouchFriendly(hapticButton);
-    connect(hapticButton, &QPushButton::clicked, this, [] {
+    connect(hapticButton, &QPushButton::clicked, this, [this] {
         AndroidIntegration::performHapticFeedback();
+        addAndroidHistoryEvent(tr("触觉振动反馈"), tr("执行 HapticFeedbackConstants.KEYBOARD_TAP"));
     });
     cardLayout(feedbackCard)->addWidget(hapticButton);
     layout->addWidget(feedbackCard);
@@ -624,19 +866,21 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
     auto *shareButton = new QPushButton(tr("打开系统分享面板"), sharingCard);
     shareButton->setProperty("accent", true);
     makeTouchFriendly(shareButton);
-    connect(shareButton, &QPushButton::clicked, this, [] {
+    connect(shareButton, &QPushButton::clicked, this, [this] {
         AndroidIntegration::shareText(
             QObject::tr("Fluent Android Gallery"),
             QObject::tr("我正在体验 Window11Style 的 Android 移动端 Demo。"));
+        addAndroidHistoryEvent(tr("调用系统分享"), tr("启动 Android Intent.ACTION_SEND"));
     });
     cardLayout(sharingCard)->addWidget(shareButton);
 
     auto *clipboardButton = new QPushButton(tr("复制演示文本"), sharingCard);
     makeTouchFriendly(clipboardButton);
-    connect(clipboardButton, &QPushButton::clicked, this, [] {
+    connect(clipboardButton, &QPushButton::clicked, this, [this] {
         QApplication::clipboard()->setText(
             QObject::tr("Fluent Android Gallery · Window11Style"));
         AndroidIntegration::showToast(QObject::tr("已复制到剪贴板"));
+        addAndroidHistoryEvent(tr("写入剪贴板"), tr("Fluent Android Gallery · Window11Style"));
     });
     cardLayout(sharingCard)->addWidget(clipboardButton);
     layout->addWidget(sharingCard);
@@ -647,11 +891,12 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
 
     auto *browserButton = new QPushButton(tr("在浏览器中打开 Qt Android 文档"), externalCard);
     makeTouchFriendly(browserButton);
-    connect(browserButton, &QPushButton::clicked, this, [] {
+    connect(browserButton, &QPushButton::clicked, this, [this] {
         const bool opened = QDesktopServices::openUrl(
             QUrl(QStringLiteral("https://doc.qt.io/qt-6/android.html")));
         AndroidIntegration::showToast(
             opened ? QObject::tr("正在打开浏览器") : QObject::tr("没有可用的浏览器"));
+        addAndroidHistoryEvent(tr("打开外部浏览器"), tr("https://doc.qt.io/qt-6/android.html"));
     });
     cardLayout(externalCard)->addWidget(browserButton);
 
@@ -666,10 +911,26 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
         selectedFile->setText(
             tr("已选择：%1\n%2").arg(fileUrl.fileName(), fileUrl.toDisplayString()));
         AndroidIntegration::showToast(tr("文件已选择"));
+        addAndroidHistoryEvent(tr("选择系统文件"), fileUrl.fileName());
     });
     cardLayout(externalCard)->addWidget(fileButton);
     cardLayout(externalCard)->addWidget(selectedFile);
     layout->addWidget(externalCard);
+
+    // 操作历程时间轴
+    auto *historyCard = createCard(
+        tr("交互操作历程 (ExTimeline)"),
+        tr("记录当前会话调用的 Android 系统功能。"));
+    m_historyTimeline = new ExTimeline(historyCard);
+    m_historyTimeline->setLayoutMode(ExTimeline::ContentOnRight);
+    m_historyTimeline->setMinimumHeight(180);
+    m_historyTimeline->addEvent(
+        QDateTime::currentDateTime(),
+        tr("页面初始化"),
+        tr("系统功能展示就绪"),
+        ExTimelineEvent::Completed);
+    cardLayout(historyCard)->addWidget(m_historyTimeline);
+    layout->addWidget(historyCard);
 
     auto *deviceCard = createCard(
         tr("设备信息"),
@@ -683,6 +944,7 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
     connect(refreshButton, &QPushButton::clicked, this, [this, deviceLabel] {
         deviceLabel->setText(deviceSummary());
         AndroidIntegration::showToast(tr("设备信息已刷新"));
+        addAndroidHistoryEvent(tr("刷新设备环境"), tr("读取屏幕与系统安全区数据"));
     });
     cardLayout(deviceCard)->addWidget(refreshButton);
     layout->addWidget(deviceCard);
@@ -699,14 +961,54 @@ QWidget *AndroidGalleryWindow::createAndroidPage()
     return createScrollPage(content);
 }
 
+void AndroidGalleryWindow::addAndroidHistoryEvent(const QString &title, const QString &description)
+{
+    if (!m_historyTimeline)
+        return;
+
+    // 将之前的事件都标记为 Completed，新增的标记为 Current
+    const auto events = m_historyTimeline->events();
+    for (auto *ev : events)
+    {
+        if (ev->status() == ExTimelineEvent::Current)
+            ev->setStatus(ExTimelineEvent::Completed);
+    }
+
+    m_historyTimeline->addEvent(
+        QDateTime::currentDateTime(),
+        title,
+        description,
+        ExTimelineEvent::Current);
+}
+
 QWidget *AndroidGalleryWindow::createScrollPage(QWidget *content) const
 {
     auto *scrollArea = new QScrollArea;
     scrollArea->setFrameShape(QFrame::NoFrame);
     scrollArea->setWidgetResizable(true);
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setWidget(content);
     scrollArea->viewport()->setAutoFillBackground(false);
+
+    // 启用 QScroller 触控动量与鼠标拖拽惯性滑动（类似原生 Android 滚动）
+    QScroller::grabGesture(scrollArea->viewport(), QScroller::LeftMouseButtonGesture);
+    QScroller::grabGesture(scrollArea->viewport(), QScroller::TouchGesture);
+
+    QScroller *scroller = QScroller::scroller(scrollArea->viewport());
+    if (scroller)
+    {
+        QScrollerProperties props = scroller->scrollerProperties();
+        props.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy,
+                              QVariant::fromValue(QScrollerProperties::OvershootAlwaysOn));
+        props.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy,
+                              QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
+        props.setScrollMetric(QScrollerProperties::MousePressEventDelay, 0.0);
+        props.setScrollMetric(QScrollerProperties::FrameRate,
+                              QVariant::fromValue(QScrollerProperties::Fps60));
+        scroller->setScrollerProperties(props);
+    }
+
     return scrollArea;
 }
 
@@ -778,15 +1080,16 @@ void AndroidGalleryWindow::updateSystemMonitor()
         AndroidIntegration::readSystemSnapshot();
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
 
+    int memPercent = 0;
     if (m_memoryGauge && m_memoryDetails)
     {
         if (snapshot.totalMemoryBytes > 0 && snapshot.availableMemoryBytes >= 0)
         {
             const qint64 used = qMax<qint64>(
                 0, snapshot.totalMemoryBytes - snapshot.availableMemoryBytes);
-            const int usedPercent = qBound(
+            memPercent = qBound(
                 0, qRound(100.0 * used / snapshot.totalMemoryBytes), 100);
-            m_memoryGauge->setValue(usedPercent);
+            m_memoryGauge->setValue(memPercent);
             m_memoryDetails->setText(
                 tr("已用 %1 / 总计 %2\n可用 %3 · 低内存阈值 %4")
                     .arg(formatBytes(used), formatBytes(snapshot.totalMemoryBytes),
@@ -847,11 +1150,13 @@ void AndroidGalleryWindow::updateSystemMonitor()
         }
     }
 
+    int batteryVal = 0;
     if (m_batteryRing && m_batteryDetails)
     {
         if (snapshot.batteryLevel >= 0)
         {
-            m_batteryRing->setValue(snapshot.batteryLevel);
+            batteryVal = snapshot.batteryLevel;
+            m_batteryRing->setValue(batteryVal);
             m_batteryRing->setTitle(snapshot.charging ? tr("充电中") : tr("电池"));
             m_batteryDetails->setText(
                 snapshot.charging ? tr("已连接电源") : tr("正在使用电池"));
@@ -864,15 +1169,18 @@ void AndroidGalleryWindow::updateSystemMonitor()
         }
     }
 
+    int storagePercent = 0;
     if (m_storageProgress && m_storageDetails)
     {
         const QStorageInfo storage = QStorageInfo::root();
         if (storage.isValid() && storage.isReady() && storage.bytesTotal() > 0)
         {
             const qint64 used = qMax<qint64>(0, storage.bytesTotal() - storage.bytesAvailable());
-            const int usedPercent = qBound(
+            storagePercent = qBound(
                 0, qRound(100.0 * used / storage.bytesTotal()), 100);
-            m_storageProgress->setValue(usedPercent);
+            m_storageProgress->setValue(storagePercent);
+            if (m_storageLiquidGauge)
+                m_storageLiquidGauge->setValue(storagePercent);
             m_storageDetails->setText(
                 tr("存储：已用 %1 / 总计 %2 · 可用 %3")
                     .arg(formatBytes(used), formatBytes(storage.bytesTotal()),
@@ -881,7 +1189,21 @@ void AndroidGalleryWindow::updateSystemMonitor()
         else
         {
             m_storageProgress->setValue(0);
+            if (m_storageLiquidGauge)
+                m_storageLiquidGauge->setValue(0);
             m_storageDetails->setText(tr("当前设备未返回存储信息"));
+        }
+    }
+
+    // 更新综合多环
+    if (m_systemMultiRing)
+    {
+        const auto items = m_systemMultiRing->items();
+        if (items.size() >= 3)
+        {
+            items.at(0)->setValue(memPercent);
+            items.at(1)->setValue(batteryVal);
+            items.at(2)->setValue(storagePercent);
         }
     }
 
