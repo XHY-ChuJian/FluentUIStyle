@@ -446,6 +446,11 @@ QPointF ExRangeSliderPrivate::handleCenter(int value) const
 
 void ExRangeSliderPrivate::showPressedHandleToolTip(int value)
 {
+#ifdef Q_OS_ANDROID
+    Q_UNUSED(value)
+    return;
+#endif
+
     Q_Q(ExRangeSlider);
     const QVariant showTip = q->property(SliderValueTipProperty);
     if (!showTip.isValid() || !showTip.toBool())

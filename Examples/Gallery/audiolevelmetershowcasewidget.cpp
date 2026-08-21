@@ -29,7 +29,7 @@
 
 #include <cmath>
 
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 ) && !defined(Q_OS_ANDROID)
 #include <audiospectrumanalyzer.h>
 
 #include <QAudioOutput>
@@ -224,7 +224,7 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     examplesLayout->addLayout( metersRow );
     mainLayout->addWidget( examplesCard );
 
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 ) && !defined(Q_OS_ANDROID)
     auto* mediaPlayer = new QMediaPlayer( this );
     auto* audioOutput = new QAudioOutput( this );
     auto* levelAnalyzer = new AudioSpectrumAnalyzer( this );
@@ -316,7 +316,7 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
     preview->setMinimumSize( 220, 390 );
     preview->setMaximumWidth( 300 );
     useThemeColors( preview );
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 ) && !defined(Q_OS_ANDROID)
     connect( levelAnalyzer, &AudioSpectrumAnalyzer::pcmDataReady, this, [=]( const QByteArray& pcmData )
              {
                  const qreal decibels = pcmLevelDecibels( pcmData );
@@ -604,12 +604,12 @@ AudioLevelMeterShowcaseWidget::AudioLevelMeterShowcaseWidget( QWidget* parent )
              &QTimer::timeout,
              this,
              [monoMeter, stereoMeter, preview,
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 ) && !defined(Q_OS_ANDROID)
               mediaPlayer,
 #endif
               phase = qreal( 0.0 )]() mutable
              {
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 ) && !defined(Q_OS_ANDROID)
                  if ( !mediaPlayer->source().isEmpty() )
                  {
                      return;

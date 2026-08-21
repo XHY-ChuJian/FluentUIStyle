@@ -82,12 +82,12 @@ target_link_libraries(Gallery PRIVATE
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 
-if(TARGET ExWidgets::Frameless)
+if(NOT ANDROID AND TARGET ExWidgets::Frameless)
     target_compile_definitions(Gallery PRIVATE GALLERY_ENABLE_FRAMELESS)
     target_link_libraries(Gallery PRIVATE ExWidgets::Frameless)
 endif()
 
-if(QT_VERSION_MAJOR GREATER_EQUAL 6)
+if(QT_VERSION_MAJOR GREATER_EQUAL 6 AND NOT ANDROID)
     target_link_libraries(Gallery PRIVATE
         AudiomaticMiniWidgets
         Qt6::Multimedia
@@ -101,10 +101,18 @@ else()
     )
 endif()
 
+if(WIN32)
+    set_target_properties(Gallery PROPERTIES WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>)
+endif()
+
 set_target_properties(Gallery PROPERTIES
-    WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
     DEBUG_POSTFIX d
 )
+
+if(ANDROID)
+    set_property(TARGET Gallery PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+        "${CMAKE_CURRENT_SOURCE_DIR}/../android")
+endif()
 
 if(WIN32 AND GALLERY_LUPDATE)
     add_custom_target(

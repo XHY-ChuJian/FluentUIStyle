@@ -53,6 +53,13 @@ int main(int argc, char *argv[])
     // qApp->setProperty("secondLevelRoundingRadius", 0);
     qApp->setProperty("_q_scrollHint_center", false); //控制QComboBox弹出位置，默认false，true则在QComboBox中心位置弹出
     qApp->setProperty("_q_themestyle", 0);            //控制配色方案，默认0-Fluent, 1-Teams
+
+#ifdef Q_OS_ANDROID
+    // 全局禁用所有 QComboBox 的展开动画
+    qApp->setProperty("comboBoxPopupDropDownAnimationEnabled", false);
+#endif
+
+
 #ifdef WIN32
     qApp->setStyle("FluentUI3");
 #else
@@ -70,7 +77,11 @@ int main(int argc, char *argv[])
     a.setFont(font);
 
     MainWindow w;
+#ifdef Q_OS_ANDROID
+    w.showMaximized();
+#else
     w.show();
+#endif
 
     return a.exec();
 }

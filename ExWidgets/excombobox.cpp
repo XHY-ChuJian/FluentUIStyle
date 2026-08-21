@@ -40,6 +40,11 @@ ExComboBox::~ExComboBox()
 
 void ExComboBox::showPopup()
 {
+#ifdef Q_OS_ANDROID
+    QComboBox::showPopup();
+    return;
+#endif
+
     if ( m_state == AnimationState::Opening )
     {
         return;
@@ -65,6 +70,11 @@ void ExComboBox::showPopup()
 
 void ExComboBox::hidePopup()
 {
+#ifdef Q_OS_ANDROID
+    QComboBox::hidePopup();
+    return;
+#endif
+
     // 展开完成前不允许关闭，避免破坏正在变化的布局和 Geometry。
     if ( m_state != AnimationState::Idle )
     {

@@ -14,7 +14,7 @@
 #include "audiolevelmetershowcasewidget.h"
 #include "feedbackshowcasewidget.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_ANDROID)
 #include "audiomaticplayerwidget.h"
 #else
 #include "spectrumshowcasewidget.h"
@@ -330,7 +330,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_widgetBgMode(WidgetBgMode::None)
 {
     setObjectName(QStringLiteral("MainWindow"));
+#ifdef GALLERY_ENABLE_FRAMELESS
     setAttribute(Qt::WA_DontCreateNativeAncestors);
+#endif
 
     ui->setupUi(this);
 
@@ -345,6 +347,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_windowFrame = new FluentWindowFrame(this, this);
     m_windowFrame->installChromeHeader(m_menuBar);
     setupTitleBarChrome();
+#elif defined(Q_OS_ANDROID)
+    m_menuBar->hide();
 #else
     setMenuBar(m_menuBar);
 #endif
@@ -1663,7 +1667,7 @@ void MainWindow::setupAudiomaticPlayerPage()
     auto *pageLayout = new QHBoxLayout(m_audiomaticPlayerPage);
     pageLayout->setContentsMargins(24, 24, 24, 24);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_ANDROID)
     pageLayout->addWidget(new AudiomaticPlayerWidget(m_audiomaticPlayerPage));
 #else
     pageLayout->addWidget(new SpectrumShowcaseWidget(m_audiomaticPlayerPage));

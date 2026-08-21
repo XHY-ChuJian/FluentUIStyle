@@ -33,6 +33,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     Svg
 )
 
+if(QT_VERSION_MAJOR EQUAL 6 AND QT_KNOWN_POLICY_QTP0002)
+    qt_policy(SET QTP0002 NEW)
+endif()
+
 # Install into the Qt selected by the current Kit unless the caller explicitly
 # supplied CMAKE_INSTALL_PREFIX. qmake is authoritative for both native Qt 5
 # and Qt 6 layouts; the package directory is a fallback for unusual packages
@@ -110,21 +114,27 @@ if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION VERSION_GREATER_EQUAL "6.10.0")
     )
 endif()
 
-# Local runs: keep all configs in the same output dir (Windows/MSVC convenience).
+# Local desktop runs: keep all configs in the same output dir (Windows/MSVC convenience).
+# Android application targets are MODULE_LIBRARY targets. Keep their library output in
+# each target's build directory so Qt Creator can find the adjacent deployment JSON.
 # Optional components such as ExWidgetsFrameless also inherit these paths.
 set(_out_bin "${CMAKE_BINARY_DIR}/bin")
 set(_out_lib "${CMAKE_BINARY_DIR}/lib")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_out_bin}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_out_lib}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_out_lib}")
 set(CMAKE_PDB_OUTPUT_DIRECTORY "${_out_bin}")
+if(NOT ANDROID)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_out_lib}")
+endif()
 
 foreach(_cfg DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
     set(CMAKE_PDB_OUTPUT_DIRECTORY_${_cfg} "${_out_bin}")
+    if(NOT ANDROID)
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${_out_lib}")
+    endif()
 endforeach()
 
 option(BUILD_LIBRARY "Build as library" ON)
@@ -133,6 +143,14 @@ option(BUILD_EXAMPLES "Build example applications" ON)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
+endif()
+
+# QWindowKit's frameless integration provides desktop window chrome. Android
+# windows already use the Activity surface and must not install a desktop title bar.
+if(ANDROID)
+    set(EXWIDGETS_BUILD_FRAMELESS OFF CACHE BOOL
+        "Build the optional QWindowKit-based frameless window component" FORCE
+    )
 endif()
 
 add_subdirectory(ExWidgets)
