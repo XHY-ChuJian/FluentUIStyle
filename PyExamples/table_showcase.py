@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QTableWidgetItem
+from PySide6.QtWidgets import QTableWidgetItem, QAbstractItemView
 from PySide6.QtCore import Qt
 from utils import query_installed_software
 
@@ -15,6 +15,8 @@ def setup_table_widget(window):
     table.verticalHeader().setVisible(False)
     table.setAlternatingRowColors(True)
     table.setShowGrid(False)
+
+    table.setSelectionBehavior(QAbstractItemView.SelectRows);
     
     h_font = table.horizontalHeader().font()
     h_font.setPixelSize(14)
