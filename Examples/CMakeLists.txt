@@ -12,8 +12,6 @@ endif()
 add_subdirectory(Gallery)
 if(NOT ANDROID)
     add_subdirectory(Win11Clock)
-    add_subdirectory(SystemMonitor)
-    add_subdirectory(FluentSerial)
 endif()
 
 if(ANDROID AND QT_VERSION_MAJOR GREATER_EQUAL 6)
