@@ -123,6 +123,10 @@ void FluentWindowFrame::attachChromeHeader()
     m_windowAgent->setHitTestVisible(m_titleBar->themeButton(), true);
     m_windowAgent->setHitTestVisible(m_titleBar->pinButton(), true);
     m_windowAgent->setHitTestVisible(m_titleBar->searchLineEdit(), true);
+    for (auto *btn : m_titleBar->accentButtons())
+    {
+        m_windowAgent->setHitTestVisible(btn, true);
+    }
     m_windowAgent->setSystemButton(QWK::WindowAgentBase::Minimize, m_titleBar->minButton());
     m_windowAgent->setSystemButton(QWK::WindowAgentBase::Maximize, m_titleBar->maxButton());
     m_windowAgent->setSystemButton(QWK::WindowAgentBase::Close, m_titleBar->closeButton());
