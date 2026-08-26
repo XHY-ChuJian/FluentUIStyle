@@ -57,9 +57,6 @@ public:
     [[nodiscard]] QList<QWidget*> contentWidgets() const;
     // 追加独立 Content 面板并接管 widget 的所有权。
     void addContentWidget( QWidget* widget );
-    // 移除并删除指定 Content 控件。
-    bool removeContentWidget( QWidget* widget );
-    void clearContentWidgets();
 
     [[nodiscard]] QSize sizeHint() const override;
     [[nodiscard]] QSize minimumSizeHint() const override;

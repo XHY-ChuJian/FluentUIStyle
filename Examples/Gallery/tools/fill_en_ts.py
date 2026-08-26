@@ -380,6 +380,63 @@ InfoBar 用于页面内非阻塞通知；Expander 用于按需显示相关的次
 桌面电脑、笔记本电脑和移动设备均已在刚刚完成同步。|The desktop, laptop, and mobile device have just finished syncing.
 向上展开|Expand upward
 内容显示在 Header 上方，适合靠近页面底部的布局。|Content appears above the header, which suits layouts near the bottom of a page.
+已登录: developer@fluentui.org|Signed in: developer@fluentui.org
+账户与云存储|Account & Cloud Storage
+主账户订阅：开发者专业版 (至 2027-12)|Primary account: Developer Pro (expires 2027-12)
+管理订阅|Manage Subscription
+账户管理|Account Management
+正在跳转至云端控制台订阅中心...|Redirecting to cloud console subscription center...
+云存储空间 (已使用 15.4 GB / 100 GB)|Cloud storage (15.4 GB / 100 GB used)
+包含：代码仓库 4.1 GB · 文档 3.1 GB · 照片与媒体 8.2 GB|Includes: Repos 4.1 GB · Docs 3.1 GB · Photos & Media 8.2 GB
+已启用双重身份验证 (2FA / FIDO2 Key)|Two-factor authentication enabled (2FA / FIDO2 Key)
+配置密钥|Configure Key
+安全中心|Security Center
+当前安全密钥已处于就绪状态。|The security key is active and ready.
+网络代理与连接|Network Proxy & Connection
+SOCKS5: 127.0.0.1:10808|SOCKS5: 127.0.0.1:10808
+代理协议:|Proxy Protocol:
+Direct (直连)|Direct
+服务器与端口:|Server & Port:
+主机名或 IP|Hostname or IP
+对本地网络及环回地址 (localhost / 127.0.0.1) 绕过代理|Bypass proxy for local network and loopback (localhost / 127.0.0.1)
+测试代理连接|Test Proxy Connection
+网络测试|Network Test
+代理连接成功，往返延迟 14 ms。|Proxy connected successfully, latency 14 ms.
+保存配置|Save Configuration
+配置已保存|Configuration Saved
+代理网络配置已生效。|Proxy network settings are now active.
+外观与个性化|Appearance & Personalization
+跟随系统 · 云母效果|Follow system · Mica effect
+选择应用主题模式：|Choose application theme mode:
+浅色模式|Light mode
+深色模式|Dark mode
+跟随系统|Follow system
+启用窗口云母 / 亚克力透明材质 (Mica Effect)|Enable Mica / Acrylic translucent material
+选择强调色预设：|Choose accent color preset:
+天蓝|Sky Blue
+薄荷绿|Mint Green
+紫罗兰|Violet
+日落橙|Sunset Orange
+石墨灰|Graphite
+强调色|Accent Color
+已应用强调色主题：%1|Applied accent color theme: %1
+展开动画与过渡效果|Expansion Animation & Transitions
+已启用 · 167 ms|Enabled · 167 ms
+已启用 · %1 ms|Enabled · %1 ms
+已禁用动画|Animation Disabled
+启用展开 / 收起平滑过渡动画|Enable smooth expand/collapse transition animation
+动画时长:|Duration:
+ExExpander 内置 WinUI 3 贝塞尔曲线 (0.1, 0.9, 0.2, 1.0) 平滑插值，默认展开 333 ms，收起 167 ms。|ExExpander uses WinUI 3 cubic bezier (0.1, 0.9, 0.2, 1.0) curve, default 333 ms expand and 167 ms collapse.
+诊断日志与事件监听|Diagnostics Log & Events
+状态: 已折叠|Status: Collapsed
+状态: 展开中...|Status: Expanding...
+状态: 已展开|Status: Expanded
+添加测试日志|Add Test Log
+清空日志|Clear Log
+[expanding] 触发开始展开事件|[expanding] Triggered expanding event
+[collapsed] 内容已完全收起|[collapsed] Content completely collapsed
+[expansionFinished] 动画结束 (expanded = %1)|[expansionFinished] Animation finished (expanded = %1)
+[expandedChanged] 状态属性变更: %1|[expandedChanged] Property changed: %1
 """.strip()
 
 TABLE = {}

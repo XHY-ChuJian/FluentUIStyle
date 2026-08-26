@@ -424,7 +424,7 @@ expander->setExpanded(true);
 ```
 
 Header 和 Content 都可以是任意 `QWidget`。`expandDirection` 支持 `Down` 和 `Up`；Header 支持鼠标和键盘操作，并显示焦点状态。
-可多次调用 `addContentWidget()` 追加 Content 面板；各项与 Header 连成一个整体，中间使用分隔线，只有最外侧 Content 保留圆角。`removeContentWidget()` 与 `clearContentWidgets()` 会删除由 Expander 接管的对应控件。
+可多次调用 `addContentWidget()` 追加 Content 面板；各项与 Header 连成一个整体，中间使用分隔线，只有最外侧 Content 保留圆角。
 
 ---
 

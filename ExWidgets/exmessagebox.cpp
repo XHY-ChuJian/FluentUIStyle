@@ -11,10 +11,10 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-namespace
-{
+namespace {
 // ---- WinUI 3 ContentDialog 设计常量 ----
-// 参考: https://learn.microsoft.com/en-us/windows/apps/design/controls/dialogs-and-flyouts/dialogs
+// 参考:
+// https://learn.microsoft.com/en-us/windows/apps/design/controls/dialogs-and-flyouts/dialogs
 constexpr int kCornerRadius = 8;
 constexpr int kPadding = 16;
 constexpr int kTitleContentGap = 12;
@@ -31,479 +31,419 @@ constexpr int kDialogMinWidth = 320;
 constexpr int kDialogPreferWidth = 480;
 constexpr int kDialogMaxWidth = 548;
 
-bool isDarkMode()
-{
-    return QApplication::palette().window().color().lightness() < 128;
+bool isDarkMode() {
+  return QApplication::palette().window().color().lightness() < 128;
 }
 
-QColor dialogBorderColor(bool dark)
-{
-    return dark ? QColor(255, 255, 255, 20) : QColor(0, 0, 0, 15);
+QColor dialogBorderColor(bool dark) {
+  return dark ? QColor(255, 255, 255, 20) : QColor(0, 0, 0, 15);
 }
 } // namespace
 
-static void setFontPerferNoHinting(QWidget *widget, bool fontSizeIncrease = false)
-{
-    if (!widget)
-        return;
-    QFont f = widget->font();
-    f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+static void setFontPerferNoHinting(QWidget *widget,
+                                   bool fontSizeIncrease = false) {
+  if (!widget)
+    return;
+  QFont f = widget->font();
+  f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
 
-    if (fontSizeIncrease)
-    {
-        auto size = f.pixelSize();
-        f.setPixelSize(size + 1);
-    }
-    widget->setFont(f);
+  if (fontSizeIncrease) {
+    auto size = f.pixelSize();
+    f.setPixelSize(size + 1);
+  }
+  widget->setFont(f);
 }
 
-class ExMessageBoxPrivate
-{
+class ExMessageBoxPrivate {
 public:
-    ExMessageBoxPrivate(ExMessageBox *q) : q_ptr(q) {}
+  ExMessageBoxPrivate(ExMessageBox *q) : q_ptr(q) {}
 
-    ExMessageBox *q_ptr;
+  ExMessageBox *q_ptr;
 
-    QWidget *m_cardWidget{nullptr};
-    QDialogButtonBox *m_buttonBox{nullptr};
-    QLayout *m_buttonArea{nullptr};
-    QWidget *m_customContentWidget{nullptr};
-    QWidget *m_overlay{nullptr};
-    QWidget *m_overlayParent{nullptr};
-    bool m_centerButtons{true};
+  QWidget *m_cardWidget{nullptr};
+  QDialogButtonBox *m_buttonBox{nullptr};
+  QLayout *m_buttonArea{nullptr};
+  QWidget *m_customContentWidget{nullptr};
+  QWidget *m_overlay{nullptr};
+  QWidget *m_overlayParent{nullptr};
+  bool m_centerButtons{true};
 
-    void resetLayout();
-    void showOverlay();
-    void hideOverlay();
+  void resetLayout();
+  void showOverlay();
+  void hideOverlay();
 };
 
-void ExMessageBoxPrivate::resetLayout()
-{
-    ExMessageBox *q = q_ptr;
+void ExMessageBoxPrivate::resetLayout() {
+  ExMessageBox *q = q_ptr;
 
-    auto *iconLabel = q->findChild<QLabel *>(QStringLiteral("qt_msgboxex_icon_label"));
-    auto *textLabel = q->findChild<QLabel *>(QStringLiteral("qt_msgbox_label"));
-    auto *infoLabel = q->findChild<QLabel *>(QStringLiteral("qt_msgbox_informativelabel"));
-    auto *buttonBox = q->findChild<QDialogButtonBox *>(QStringLiteral("qt_msgbox_buttonbox"));
+  auto *iconLabel =
+      q->findChild<QLabel *>(QStringLiteral("qt_msgboxex_icon_label"));
+  auto *textLabel = q->findChild<QLabel *>(QStringLiteral("qt_msgbox_label"));
+  auto *infoLabel =
+      q->findChild<QLabel *>(QStringLiteral("qt_msgbox_informativelabel"));
+  auto *buttonBox =
+      q->findChild<QDialogButtonBox *>(QStringLiteral("qt_msgbox_buttonbox"));
 
-    if (!textLabel || !buttonBox)
-        return;
+  if (!textLabel || !buttonBox)
+    return;
 
-    if (m_cardWidget)
-    {
-        return;
-    }
+  if (m_cardWidget) {
+    return;
+  }
 
-    delete q->layout();
+  delete q->layout();
 
-    auto *outerLayout = new QVBoxLayout();
-    outerLayout->setObjectName("OuterLayout");
-    outerLayout->setContentsMargins(kShadowMargin, kShadowMargin,
-                                    kShadowMargin, kShadowMargin);
-    outerLayout->setSpacing(0);
-    q->setLayout(outerLayout);
+  auto *outerLayout = new QVBoxLayout();
+  outerLayout->setObjectName("OuterLayout");
+  outerLayout->setContentsMargins(kShadowMargin, kShadowMargin, kShadowMargin,
+                                  kShadowMargin);
+  outerLayout->setSpacing(0);
+  q->setLayout(outerLayout);
 
-    m_cardWidget = new QWidget(q);
-    m_cardWidget->setObjectName(QStringLiteral("FluentMessageBoxCard"));
-    outerLayout->addWidget(m_cardWidget);
+  m_cardWidget = new QWidget(q);
+  m_cardWidget->setObjectName(QStringLiteral("FluentMessageBoxCard"));
+  outerLayout->addWidget(m_cardWidget);
 
-    if (m_cardWidget->layout())
-        delete m_cardWidget->layout();
+  if (m_cardWidget->layout())
+    delete m_cardWidget->layout();
 
-    auto *innerLayout = new QVBoxLayout(m_cardWidget);
-    innerLayout->setObjectName("CardInnerLayout");
-    innerLayout->setContentsMargins(kPadding, kPadding, kPadding, 0);
-    innerLayout->setSpacing(0);
+  auto *innerLayout = new QVBoxLayout(m_cardWidget);
+  innerLayout->setObjectName("CardInnerLayout");
+  innerLayout->setContentsMargins(kPadding, kPadding, kPadding, 0);
+  innerLayout->setSpacing(0);
 
-    if (q->windowTitle().isEmpty())
-    {
-        q->setWindowTitle(QApplication::applicationName());
-    }
-    auto *titleLabel = new QLabel(q->windowTitle(), m_cardWidget);
-    titleLabel->setObjectName(QStringLiteral("FluentMessageBoxTitle"));
-    titleLabel->setWordWrap(true);
-    {
-        QFont f = titleLabel->font();
-        f.setPixelSize(kTitleFontPx);
-        f.setWeight(QFont::DemiBold);
-        titleLabel->setFont(f);
-    }
-    innerLayout->addWidget(titleLabel);
-    innerLayout->addSpacing(kTitleContentGap);
+  if (q->windowTitle().isEmpty()) {
+    q->setWindowTitle(QApplication::applicationName());
+  }
+  auto *titleLabel = new QLabel(q->windowTitle(), m_cardWidget);
+  titleLabel->setObjectName(QStringLiteral("FluentMessageBoxTitle"));
+  titleLabel->setWordWrap(true);
+  {
+    QFont f = titleLabel->font();
+    f.setPixelSize(kTitleFontPx);
+    f.setWeight(QFont::DemiBold);
+    titleLabel->setFont(f);
+  }
+  innerLayout->addWidget(titleLabel);
+  innerLayout->addSpacing(kTitleContentGap);
 
-    {
-        QFont f = textLabel->font();
-        f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
-        f.setPixelSize(kBodyFontPx);
-        textLabel->setFont(f);
-    }
-    textLabel->setWordWrap(true);
+  {
+    QFont f = textLabel->font();
+    f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+    f.setPixelSize(kBodyFontPx);
+    textLabel->setFont(f);
+  }
+  textLabel->setWordWrap(true);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    const bool hasIcon = iconLabel && !iconLabel->pixmap().isNull();
+  const bool hasIcon = iconLabel && !iconLabel->pixmap().isNull();
 #else
-    const bool hasIcon = iconLabel && !iconLabel->pixmap()->isNull();
+  const bool hasIcon = iconLabel && !iconLabel->pixmap()->isNull();
 #endif
-    if (hasIcon)
-    {
-        auto *contentRow = new QHBoxLayout;
-        contentRow->setSpacing(12);
-        contentRow->addWidget(iconLabel, 0, Qt::AlignVCenter);
-        contentRow->addWidget(textLabel, 1);
-        innerLayout->addLayout(contentRow);
-    }
-    else
-    {
-        innerLayout->addWidget(textLabel);
-        if (iconLabel)
-            iconLabel->hide();
-    }
+  if (hasIcon) {
+    auto *contentRow = new QHBoxLayout;
+    contentRow->setSpacing(12);
+    contentRow->addWidget(iconLabel, 0, Qt::AlignVCenter);
+    contentRow->addWidget(textLabel, 1);
+    innerLayout->addLayout(contentRow);
+  } else {
+    innerLayout->addWidget(textLabel);
     if (iconLabel)
-        iconLabel->setParent(m_cardWidget);
-    textLabel->setParent(m_cardWidget);
+      iconLabel->hide();
+  }
+  if (iconLabel)
+    iconLabel->setParent(m_cardWidget);
+  textLabel->setParent(m_cardWidget);
 
-    if (infoLabel)
-    {
-        QFont f = infoLabel->font();
-        f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
-        f.setPixelSize(kInformativeFontPx);
-        infoLabel->setFont(f);
-        infoLabel->setContentsMargins(0, 7, 0, 0);
-        innerLayout->addWidget(infoLabel);
+  if (infoLabel) {
+    QFont f = infoLabel->font();
+    f.setHintingPreference(QFont::HintingPreference::PreferNoHinting);
+    f.setPixelSize(kInformativeFontPx);
+    infoLabel->setFont(f);
+    infoLabel->setContentsMargins(0, 7, 0, 0);
+    innerLayout->addWidget(infoLabel);
+  }
+
+  if (auto *checkBox = q->findChild<QCheckBox *>()) {
+    setFontPerferNoHinting(checkBox);
+    checkBox->setContentsMargins(0, 7, 0, 0);
+    checkBox->setParent(m_cardWidget);
+    innerLayout->addWidget(checkBox);
+  }
+
+  auto widgetList = q->findChildren<QWidget *>();
+  for (const auto &w : widgetList) {
+    if (w->inherits("QMessageBoxDetailsText")) {
+      innerLayout->addWidget(w);
     }
+  }
 
-    if (auto *checkBox = q->findChild<QCheckBox *>())
-    {
-        setFontPerferNoHinting(checkBox);
-        checkBox->setContentsMargins(0, 7, 0, 0);
-        checkBox->setParent(m_cardWidget);
-        innerLayout->addWidget(checkBox);
+  if (m_customContentWidget) {
+    m_customContentWidget->setParent(m_cardWidget);
+    innerLayout->addWidget(m_customContentWidget);
+  }
+
+  innerLayout->addSpacing(kContentButtonGap);
+
+  auto *buttonArea = new QHBoxLayout();
+  buttonArea->setObjectName("ButtonAreaLayout");
+  int btnMarginV = 12;
+
+  if (m_centerButtons)
+    buttonArea->addStretch();
+
+  buttonArea->setSpacing(kButtonSpacing);
+  buttonArea->setContentsMargins(0, btnMarginV, 0, btnMarginV);
+
+  buttonBox->setParent(m_cardWidget);
+
+  for (QAbstractButton *ab : buttonBox->buttons()) {
+    if (auto *pb = qobject_cast<QPushButton *>(ab)) {
+      setFontPerferNoHinting(pb, true);
+      pb->setDefault(false);
+      pb->setMinimumWidth(kButtonMinWidth);
     }
+  }
 
-    auto widgetList = q->findChildren<QWidget*>();
-    for(const auto& w : widgetList)
-    {
-        if (w->inherits("QMessageBoxDetailsText"))
-        {
-            innerLayout->addWidget(w);
-        }
+  // QDialogButtonBox
+  // 内部限制了按钮布局，导致实际不居中，把按钮取出来后，强制布局
+  if (buttonBox->layout()) {
+    QLayout *boxLayout = buttonBox->layout();
+    while (QLayoutItem *item = boxLayout->takeAt(0)) {
+      if (QWidget *w = item->widget()) {
+        buttonArea->addWidget(w, 0, Qt::AlignVCenter);
+      }
+      delete item;
     }
+  } else {
+    buttonArea->addWidget(buttonBox);
+  }
 
-    if (m_customContentWidget)
-    {
-        m_customContentWidget->setParent(m_cardWidget);
-        innerLayout->addWidget(m_customContentWidget);
-    }
+  if (m_centerButtons)
+    buttonArea->addStretch();
 
-    innerLayout->addSpacing(kContentButtonGap);
+  buttonBox->hide();
 
-    auto *buttonArea = new QHBoxLayout();
-    buttonArea->setObjectName("ButtonAreaLayout");
-    int btnMarginV = 12;
+  innerLayout->addLayout(buttonArea);
 
-    if (m_centerButtons)
-        buttonArea->addStretch();
+  m_buttonBox = buttonBox;
+  m_buttonArea = buttonArea;
 
-    buttonArea->setSpacing(kButtonSpacing);
-    buttonArea->setContentsMargins(0, btnMarginV, 0, btnMarginV);
-
-    buttonBox->setParent(m_cardWidget);
-
-    for (QAbstractButton *ab : buttonBox->buttons())
-    {
-        if (auto *pb = qobject_cast<QPushButton *>(ab))
-        {
-            setFontPerferNoHinting(pb, true);
-            pb->setDefault(false);
-            pb->setMinimumWidth(kButtonMinWidth);
-        }
-    }
-
-    // QDialogButtonBox 内部限制了按钮布局，导致实际不居中，把按钮取出来后，强制布局
-    if (buttonBox->layout())
-    {
-        QLayout *boxLayout = buttonBox->layout();
-        while (QLayoutItem *item = boxLayout->takeAt(0))
-        {
-            if (QWidget *w = item->widget())
-            {
-                buttonArea->addWidget(w, 0, Qt::AlignVCenter);
-            }
-            delete item;
-        }
-    }
-    else
-    {
-        buttonArea->addWidget(buttonBox);
-    }
-
-    if (m_centerButtons)
-        buttonArea->addStretch();
-
-    buttonBox->hide();
-
-    innerLayout->addLayout(buttonArea);
-
-    m_buttonBox = buttonBox;
-    m_buttonArea = buttonArea;
-
-    q->setMinimumWidth(kDialogMinWidth + 2 * kShadowMargin);
-    q->setMaximumWidth(kDialogMaxWidth + 2 * kShadowMargin);
+  q->setMinimumWidth(kDialogMinWidth + 2 * kShadowMargin);
+  q->setMaximumWidth(kDialogMaxWidth + 2 * kShadowMargin);
 }
 
-void ExMessageBoxPrivate::showOverlay()
-{
-    QWidget *topLevel = q_ptr->parentWidget();
-    if (!topLevel)
-        topLevel = QApplication::activeWindow();
-    if (!topLevel)
-        return;
+void ExMessageBoxPrivate::showOverlay() {
+  QWidget *topLevel = q_ptr->parentWidget();
+  if (!topLevel)
+    topLevel = QApplication::activeWindow();
+  if (!topLevel)
+    return;
 
-    // 找到最顶层的窗口
-    while (topLevel->parentWidget())
-        topLevel = topLevel->parentWidget();
+  // 找到最顶层的窗口
+  while (topLevel->parentWidget())
+    topLevel = topLevel->parentWidget();
 
-    if (!m_overlay)
-    {
-        m_overlay = new QWidget(topLevel);
-        m_overlay->setObjectName(QStringLiteral("ExMessageBoxOverlay"));
-        m_overlay->setAttribute(Qt::WA_StyledBackground, true);
-        m_overlay->setStyleSheet(
-            QStringLiteral("background-color: rgba(0, 0, 0, %1);")
-                .arg(isDarkMode() ? 0.45 : 0.3));
-        m_overlayParent = topLevel;
-        // 安装事件过滤器，让遮罩跟随父窗口大小变化
-        topLevel->installEventFilter(q_ptr);
-    }
-    m_overlay->setGeometry(topLevel->rect());
-    m_overlay->show();
-    m_overlay->raise();
+  if (!m_overlay) {
+    m_overlay = new QWidget(topLevel);
+    m_overlay->setObjectName(QStringLiteral("ExMessageBoxOverlay"));
+    m_overlay->setAttribute(Qt::WA_StyledBackground, true);
+    m_overlay->setStyleSheet(
+        QStringLiteral("background-color: rgba(0, 0, 0, %1);")
+            .arg(isDarkMode() ? 0.45 : 0.3));
+    m_overlayParent = topLevel;
+    // 安装事件过滤器，让遮罩跟随父窗口大小变化
+    topLevel->installEventFilter(q_ptr);
+  }
+  m_overlay->setGeometry(topLevel->rect());
+  m_overlay->show();
+  m_overlay->raise();
 }
 
-void ExMessageBoxPrivate::hideOverlay()
-{
-    if (m_overlay)
-    {
-        if (m_overlayParent)
-        {
-            m_overlayParent->removeEventFilter(q_ptr);
-            m_overlayParent = nullptr;
-        }
-        m_overlay->hide();
-        m_overlay->deleteLater();
-        m_overlay = nullptr;
+void ExMessageBoxPrivate::hideOverlay() {
+  if (m_overlay) {
+    if (m_overlayParent) {
+      m_overlayParent->removeEventFilter(q_ptr);
+      m_overlayParent = nullptr;
     }
+    m_overlay->hide();
+    m_overlay->deleteLater();
+    m_overlay = nullptr;
+  }
 }
 
 ExMessageBox::ExMessageBox(QWidget *parent)
-    : QMessageBox(parent), d_ptr(new ExMessageBoxPrivate(this))
-{
-    setWindowFlag(Qt::FramelessWindowHint, true);
-    setAttribute(Qt::WA_TranslucentBackground);
+    : QMessageBox(parent), d_ptr(new ExMessageBoxPrivate(this)) {
+  setWindowFlag(Qt::FramelessWindowHint, true);
+  setAttribute(Qt::WA_TranslucentBackground);
 }
 
-ExMessageBox::ExMessageBox(Icon icon,
-                           const QString &title,
-                           const QString &text,
-                           StandardButtons buttons,
-                           QWidget *parent,
+ExMessageBox::ExMessageBox(Icon icon, const QString &title, const QString &text,
+                           StandardButtons buttons, QWidget *parent,
                            Qt::WindowFlags f)
-    : QMessageBox(icon, title, text, buttons, parent, f), d_ptr(new ExMessageBoxPrivate(this))
-{
-    setWindowFlag(Qt::FramelessWindowHint, true);
-    setAttribute(Qt::WA_TranslucentBackground);
+    : QMessageBox(icon, title, text, buttons, parent, f),
+      d_ptr(new ExMessageBoxPrivate(this)) {
+  setWindowFlag(Qt::FramelessWindowHint, true);
+  setAttribute(Qt::WA_TranslucentBackground);
 }
 
-ExMessageBox::~ExMessageBox()
-{
-    delete d_ptr;
+ExMessageBox::~ExMessageBox() { delete d_ptr; }
+
+void ExMessageBox::setContentWidget(QWidget *widget) {
+  Q_D(ExMessageBox);
+  d->m_customContentWidget = widget;
 }
 
-void ExMessageBox::setContentWidget(QWidget *widget)
-{
-    Q_D(ExMessageBox);
-    d->m_customContentWidget = widget;
+void ExMessageBox::setCenterButtons(bool center) {
+  Q_D(ExMessageBox);
+  d->m_centerButtons = center;
 }
 
-void ExMessageBox::setCenterButtons(bool center)
-{
-    Q_D(ExMessageBox);
-    d->m_centerButtons = center;
+bool ExMessageBox::centerButtons() const {
+  Q_D(const ExMessageBox);
+  return d->m_centerButtons;
 }
 
-bool ExMessageBox::centerButtons() const
-{
-    Q_D(const ExMessageBox);
-    return d->m_centerButtons;
+int ExMessageBox::exec() {
+  Q_D(ExMessageBox);
+  d->showOverlay();
+  int result = QDialog::exec();
+  d->hideOverlay();
+  return result;
 }
 
-int ExMessageBox::exec()
-{
-    Q_D(ExMessageBox);
+void ExMessageBox::setVisible(bool visible) {
+  Q_D(ExMessageBox);
+  if (visible) {
+    d->resetLayout();
     d->showOverlay();
-    int result = QDialog::exec();
+  } else {
     d->hideOverlay();
-    return result;
+  }
+  QMessageBox::setVisible(visible);
 }
 
-void ExMessageBox::setVisible(bool visible)
-{
-    Q_D(ExMessageBox);
-    if (visible)
-    {
-        d->resetLayout();
-        d->showOverlay();
+void ExMessageBox::setDetailedText(const QString &text) {
+  QMessageBox::setDetailedText(text);
+
+  auto btns = findChildren<QPushButton *>();
+  QPushButton *detailsButton = nullptr;
+  for (const auto &btn : btns) {
+    if (btn->inherits("DetailButton")) {
+      detailsButton = btn;
     }
-    else
-    {
-        d->hideOverlay();
+  }
+  if (detailsButton) {
+    connect(detailsButton, &QPushButton::clicked, this,
+            [this, detailsButton]() { adjustSize(); });
+  }
+}
+
+void ExMessageBox::paintEvent(QPaintEvent *event) {
+  Q_D(ExMessageBox);
+  if (!d->m_cardWidget)
+    return;
+
+  QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  QRect cardRect = this->rect();
+  cardRect.adjust(kShadowMargin, kShadowMargin, -kShadowMargin, -kShadowMargin);
+
+  const bool dark = isDarkMode();
+
+  painter.setPen(Qt::NoPen);
+  constexpr int layers = 4;
+  for (int i = layers; i > 0; --i) {
+    const qreal expand = i * 1.5;
+    const int alpha = dark ? (6 + (layers - i) * 4) : (3 + (layers - i) * 2);
+    QRectF sr = cardRect.adjusted(-expand, -expand + 1, expand, expand + 1);
+    QPainterPath sp;
+    sp.addRoundedRect(sr, kCornerRadius + expand, kCornerRadius + expand);
+    painter.setBrush(QColor(0, 0, 0, alpha));
+    painter.drawPath(sp);
+  }
+
+  QPainterPath path;
+  path.addRoundedRect(cardRect, kCornerRadius, kCornerRadius);
+  painter.setClipPath(path);
+
+  QPoint mappedTopLeft =
+      d->m_cardWidget->mapTo(this, d->m_buttonArea->geometry().topLeft());
+  const int splitY = mappedTopLeft.y();
+
+  QRect topArea = cardRect;
+  topArea.setBottom(splitY);
+  painter.fillRect(topArea, dark ? palette().base() : Qt::white);
+
+  QRect bottomArea = cardRect;
+  bottomArea.setTop(splitY);
+  painter.fillRect(bottomArea, palette().window());
+
+  painter.setClipping(false);
+  painter.setPen(QPen(dialogBorderColor(dark), 1.0));
+  painter.setBrush(Qt::NoBrush);
+  const auto cardRectF = QRectF(cardRect);
+  painter.drawRoundedRect(cardRectF.adjusted(0.5, 0.5, -0.5, -0.5),
+                          kCornerRadius, kCornerRadius);
+}
+
+void ExMessageBox::showEvent(QShowEvent *event) {
+  // 拦截 QMessageBox 的 showEvent，避免其强制触发内部的 updateSize()
+  QDialog::showEvent(event);
+}
+
+void ExMessageBox::resizeEvent(QResizeEvent *event) {
+  // 拦截 QMessageBox 的 resizeEvent
+  QDialog::resizeEvent(event);
+}
+
+bool ExMessageBox::event(QEvent *e) {
+  // 拦截 QMessageBox 的 event，避免其在 LayoutRequest 时强制触发 updateSize()
+  if (e->type() == QEvent::LayoutRequest) {
+    return QDialog::event(e);
+  }
+  return QMessageBox::event(e);
+}
+
+bool ExMessageBox::eventFilter(QObject *watched, QEvent *event) {
+  Q_D(ExMessageBox);
+  if (d->m_overlay && event->type() == QEvent::Resize) {
+    if (auto *w = qobject_cast<QWidget *>(watched)) {
+      d->m_overlay->setGeometry(w->rect());
     }
-    QMessageBox::setVisible(visible);
+  }
+  return QMessageBox::eventFilter(watched, event);
 }
 
-void ExMessageBox::setDetailedText(const QString &text)
-{
-    QMessageBox::setDetailedText(text);
-
-    auto btns = findChildren<QPushButton *>();
-    QPushButton* detailsButton = nullptr;
-    for(const auto& btn : btns)
-    {
-        if (btn->inherits("DetailButton"))
-        {
-            detailsButton = btn;
-        }
-    }
-    if (detailsButton)
-    {
-        connect(detailsButton, &QPushButton::clicked, this, [this, detailsButton]()
-        {
-            adjustSize();
-        });
-    }
+QMessageBox::StandardButton
+ExMessageBox::information(QWidget *parent, const QString &title,
+                          const QString &text, StandardButtons buttons,
+                          StandardButton defaultButton) {
+  ExMessageBox box(Information, title, text, buttons, parent);
+  return static_cast<StandardButton>(box.exec());
 }
 
-void ExMessageBox::paintEvent(QPaintEvent *event)
-{
-    Q_D(ExMessageBox);
-    if (!d->m_cardWidget)
-        return;
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    QRect cardRect = this->rect();
-    cardRect.adjust(kShadowMargin, kShadowMargin, -kShadowMargin, -kShadowMargin);
-
-    const bool dark = isDarkMode();
-
-    painter.setPen(Qt::NoPen);
-    constexpr int layers = 4;
-    for (int i = layers; i > 0; --i)
-    {
-        const qreal expand = i * 1.5;
-        const int alpha = dark ? (6 + (layers - i) * 4) : (3 + (layers - i) * 2);
-        QRectF sr = cardRect.adjusted(-expand, -expand + 1, expand, expand + 1);
-        QPainterPath sp;
-        sp.addRoundedRect(sr, kCornerRadius + expand, kCornerRadius + expand);
-        painter.setBrush(QColor(0, 0, 0, alpha));
-        painter.drawPath(sp);
-    }
-
-    QPainterPath path;
-    path.addRoundedRect(cardRect, kCornerRadius, kCornerRadius);
-    painter.setClipPath(path);
-
-    QPoint mappedTopLeft = d->m_cardWidget->mapTo(this, d->m_buttonArea->geometry().topLeft());
-    const int splitY = mappedTopLeft.y();
-
-    QRect topArea = cardRect;
-    topArea.setBottom(splitY);
-    painter.fillRect(topArea, dark ? palette().base() : Qt::white);
-
-    QRect bottomArea = cardRect;
-    bottomArea.setTop(splitY);
-    painter.fillRect(bottomArea, palette().window());
-
-    painter.setClipping(false);
-    painter.setPen(QPen(dialogBorderColor(dark), 1.0));
-    painter.setBrush(Qt::NoBrush);
-    const auto cardRectF = QRectF(cardRect);
-    painter.drawRoundedRect(cardRectF.adjusted(0.5, 0.5, -0.5, -0.5),
-                            kCornerRadius, kCornerRadius);
+QMessageBox::StandardButton
+ExMessageBox::warning(QWidget *parent, const QString &title,
+                      const QString &text, StandardButtons buttons,
+                      StandardButton defaultButton) {
+  ExMessageBox box(Warning, title, text, buttons, parent);
+  return static_cast<StandardButton>(box.exec());
 }
 
-void ExMessageBox::showEvent(QShowEvent *event)
-{
-    // 拦截 QMessageBox 的 showEvent，避免其强制触发内部的 updateSize()
-    QDialog::showEvent(event);
+QMessageBox::StandardButton
+ExMessageBox::critical(QWidget *parent, const QString &title,
+                       const QString &text, StandardButtons buttons,
+                       StandardButton defaultButton) {
+  ExMessageBox box(Critical, title, text, buttons, parent);
+  return static_cast<StandardButton>(box.exec());
 }
 
-void ExMessageBox::resizeEvent(QResizeEvent *event)
-{
-    // 拦截 QMessageBox 的 resizeEvent
-    QDialog::resizeEvent(event);
-}
-
-bool ExMessageBox::event(QEvent *e)
-{
-    // 拦截 QMessageBox 的 event，避免其在 LayoutRequest 时强制触发 updateSize()
-    if (e->type() == QEvent::LayoutRequest)
-    {
-        return QDialog::event(e);
-    }
-    return QMessageBox::event(e);
-}
-
-bool ExMessageBox::eventFilter(QObject *watched, QEvent *event)
-{
-    Q_D(ExMessageBox);
-    if (d->m_overlay && event->type() == QEvent::Resize)
-    {
-        if (auto *w = qobject_cast<QWidget *>(watched))
-        {
-            d->m_overlay->setGeometry(w->rect());
-        }
-    }
-    return QMessageBox::eventFilter(watched, event);
-}
-
-QMessageBox::StandardButton ExMessageBox::information(QWidget *parent,
-                                                      const QString &title,
-                                                      const QString &text,
-                                                      StandardButtons buttons,
-                                                      StandardButton defaultButton)
-{
-    ExMessageBox box(Information, title, text, buttons, parent);
-    return static_cast<StandardButton>(box.exec());
-}
-
-QMessageBox::StandardButton ExMessageBox::warning(QWidget *parent,
-                                                  const QString &title,
-                                                  const QString &text,
-                                                  StandardButtons buttons,
-                                                  StandardButton defaultButton)
-{
-    ExMessageBox box(Warning, title, text, buttons, parent);
-    return static_cast<StandardButton>(box.exec());
-}
-
-QMessageBox::StandardButton ExMessageBox::critical(QWidget *parent,
-                                                   const QString &title,
-                                                   const QString &text,
-                                                   StandardButtons buttons,
-                                                   StandardButton defaultButton)
-{
-    ExMessageBox box(Critical, title, text, buttons, parent);
-    return static_cast<StandardButton>(box.exec());
-}
-
-QMessageBox::StandardButton ExMessageBox::question(QWidget *parent,
-                                                   const QString &title,
-                                                   const QString &text,
-                                                   StandardButtons buttons,
-                                                   StandardButton defaultButton)
-{
-    ExMessageBox box(Question, title, text, buttons, parent);
-    return static_cast<StandardButton>(box.exec());
+QMessageBox::StandardButton
+ExMessageBox::question(QWidget *parent, const QString &title,
+                       const QString &text, StandardButtons buttons,
+                       StandardButton defaultButton) {
+  ExMessageBox box(Question, title, text, buttons, parent);
+  return static_cast<StandardButton>(box.exec());
 }

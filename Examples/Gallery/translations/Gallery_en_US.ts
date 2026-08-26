@@ -798,7 +798,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>强调色</source>
-        <translation>Accent color</translation>
+        <translation>Accent Color</translation>
     </message>
     <message>
         <source>浅色</source>
@@ -1194,55 +1194,55 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>跟随系统</source>
-        <translation>Use system setting</translation>
+        <translation>Follow system</translation>
     </message>
     <message>
         <source>仅图标</source>
-        <translation>Icons only</translation>
+        <translation>仅图标</translation>
     </message>
     <message>
         <source>图标和文本</source>
-        <translation>Icons and text</translation>
+        <translation>图标和文本</translation>
     </message>
     <message>
         <source>外观和行为</source>
-        <translation>Appearance &amp; behavior</translation>
+        <translation>外观和行为</translation>
     </message>
     <message>
         <source>应用主题</source>
-        <translation>App theme</translation>
+        <translation>应用主题</translation>
     </message>
     <message>
         <source>选择应用显示的主题</source>
-        <translation>Select which app theme to display</translation>
+        <translation>选择应用显示的主题</translation>
     </message>
     <message>
         <source>选择应用使用的显示语言</source>
-        <translation>Select the app display language</translation>
+        <translation>选择应用使用的显示语言</translation>
     </message>
     <message>
         <source>选择内容区域的背景效果</source>
-        <translation>Select the content area background effect</translation>
+        <translation>选择内容区域的背景效果</translation>
     </message>
     <message>
         <source>导航样式</source>
-        <translation>Navigation style</translation>
+        <translation>导航样式</translation>
     </message>
     <message>
         <source>选择导航栏的显示方式</source>
-        <translation>Select how the navigation pane is displayed</translation>
+        <translation>选择导航栏的显示方式</translation>
     </message>
     <message>
         <source>选择控件使用的系统强调色</source>
-        <translation>Select the accent color used by controls</translation>
+        <translation>选择控件使用的系统强调色</translation>
     </message>
     <message>
         <source>查看项目信息</source>
-        <translation>View project information</translation>
+        <translation>查看项目信息</translation>
     </message>
     <message>
         <source>FluentUI3 Style 与扩展控件示例程序</source>
-        <translation>FluentUI3 Style and extended controls sample</translation>
+        <translation>FluentUI3 Style 与扩展控件示例程序</translation>
     </message>
 </context>
 <context>
@@ -1579,7 +1579,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>强调色</source>
-        <translation>Accent color</translation>
+        <translation>Accent Color</translation>
     </message>
     <message>
         <source>Track 颜色</source>
@@ -1835,11 +1835,11 @@ li.checked::marker { content: "\2612"; }
     <name>ExInfoBar</name>
     <message>
         <source>关闭</source>
-        <translation>Close</translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <source>关闭通知</source>
-        <translation>Close notification</translation>
+        <translation>关闭通知</translation>
     </message>
 </context>
 <context>
@@ -1906,7 +1906,7 @@ li.checked::marker { content: "\2612"; }
     </message>
     <message>
         <source>弹出通知相对主窗口定位；顶部的新通知向下追加，底部的新通知向上追加，空间不足时自动排队。</source>
-        <translation>Popup notifications are positioned relative to the main window. Top notifications append downward, bottom notifications append upward, and overflow waits in a queue.</translation>
+        <translation>弹出通知相对主窗口定位；顶部的新通知向下追加，底部的新通知向上追加，空间不足时自动排队。</translation>
     </message>
     <message>
         <source>窗口级通知 %1</source>
