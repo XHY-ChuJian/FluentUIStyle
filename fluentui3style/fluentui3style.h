@@ -73,6 +73,7 @@ public:
 
     QIcon standardIcon(StandardPixmap sp, const QStyleOption *option, const QWidget *widget) const override;
     QPalette standardPalette() const override;
+    QIcon fluentIcon(const QChar &ch, const QColor &color = QColor()) const;
 
     bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -124,8 +125,6 @@ private:
     QColor controlTextColor(const QStyleOption *option, QPalette::ColorRole role = QPalette::ButtonText) const;
     QColor winUI3Color(WINUI3Color col) const;
     QColor accentColor(const QStyleOption *option) const;
-
-    QIcon fluentIcon(const QChar &ch, const QColor &color = QColor()) const;
 
 private:
     mutable QFont assetFont;

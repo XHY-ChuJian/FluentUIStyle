@@ -437,6 +437,9 @@ ExExpander 内置 WinUI 3 贝塞尔曲线 (0.1, 0.9, 0.2, 1.0) 平滑插值，�
 [collapsed] 内容已完全收起|[collapsed] Content completely collapsed
 [expansionFinished] 动画结束 (expanded = %1)|[expansionFinished] Animation finished (expanded = %1)
 [expandedChanged] 状态属性变更: %1|[expandedChanged] Property changed: %1
+日历视图 (WinUI 3 CalendarView)|Calendar View (WinUI 3 CalendarView)
+选中日期：%1|Selected Date: %1
+返回今天|Back to Today
 """.strip()
 
 TABLE = {}

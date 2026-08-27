@@ -3,6 +3,8 @@
 
 #include <QCoreApplication>
 #include <QList>
+#include <QCalendarWidget>
+#include <QCheckBox>
 #include <QColorDialog>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -307,6 +309,57 @@ DialogShowcaseWidget::DialogShowcaseWidget(QWidget *parent)
             });
 
     addButtons(rowCD, {btnCDSimple, btnCDConfirm, btnCDThree, btnCDCustom});
+
+    // 8. WinUI 3 日历视图 (CalendarView / QCalendarWidget)
+    auto *calendarCard = new QWidget(content);
+    calendarCard->setProperty("isCard", true);
+    calendarCard->setAttribute(Qt::WA_StyledBackground, true);
+    auto *vCal = new QVBoxLayout(calendarCard);
+    vCal->setContentsMargins(12, 12, 12, 12);
+    vCal->setSpacing(10);
+    auto *calTitle = new QLabel(tr("日历视图 (WinUI 3 CalendarView)"), calendarCard);
+    {
+        QFont f = calTitle->font();
+        f.setBold(true);
+        f.setPixelSize(14);
+        calTitle->setFont(f);
+    }
+    vCal->addWidget(calTitle);
+
+    auto *hCalLay = new QHBoxLayout;
+    hCalLay->setSpacing(16);
+
+    auto *calendar = new QCalendarWidget(calendarCard);
+    calendar->setGridVisible(false);
+    calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
+    calendar->setMinimumSize(320, 290);
+    hCalLay->addWidget(calendar);
+
+    auto *infoLay = new QVBoxLayout;
+    infoLay->setSpacing(10);
+    auto *selectedDateLabel = new QLabel(tr("选中日期：%1").arg(calendar->selectedDate().toString(QStringLiteral("yyyy-MM-dd"))), calendarCard);
+    QFont fInfo = selectedDateLabel->font();
+    fInfo.setPixelSize(13);
+    selectedDateLabel->setFont(fInfo);
+    infoLay->addWidget(selectedDateLabel);
+
+    auto *btnToday = new QPushButton(tr("返回今天"), calendarCard);
+    btnToday->setProperty("isAccent", true);
+    connect(btnToday, &QPushButton::clicked, calendar, [calendar]() {
+        calendar->setSelectedDate(QDate::currentDate());
+        calendar->showToday();
+    });
+    infoLay->addWidget(btnToday);
+    infoLay->addStretch(1);
+    hCalLay->addLayout(infoLay);
+    hCalLay->addStretch(1);
+
+    connect(calendar, &QCalendarWidget::selectionChanged, calendarCard, [calendar, selectedDateLabel]() {
+        selectedDateLabel->setText(tr("选中日期：%1").arg(calendar->selectedDate().toString(QStringLiteral("yyyy-MM-dd"))));
+    });
+
+    vCal->addLayout(hCalLay);
+    mainLay->addWidget(calendarCard);
 
     mainLay->addStretch(1);
 
