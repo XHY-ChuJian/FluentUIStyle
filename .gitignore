@@ -67,3 +67,4 @@ venv/
 __pycache__/
 *.pyc
 .idea/
+.clang-format
