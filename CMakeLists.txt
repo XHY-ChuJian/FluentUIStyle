@@ -140,6 +140,7 @@ endforeach()
 option(BUILD_LIBRARY "Build as library" ON)
 option(BUILD_PLUGIN "Build as plugin (Windows only)" ON)
 option(BUILD_EXAMPLES "Build example applications" ON)
+option(BUILD_QTCREATOR_PLUGIN "Build Qt Creator extension plugin" OFF)
 
 if(NOT WIN32)
     set(BUILD_PLUGIN OFF)
@@ -161,6 +162,10 @@ endif()
 
 if(BUILD_PLUGIN)
     add_subdirectory(fluentui3style/plugin)
+endif()
+
+if(BUILD_QTCREATOR_PLUGIN)
+    add_subdirectory(QtCreatorPlugin)
 endif()
 
 if(BUILD_EXAMPLES)

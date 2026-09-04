@@ -72,6 +72,18 @@ app.setStyle("FluentUI3");
 - 已构建并部署 `FluentUI3` 样式插件
 - 希望主工程最少改动接入
 
+### 方式 3：作为 Qt Creator IDE 扩展插件加载
+
+Qt Creator 内部采用独立的插件框架和主题隔离机制，普通的 `-style` 参数无法直接作用于 IDE 全局。本项目提供了专用的 **Qt Creator Extension 插件**：
+
+```bash
+# 开启 Qt Creator 插件构建
+cmake -B build -DBUILD_QTCREATOR_PLUGIN=ON -DQTCREATOR_DIR="<QtCreator安装路径>"
+cmake --build build --config Release --target FluentUI3CreatorPlugin
+```
+
+编译完成后将 `FluentUI3CreatorPlugin.dll` 复制到 Qt Creator 的插件目录 `<QtCreatorDir>/lib/qtcreator/plugins/`，重启 Qt Creator 即可在 IDE 中直接生效。详细说明见 [QtCreatorPlugin/README.md](file:///d:/workspace/Code/Github/Window11Style/QtCreatorPlugin/README.md)。
+
 
 
 ## 控件属性设置说明

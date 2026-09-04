@@ -1,0 +1,13 @@
+{
+    "Id" : "fluentui3creatorplugin",
+    "Name" : "FluentUI3CreatorPlugin",
+    "VendorId" : "fluentui3style",
+    "Vendor" : "FluentUI3Style",
+    "Version" : "0.1.0",
+    "CompatVersion" : "0.1.0",
+    "Copyright" : "(C) 2026 XHY-ChuJian",
+    "License" : "MIT",
+    "Category" : "Environment",
+    "Description" : "Applies FluentUI3 modern styling to Qt Creator IDE.",
+    "Url" : "https://github.com/XHY-ChuJian/FluentUIStyle"
+}

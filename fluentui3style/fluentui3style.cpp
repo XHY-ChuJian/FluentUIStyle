@@ -56,6 +56,7 @@
 #include <QtMath>
 
 #include <array>
+#include <qpainter.h>
 
 #include "comboboxpopupanimation_p.h"
 #include "fluentcalendarwidget_p.h"
@@ -709,24 +710,16 @@ inline bool isChecked( const QStyleOption* option )
 }
 
 inline bool isDisabled( const QStyleOption* option )
-{
-    return !option->state.testFlag( QStyle::State_Enabled );
-}
+{ return !option->state.testFlag( QStyle::State_Enabled ); }
 
 inline bool isPressed( const QStyleOption* option )
-{
-    return option->state.testFlag( QStyle::State_Sunken );
-}
+{ return option->state.testFlag( QStyle::State_Sunken ); }
 
 inline bool isHover( const QStyleOption* option )
-{
-    return option->state.testFlag( QStyle::State_MouseOver );
-}
+{ return option->state.testFlag( QStyle::State_MouseOver ); }
 
 inline bool isAutoRaise( const QStyleOption* option )
-{
-    return option->state.testFlag( QStyle::State_AutoRaise );
-}
+{ return option->state.testFlag( QStyle::State_AutoRaise ); }
 enum class ControlState
 {
     Normal,
@@ -979,9 +972,7 @@ V takeValue( QHash<K, V>& h, K key )
 }
 
 void removeAnimation( QObject* target )
-{
-    animations.remove( target );
-}
+{ animations.remove( target ); }
 
 void stopAnimation( QObject* target )
 {
@@ -1003,9 +994,7 @@ void startAnimation( QStyleAnimation* animation )
 }
 
 QStyleAnimation* getAnimation( QObject* target )
-{
-    return animations.value( target );
-}
+{ return animations.value( target ); }
 
 //--------------------------------------------------//
 
@@ -1133,9 +1122,7 @@ float animationValue( QObject* target, const QByteArray& key, float defaultValue
 //--------------------------------------------------//
 
 bool transitionsEnabled()
-{
-    return true;
-}
+{ return true; }
 
 class PainterStateGuard
 {
@@ -1262,9 +1249,7 @@ inline void qDrawPlainRoundedRect( QPainter* painter,
                                    const QColor& lineColor,
                                    int lineWidth      = 1,
                                    const QBrush* fill = nullptr )
-{
-    qDrawPlainRoundedRect( painter, rect.x(), rect.y(), rect.width(), rect.height(), rx, ry, lineColor, lineWidth, fill );
-}
+{ qDrawPlainRoundedRect( painter, rect.x(), rect.y(), rect.width(), rect.height(), rx, ry, lineColor, lineWidth, fill ); }
 
 void qDrawShadeRect( QPainter* p,
                      int x,
@@ -1383,9 +1368,7 @@ void qDrawShadeRect( QPainter* p,
                      int lineWidth      = 1,
                      int midLineWidth   = 0,
                      const QBrush* fill = nullptr )
-{
-    qDrawShadeRect( p, r.x(), r.y(), r.width(), r.height(), pal, sunken, lineWidth, midLineWidth, fill );
-}
+{ qDrawShadeRect( p, r.x(), r.y(), r.width(), r.height(), pal, sunken, lineWidth, midLineWidth, fill ); }
 
 void qDrawShadePanel( QPainter* p,
                       int x,
@@ -1502,9 +1485,7 @@ void qDrawShadePanel( QPainter* p,
                       bool sunken        = false,
                       int lineWidth      = 1,
                       const QBrush* fill = nullptr )
-{
-    qDrawShadePanel( p, r.x(), r.y(), r.width(), r.height(), pal, sunken, lineWidth, fill );
-}
+{ qDrawShadePanel( p, r.x(), r.y(), r.width(), r.height(), pal, sunken, lineWidth, fill ); }
 
 static QScreen* screenOf( const QWidget* w )
 {
@@ -3318,8 +3299,8 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     {
                         const bool onlyOne = vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
                                              || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
-                        bool isFirst = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
-                        bool isLast  = vopt->viewItemPosition == QStyleOptionViewItem::End;
+                        bool isFirst       = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
+                        bool isLast        = vopt->viewItemPosition == QStyleOptionViewItem::End;
 
                         if ( onlyOne )
                         {
@@ -3469,9 +3450,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 int fwidth  = int( ( frm->lineWidth + frm->midLineWidth ) / nativeMetricScaleFactor( widget ) );
 
                 QRectF bottomLeftCorner  = QRectF( rect.left() + 1.0,
-                                                  rect.bottom() - 1.0 - secondLevelRoundingRadius,
-                                                  secondLevelRoundingRadius,
-                                                  secondLevelRoundingRadius );
+                                                   rect.bottom() - 1.0 - secondLevelRoundingRadius,
+                                                   secondLevelRoundingRadius,
+                                                   secondLevelRoundingRadius );
                 QRectF bottomRightCorner = QRectF( rect.right() - 1.0 - secondLevelRoundingRadius,
                                                    rect.bottom() - 1.0 - secondLevelRoundingRadius,
                                                    secondLevelRoundingRadius,
@@ -4161,18 +4142,14 @@ void FluentUI3Style::drawCapsuleTab( const QStyleOptionTab* tab, QPainter* paint
         painter->setBrush( winUI3Color( tabBarSelectedBackground ) );
 
         const int arcLength = 14;
+        const int bottomArc = 14;
+        QRectF r            = tabRect;
         QList<QPointF> pts;
-        pts << QPointF( tabRect.bottomLeft().x() - arcLength, tabRect.bottomLeft().y() ) << tabRect.bottomLeft() << tabRect.topLeft()
-            << tabRect.topRight() << tabRect.bottomRight() << QPointF( tabRect.bottomRight().x() + arcLength, tabRect.bottomRight().y() );
+        pts << QPointF( r.bottomLeft().x() - bottomArc, r.bottomLeft().y() ) << r.bottomLeft() << r.topLeft() << r.topRight()
+            << r.bottomRight() << QPointF( r.bottomRight().x() + bottomArc, r.bottomRight().y() );
 
         QPainterPath path = buildRoundedPolyline( pts, radius );
         painter->fillPath( path, painter->brush() );
-
-        // QRectF indicatorRect(tabRect.x() + 7.f, tabRect.y() + 7.0f, 2,
-        // tabRect.height() - 14.0f); const QColor col = accentColor(tab);
-        // painter->setBrush(col);
-        // painter->setPen(col);
-        // painter->drawRoundedRect(indicatorRect, 1.0, 1.0);
     }
     else if ( tab->state & State_MouseOver )
     {
@@ -6914,9 +6891,9 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 QRect rect       = vopt->rect;
                 const bool isRtl = option->direction == Qt::RightToLeft;
                 bool onlyOne     = vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
-                               || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
-                bool isFirst = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
-                bool isLast  = vopt->viewItemPosition == QStyleOptionViewItem::End;
+                                   || vopt->viewItemPosition == QStyleOptionViewItem::Invalid;
+                bool isFirst     = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
+                bool isLast      = vopt->viewItemPosition == QStyleOptionViewItem::End;
 
                 // the tree decoration already painted the left side of the
                 // rounded rect
@@ -6967,7 +6944,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                 const QTableView* tableView    = qobject_cast<const QTableView*>( widget );
                 bool tableCellHighlightHandled = false;
                 const bool tableRowStrategy    = tableView && !highContrastTheme && vopt->index.isValid()
-                                              && tableView->selectionBehavior() == QAbstractItemView::SelectRows;
+                                                 && tableView->selectionBehavior() == QAbstractItemView::SelectRows;
 
                 if ( tableRowStrategy )
                 {
@@ -7350,9 +7327,7 @@ int FluentUI3Style::styleHint( StyleHint hint, const QStyleOption* opt, const QW
 }
 
 static bool isComboBoxPopup( QWidget* w )
-{
-    return w && w->inherits( "QComboBoxPrivateContainer" );
-}
+{ return w && w->inherits( "QComboBoxPrivateContainer" ); }
 
 QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget ) const
 {
@@ -7901,9 +7876,7 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
 }
 
 void FluentUI3Style::polish( QPalette& result )
-{
-    PaletteManager::instance().applyPalette( result, colorSchemeIndex );
-}
+{ PaletteManager::instance().applyPalette( result, colorSchemeIndex ); }
 
 void FluentUI3Style::polish( QApplication* app )
 {
@@ -8058,7 +8031,7 @@ void FluentUI3Style::polish( QWidget* widget )
         widget->setAttribute( Qt::WA_RightToLeft, layoutDirection );
         widget->setAttribute( Qt::WA_WState_Created, wasCreated );
 
-        if ( isComboPopup || isCalendarPopup)
+        if ( isComboPopup || isCalendarPopup )
         {
             widget->installEventFilter( this );
         }
@@ -8767,9 +8740,7 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 }
 
 QColor FluentUI3Style::winUI3Color( WINUI3Color col ) const
-{
-    return WINUI3Colors[ colorSchemeIndex ][ col ];
-}
+{ return WINUI3Colors[ colorSchemeIndex ][ col ]; }
 
 QColor FluentUI3Style::accentColor( const QStyleOption* option ) const
 {
