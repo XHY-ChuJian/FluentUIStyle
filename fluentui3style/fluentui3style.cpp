@@ -1608,7 +1608,8 @@ FluentUI3Style::FluentUI3Style( QStyle* style )
     {
         PaletteManager::instance().setThemeStyle( (ThemeStyle)themeStyle );
     }
-    qDebug() << "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
+    qDebug()<< "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
+    qDebug()<< "[FluentUI3Style] version:4.0.2";
 
     // qApp->installEventFilter(this);
 }
