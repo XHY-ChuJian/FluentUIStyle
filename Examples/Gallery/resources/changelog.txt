@@ -3,12 +3,9 @@
 2. Gallery 新增轮播图演示页（PageCarousel），包含基础图片轮播、自定义控件卡片、循环模式与悬停触发导航等多组交互演示
 3. 新增 ExFontIcon 字体图标组件，提供完整的 Windows 11 Segoe Fluent Icons 枚举（1403项）与单例支持
 4. 全面消除 ExWidgets 各控件内部字体图标硬编码，统一规范为 ExFontIcon 接口体系
-5. PageSegoeIconGallery 全面重构为 Qt 标准 Model-View-Delegate 架构，消除数千个子控件分配开销，数据加载 0ms 秒开且滚动平滑
-6. 优化 Gallery 启动性能与懒加载策略（PageInstalledSoftware 延迟预热），彻底消除冷启动期间全机注册表扫描造成的卡顿
-7. ExTour 漫游引导控件关闭按钮改用原生矢量文字渲染，解决高分屏（DPI 缩放）下图标模糊问题并自动跟随主题调色板
-8. ExTour 优化按键交互（避免聚焦卡片按钮时被顶层遮罩截胡）、小三角内外边距联动与卡片尺寸自适应
-9. ExBreadcrumbBar 面包屑导航增加 setItems(const QStringList&) 数据源便捷接口，修复溢出菜单动作动态分配时的内存累积隐患
-10. ExExpander 展开箭头接入 FluentUI3Colors 标准配色，修复浅色主题下悬停与按下背景不明显的问题
+5. ExTour 漫游引导控件关闭按钮改用原生矢量文字渲染，解决高分屏（DPI 缩放）下图标模糊问题并自动跟随主题调色板
+6. ExTour 优化按键交互（避免聚焦卡片按钮时被顶层遮罩截胡）、小三角内外边距联动与卡片尺寸自适应
+7. ExExpander 展开箭头接入 FluentUI3Colors 标准配色，修复浅色主题下悬停与按下背景不明显的问题
 
 【更新内容2026-9-11】
 1. 新增 ExBreadcrumbBar 面包屑导航与 ExTeachingTip 教学引导提示控件
