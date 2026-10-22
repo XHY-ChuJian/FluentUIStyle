@@ -45,6 +45,8 @@ endif()
 if(BUILD_EXAMPLES)
     set(AUDIOMATIC_MINI_APP_SOURCES
         main.cpp
+        crashdump.cpp
+        crashdump.h
         playerwindow.cpp
         playerwindow.h
         spectrumdemowindow.cpp
@@ -82,6 +84,9 @@ if(BUILD_EXAMPLES)
         Qt6::Network
         ${FLUENT_QT_PRIVATE_LIBS}
     )
+    if(WIN32)
+        target_link_libraries(AudiomaticMini PRIVATE dbghelp)
+    endif()
     if(NOT WIN32)
         if(TARGET FluentUI3Style)
             target_link_libraries(AudiomaticMini PRIVATE FluentUI3Style)

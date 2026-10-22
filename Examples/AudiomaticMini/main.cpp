@@ -6,6 +6,7 @@
 #include <QIcon>
 #include <QStyleFactory>
 
+#include "crashdump.h"
 #include "playerwindow.h"
 #include "spectrumdemowindow.h"
 
@@ -38,6 +39,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(QStringLiteral("Window11Style"));
     QCoreApplication::setApplicationName(QStringLiteral("AudiomaticMini"));
 
+    const QString crashDumpDirectory = AudiomaticCrashDump::install();
+    if (!crashDumpDirectory.isEmpty())
+    {
+        qInfo() << "Crash dumps:" << crashDumpDirectory;
+    }
     app.setWindowIcon(QIcon(QStringLiteral(":/music.ico")));
 
     setupBundledQtPlugins();
