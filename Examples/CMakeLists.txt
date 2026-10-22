@@ -1,5 +1,6 @@
-# Qt 6 Gallery reuses AudiomaticMiniWidgets, so AudiomaticMini must be added
-# before Gallery. Qt 5 skips the examples that require Qt 6 Multimedia.
+# Qt 6 still builds AudiomaticMini for its own executable. Gallery's music page
+# compiles pages/media/localplayer and does not link AudiomaticMiniWidgets.
+# Qt 5 skips the examples that require Qt 6 Multimedia.
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS Multimedia Network)
 if(NOT ANDROID)

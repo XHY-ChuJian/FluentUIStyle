@@ -6,6 +6,16 @@ file(GLOB_RECURSE GALLERY_SOURCES CONFIGURE_DEPENDS
 )
 
 # Remove conditional sources so they aren't compiled unless their conditions are met
+set(GALLERY_LOCAL_PLAYER_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/audiomaticplayerwidget.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/audiomaticplayerwidget.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/audiomaticplayerwidget.ui"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/audiospectrumanalyzer.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/audiospectrumanalyzer.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/jamendoclient.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer/jamendoclient.h"
+)
+
 list(REMOVE_ITEM GALLERY_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/core/applanguage.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core/applanguage.h"
@@ -14,6 +24,7 @@ list(REMOVE_ITEM GALLERY_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/pagespectrum.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/sinewavegenerator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pages/media/sinewavegenerator.h"
+    ${GALLERY_LOCAL_PLAYER_SOURCES}
 )
 
 if(WIN32)
@@ -70,6 +81,7 @@ target_include_directories(Gallery PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/basic
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/gauges
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/media
+    ${CMAKE_CURRENT_SOURCE_DIR}/pages/media/localplayer
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/timeline
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/exwidgets
     ${CMAKE_CURRENT_SOURCE_DIR}/pages/info
@@ -109,9 +121,10 @@ if(NOT ANDROID AND TARGET Frameless::Frameless)
 endif()
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6 AND NOT ANDROID)
+    target_sources(Gallery PRIVATE ${GALLERY_LOCAL_PLAYER_SOURCES})
     target_link_libraries(Gallery PRIVATE
-        AudiomaticMiniWidgets
         Qt6::Multimedia
+        Qt6::Network
     )
 else()
     target_sources(Gallery PRIVATE
