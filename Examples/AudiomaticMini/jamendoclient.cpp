@@ -96,15 +96,6 @@ QNetworkRequest buildRequest(const QUrl &url)
 
 } // namespace
 
-QString JamendoTrack::displayTitle() const
-{
-    if (artistName.isEmpty())
-    {
-        return name;
-    }
-    return QStringLiteral("%1 - %2").arg(name, artistName);
-}
-
 JamendoClient::JamendoClient(QObject *parent)
     : QObject(parent)
     , m_nam(new QNetworkAccessManager(this))
@@ -432,9 +423,13 @@ QString loadJamendoClientId()
 
     QSettings settings = makeJamendoSettings();
     settings.beginGroup(QString::fromLatin1(kSettingsGroup));
-    const QString stored = settings.value(QString::fromLatin1(kSettingsClientIdKey)).toString();
+    const QString stored = settings.value(QString::fromLatin1(kSettingsClientIdKey)).toString().trimmed();
     settings.endGroup();
-    return stored;
+    if (!stored.isEmpty())
+    {
+        return stored;
+    }
+    return QStringLiteral("b36492c6");
 }
 
 void saveJamendoClientId(const QString &clientId)

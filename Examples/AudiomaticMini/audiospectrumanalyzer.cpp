@@ -189,11 +189,6 @@ void AudioSpectrumAnalyzer::onBufferReady()
     {
         processBuffer();
     }
-
-    if (m_active)
-    {
-        feedPlaybackChunk();
-    }
 }
 
 void AudioSpectrumAnalyzer::onDecoderFinished()

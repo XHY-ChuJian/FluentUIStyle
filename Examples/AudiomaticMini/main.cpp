@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFont>
+#include <QIcon>
 #include <QStyleFactory>
 
 #include "playerwindow.h"
@@ -36,6 +37,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("Window11Style"));
     QCoreApplication::setApplicationName(QStringLiteral("AudiomaticMini"));
+
+    app.setWindowIcon(QIcon(QStringLiteral(":/music.ico")));
 
     setupBundledQtPlugins();
 

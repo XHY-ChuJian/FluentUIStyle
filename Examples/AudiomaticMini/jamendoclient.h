@@ -16,8 +16,6 @@ struct JamendoTrack
     int durationSec{0};
     QUrl audioUrl;
     QUrl imageUrl;
-
-    QString displayTitle() const;
 };
 
 struct JamendoRadio

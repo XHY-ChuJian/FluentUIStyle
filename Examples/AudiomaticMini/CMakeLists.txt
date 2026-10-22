@@ -4,6 +4,8 @@ if(QT_VERSION_MAJOR LESS 6)
 endif()
 
 set(AUDIOMATIC_MINI_WIDGET_SOURCES
+    audiomaticimmersiveview.cpp
+    audiomaticimmersiveview.h
     audiomaticplayerwidget.cpp
     audiomaticplayerwidget.h
     audiomaticplayerwidget.ui
@@ -11,6 +13,12 @@ set(AUDIOMATIC_MINI_WIDGET_SOURCES
     audiospectrumanalyzer.h
     jamendoclient.cpp
     jamendoclient.h
+    lyricsmanager.cpp
+    lyricsmanager.h
+    systemaudiocapture.cpp
+    systemaudiocapture.h
+    systemmediawatcher.cpp
+    systemmediawatcher.h
 )
 
 add_library(AudiomaticMiniWidgets STATIC ${AUDIOMATIC_MINI_WIDGET_SOURCES})
@@ -30,6 +38,10 @@ target_link_libraries(AudiomaticMiniWidgets PUBLIC
     ${FLUENT_QT_PRIVATE_LIBS}
 )
 
+if(WIN32)
+    target_link_libraries(AudiomaticMiniWidgets PUBLIC ole32 windowsapp)
+endif()
+
 if(BUILD_EXAMPLES)
     set(AUDIOMATIC_MINI_APP_SOURCES
         main.cpp
@@ -41,9 +53,17 @@ if(BUILD_EXAMPLES)
         sinewavegenerator.h
     )
 
+    set(app_icon_res "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
     qt_add_executable(AudiomaticMini
         MANUAL_FINALIZATION
         ${AUDIOMATIC_MINI_APP_SOURCES}
+        ${app_icon_res}
+    )
+
+    qt_add_resources(AudiomaticMini "audiomatic_resources"
+        PREFIX "/"
+        FILES
+            music.ico
     )
 
     target_include_directories(AudiomaticMini PRIVATE
