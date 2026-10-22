@@ -22,9 +22,9 @@ struct LyricLine
 class LyricsManagerPrivate;
 
 /**
- * @brief 在线歌词检索、本地 LRC 缓存与实时解析管理器。
+ * @brief 在线歌词检索与实时解析管理器。
  *
- * 根据“歌名+歌手”自动检索网络标准 LRC 歌词，下载后缓存在本地磁盘；
+ * 根据“歌名+歌手”每次重新检索网络标准 LRC 歌词，不在本地保留歌词文件。
  * 提供快速二分时间轴查找当前正在演唱的歌词行。
  */
 class LyricsManager : public QObject
@@ -35,10 +35,10 @@ public:
     explicit LyricsManager( QObject* parent = nullptr );
     ~LyricsManager() override;
 
-    /// 异步获取歌词（优先检索本地磁盘缓存，未命中则异步联网下载）
+    /// 异步从网络获取歌词
     void fetchLyrics( const QString& title, const QString& artist, qint64 durationMs = 0 );
 
-    /// 强制重新从网络检索歌词（忽略并覆盖本地缓存）
+    /// 强制重新从网络检索歌词，并丢掉已缓存的封面
     void refetchLyrics( const QString& title, const QString& artist, qint64 durationMs = 0 );
 
     /// 获取当前加载的歌词列表

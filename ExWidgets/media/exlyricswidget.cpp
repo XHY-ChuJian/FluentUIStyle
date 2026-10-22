@@ -31,6 +31,42 @@ QColor resolveAccentColor( const QPalette& palette )
     return palette.color( QPalette::Highlight );
 }
 
+struct LrcStamp
+{
+    qint64 timeMs { 0 };
+    int startPos { 0 };
+    int endPos { 0 };
+};
+
+bool isNonLyricMetaLine( const QString& text )
+{
+    const QString t = text.trimmed();
+    if ( t.isEmpty() )
+    {
+        return true;
+    }
+
+    static const QRegularExpression roleRe(
+        QStringLiteral( "(作词|作曲|编曲|制作人|录音师|录音室|混音师|混音室|母带|出品|监制|和声|企划|统筹|推广|发行|弦乐|小提琴|中提琴|大提琴"
+                        "|lyricist|composer|arrangement|producer|engineer|studio|violin|viola|cello|strings"
+                        "|^\\s*(?:op|sp)\\s*[:：])" ),
+        QRegularExpression::CaseInsensitiveOption );
+    if ( !roleRe.match( t ).hasMatch() )
+    {
+        return false;
+    }
+
+    const bool hasColon = t.contains( QStringLiteral( ":" ) ) || t.contains( QStringLiteral( "：" ) );
+    if ( hasColon )
+    {
+        return true;
+    }
+
+    static const QRegularExpression leadingRe(
+        QStringLiteral( "^(作词|作曲|编曲|制作人|出品|监制|和声|企划|统筹|推广|发行|录音|混音|母带)" ) );
+    return leadingRe.match( t ).hasMatch();
+}
+
 } // namespace
 
 class ExLyricsWidgetPrivate
@@ -367,6 +403,10 @@ void ExLyricsWidget::setAutoScroll( bool autoScroll )
     }
     d->autoScroll = autoScroll;
     emit autoScrollChanged( autoScroll );
+    if ( autoScroll )
+    {
+        d->updateTargetScroll( true );
+    }
 }
 
 int ExLyricsWidget::scrollDurationMs() const
@@ -452,8 +492,6 @@ QSize ExLyricsWidget::minimumSizeHint() const
 
 void ExLyricsWidget::setLyrics( const QString& lrcContent )
 {
-    Q_D( ExLyricsWidget );
-
     QList<ExLyricLine> parsedLines;
     if ( lrcContent.trimmed().isEmpty() )
     {
@@ -461,8 +499,18 @@ void ExLyricsWidget::setLyrics( const QString& lrcContent )
         return;
     }
 
-    // 支持 [mm:ss.xx] 与 [mm:ss.xxx] 以及多时间戳同一行
-    static const QRegularExpression timeRegex( QStringLiteral( "\\[(\\d{1,2}):(\\d{1,2})(?:\\.(\\d{1,3}))?\\]" ) );
+    // [offset:+500] 按 LRC 约定加到每一行时间上。正数表示歌词整体推后。
+    qint64 offsetMs = 0;
+    static const QRegularExpression offsetRegex( QStringLiteral( "\\[offset:\\s*([+-]?\\d+)\\s*\\]" ),
+                                                  QRegularExpression::CaseInsensitiveOption );
+    const QRegularExpressionMatch offsetMatch = offsetRegex.match( lrcContent );
+    if ( offsetMatch.hasMatch() )
+    {
+        offsetMs = offsetMatch.captured( 1 ).toLongLong();
+    }
+
+    // 支持 [mm:ss.xx]、[mm:ss.xxx]、[mm:ss:xx] 以及同一行多个时间戳
+    static const QRegularExpression timeRegex( QStringLiteral( "\\[(\\d{1,3}):(\\d{1,2})(?:[.:](\\d{1,3}))?\\]" ) );
 
     const QStringList rawLines = lrcContent.split( QLatin1Char( '\n' ) );
     for ( const QString& rawLine : rawLines )
@@ -473,9 +521,7 @@ void ExLyricsWidget::setLyrics( const QString& lrcContent )
             continue;
         }
 
-        // 提取所有时间标签
-        QList<qint64> timestamps;
-        int lastMatchEnd = 0;
+        QList<LrcStamp> stamps;
 
         auto it = timeRegex.globalMatch( trimmedLine );
         while ( it.hasNext() )
@@ -487,45 +533,66 @@ void ExLyricsWidget::setLyrics( const QString& lrcContent )
             qint64 ms = 0;
             if ( !msStr.isEmpty() )
             {
-                if ( msStr.length() == 2 )
+                ms = msStr.toLongLong();
+                if ( msStr.length() == 1 )
                 {
-                    ms = msStr.toLongLong() * 10;
+                    ms *= 100;
                 }
-                else
+                else if ( msStr.length() == 2 )
                 {
-                    ms = msStr.toLongLong();
+                    ms *= 10;
                 }
             }
-            const qint64 totalMs = ( min * 60 + sec ) * 1000 + ms;
-            timestamps.append( totalMs );
-            lastMatchEnd = match.capturedEnd();
+            stamps.append( { qMax( qint64( 0 ), ( min * 60 + sec ) * 1000 + ms + offsetMs ),
+                             static_cast<int>( match.capturedStart() ),
+                             static_cast<int>( match.capturedEnd() ) } );
         }
 
-        if ( timestamps.isEmpty() )
+        if ( stamps.isEmpty() )
         {
             continue;
         }
 
-        const QString lyricText = trimmedLine.mid( lastMatchEnd ).trimmed();
-        // 过滤空行或元数据行
+        // 逐字轴的字写在时间标签之间，拼回一整句，避免只剩下最后一个标签后的尾巴。
+        QString lyricText;
+        bool inlineText = false;
+        for ( int i = 0; i < stamps.size(); ++i )
+        {
+            const int from = stamps[ i ].endPos;
+            const int to   = ( i + 1 < stamps.size() ) ? stamps[ i + 1 ].startPos : static_cast<int>( trimmedLine.size() );
+            const QString piece = trimmedLine.mid( from, to - from );
+            if ( i + 1 < stamps.size() && !piece.trimmed().isEmpty() )
+            {
+                inlineText = true;
+            }
+            lyricText += piece;
+        }
+        static const QRegularExpression wordTagRegex( QStringLiteral( "<\\d{1,3}:\\d{1,2}(?:[.:]\\d{1,3})?>" ) );
+        lyricText.remove( wordTagRegex );
+        lyricText = lyricText.trimmed();
         if ( lyricText.isEmpty() )
         {
             continue;
         }
 
-        for ( qint64 ts : timestamps )
+        if ( inlineText )
         {
             ExLyricLine line;
-            line.timeMs = ts;
+            line.timeMs = stamps.first().timeMs;
             line.text   = lyricText;
             parsedLines.append( line );
         }
+        else
+        {
+            for ( const LrcStamp& stamp : stamps )
+            {
+                ExLyricLine line;
+                line.timeMs = stamp.timeMs;
+                line.text   = lyricText;
+                parsedLines.append( line );
+            }
+        }
     }
-
-    // 按时间顺序升序排列
-    std::sort( parsedLines.begin(), parsedLines.end(), []( const ExLyricLine& a, const ExLyricLine& b ) {
-        return a.timeMs < b.timeMs;
-    } );
 
     setLyricsLines( parsedLines );
 }
@@ -533,7 +600,21 @@ void ExLyricsWidget::setLyrics( const QString& lrcContent )
 void ExLyricsWidget::setLyricsLines( const QList<ExLyricLine>& lines )
 {
     Q_D( ExLyricsWidget );
-    d->lines = lines;
+    const int oldIndex       = d->currentIndex;
+    const bool wasScrolling  = d->isUserScrolling;
+
+    d->lines.clear();
+    d->lines.reserve( lines.size() );
+    for ( const ExLyricLine& line : lines )
+    {
+        if ( !isNonLyricMetaLine( line.text ) )
+        {
+            d->lines.append( line );
+        }
+    }
+    std::stable_sort( d->lines.begin(), d->lines.end(), []( const ExLyricLine& a, const ExLyricLine& b ) {
+        return a.timeMs < b.timeMs;
+    } );
     d->currentIndex = -1;
     d->currentPositionMs = 0;
     d->currentScrollY = 0.0;
@@ -548,6 +629,14 @@ void ExLyricsWidget::setLyricsLines( const QList<ExLyricLine>& lines )
     }
 
     d->recalculateLayout();
+    if ( oldIndex != -1 )
+    {
+        emit currentLineChanged( -1, QString(), 0 );
+    }
+    if ( wasScrolling )
+    {
+        emit userScrollingChanged( false );
+    }
     update();
 }
 
@@ -571,9 +660,15 @@ void ExLyricsWidget::setCurrentPositionMs( qint64 positionMs )
     if ( newIndex != d->currentIndex )
     {
         d->currentIndex = newIndex;
+        // 当前行用更大的字号，行高变了，先重排再滚动，否则高亮行会被裁切、居中也会偏。
+        d->recalculateLayout();
         if ( d->currentIndex >= 0 && d->currentIndex < d->lines.size() )
         {
             emit currentLineChanged( d->currentIndex, d->lines[ d->currentIndex ].text, d->lines[ d->currentIndex ].timeMs );
+        }
+        else
+        {
+            emit currentLineChanged( -1, QString(), 0 );
         }
 
         if ( d->autoScroll && !d->isUserScrolling )
@@ -637,6 +732,8 @@ QString ExLyricsWidget::statusMessage() const
 void ExLyricsWidget::clear()
 {
     Q_D( ExLyricsWidget );
+    const int oldIndex      = d->currentIndex;
+    const bool wasScrolling = d->isUserScrolling;
     d->lines.clear();
     d->currentIndex = -1;
     d->currentPositionMs = 0;
@@ -647,6 +744,14 @@ void ExLyricsWidget::clear()
     d->userScrollResetTimer->stop();
     d->isUserScrolling = false;
     d->recalculateLayout();
+    if ( oldIndex != -1 )
+    {
+        emit currentLineChanged( -1, QString(), 0 );
+    }
+    if ( wasScrolling )
+    {
+        emit userScrollingChanged( false );
+    }
     update();
 }
 
@@ -655,8 +760,14 @@ void ExLyricsWidget::scrollToLine( int index, bool animated )
     Q_D( ExLyricsWidget );
     if ( index >= 0 && index < d->lines.size() )
     {
-        d->currentIndex = index;
+        const bool changed = d->currentIndex != index;
+        d->currentIndex    = index;
+        d->recalculateLayout();
         d->updateTargetScroll( animated );
+        if ( changed )
+        {
+            emit currentLineChanged( index, d->lines[ index ].text, d->lines[ index ].timeMs );
+        }
     }
 }
 
@@ -1017,8 +1128,11 @@ void ExLyricsWidget::wheelEvent( QWheelEvent* event )
         return;
     }
 
-    d->isUserScrolling = true;
-    emit userScrollingChanged( true );
+    if ( !d->isUserScrolling )
+    {
+        d->isUserScrolling = true;
+        emit userScrollingChanged( true );
+    }
     d->scrollAnimation->stop();
 
     const qreal delta = -event->angleDelta().y() * 0.45;
@@ -1118,6 +1232,7 @@ void ExLyricsWidget::changeEvent( QEvent* event )
     {
         Q_D( ExLyricsWidget );
         d->recalculateLayout();
+        d->updateTargetScroll( false );
         update();
     }
 }

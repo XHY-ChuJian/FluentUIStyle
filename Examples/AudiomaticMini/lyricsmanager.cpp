@@ -3,7 +3,6 @@
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -18,6 +17,55 @@
 #include <algorithm>
 
 namespace {
+
+/**
+ * @brief 制作人员、工作室信息不是歌词。网易云常把它们写成 [00:00.00]作词 : …
+ */
+bool isNonLyricMetaLine( const QString& text )
+{
+    const QString t = text.trimmed();
+    if ( t.isEmpty() )
+    {
+        return true;
+    }
+
+    static const QRegularExpression roleRe(
+        QStringLiteral( "(作词|作曲|编曲|制作人|录音师|录音室|混音师|混音室|母带|出品|监制|和声|企划|统筹|推广|发行|弦乐|小提琴|中提琴|大提琴"
+                        "|lyricist|composer|arrangement|producer|engineer|studio|violin|viola|cello|strings"
+                        "|^\\s*(?:op|sp)\\s*[:：])" ),
+        QRegularExpression::CaseInsensitiveOption );
+    if ( !roleRe.match( t ).hasMatch() )
+    {
+        return false;
+    }
+
+    const bool hasColon = t.contains( QStringLiteral( ":" ) ) || t.contains( QStringLiteral( "：" ) );
+    if ( hasColon )
+    {
+        return true;
+    }
+
+    static const QRegularExpression leadingRe(
+        QStringLiteral( "^(作词|作曲|编曲|制作人|出品|监制|和声|企划|统筹|推广|发行|录音|混音|母带)" ) );
+    return leadingRe.match( t ).hasMatch();
+}
+
+qint64 lrcFractionMs( const QString& msStr )
+{
+    if ( msStr.isEmpty() )
+    {
+        return 0;
+    }
+    if ( msStr.length() == 1 )
+    {
+        return msStr.toLongLong() * 100;
+    }
+    if ( msStr.length() == 2 )
+    {
+        return msStr.toLongLong() * 10;
+    }
+    return msStr.left( 3 ).toLongLong();
+}
 
 /**
  * @brief 解析标准 LRC 文本为时间戳有序行列表。
@@ -40,8 +88,9 @@ QList<LyricLine> parseLrcContent( const QString& lrcText )
         globalOffsetMs = offsetMatch.captured( 1 ).toLongLong();
     }
 
-    // 匹配 [mm:ss.xx] 或 [mm:ss.xxx] 或 [mm:ss]
-    static const QRegularExpression timeRegex( QStringLiteral( "\\[(\\d{1,2}):(\\d{1,2})(?:\\.(\\d{1,3}))?\\]" ) );
+    // [mm:ss]、[mm:ss.xx]、[mm:ss.xxx]、[mm:ss:xx]
+    static const QRegularExpression timeRegex( QStringLiteral( "\\[(\\d{1,3}):(\\d{1,2})(?:[.:](\\d{1,3}))?\\]" ) );
+    static const QRegularExpression wordTagRegex( QStringLiteral( "<\\d{1,3}:\\d{1,2}(?:[.:]\\d{1,3})?>" ) );
 
     const QStringList rawLines = lrcText.split( QLatin1Char( '\n' ) );
     for ( const QString& rawLine : rawLines )
@@ -52,47 +101,63 @@ QList<LyricLine> parseLrcContent( const QString& lrcText )
             continue;
         }
 
-        // 收集该行中所有的时间戳
-        QList<qint64> timestamps;
+        struct Stamp
+        {
+            qint64 timeMs { 0 };
+            int startPos { 0 };
+            int endPos { 0 };
+        };
+        QList<Stamp> stamps;
         auto matchIterator = timeRegex.globalMatch( trimmed );
-        int lastMatchEnd   = 0;
         while ( matchIterator.hasNext() )
         {
-            auto match = matchIterator.next();
+            const auto match = matchIterator.next();
             const qint64 mins = match.captured( 1 ).toLongLong();
             const qint64 secs = match.captured( 2 ).toLongLong();
-            qint64 ms         = 0;
-            if ( match.lastCapturedIndex() >= 3 && !match.captured( 3 ).isEmpty() )
-            {
-                const QString msStr = match.captured( 3 );
-                if ( msStr.length() == 2 )
-                {
-                    ms = msStr.toLongLong() * 10;
-                }
-                else if ( msStr.length() == 1 )
-                {
-                    ms = msStr.toLongLong() * 100;
-                }
-                else
-                {
-                    ms = msStr.left( 3 ).toLongLong();
-                }
-            }
-            timestamps.append( mins * 60000 + secs * 1000 + ms );
-            lastMatchEnd = match.capturedEnd();
+            const qint64 ms   = lrcFractionMs( match.captured( 3 ) );
+            stamps.append( { mins * 60000 + secs * 1000 + ms,
+                             static_cast<int>( match.capturedStart() ),
+                             static_cast<int>( match.capturedEnd() ) } );
         }
 
-        if ( timestamps.isEmpty() )
+        if ( stamps.isEmpty() )
         {
             continue;
         }
 
-        const QString lyricText = trimmed.mid( lastMatchEnd ).trimmed();
-        for ( qint64 t : timestamps )
+        // 逐字时间轴形如 [00:01.00]谁想[00:01.40]一眼。字在标签之间，不能只留最后一个标签后面的尾巴。
+        QString joined;
+        bool inlineText = false;
+        for ( int i = 0; i < stamps.size(); ++i )
         {
-            // 应用 [offset] 修正，确保时间轴不小于 0
-            const qint64 adjustedTime = qMax<qint64>( 0, t + globalOffsetMs );
-            lines.append( { adjustedTime, lyricText } );
+            const int from = stamps[ i ].endPos;
+            const int to   = ( i + 1 < stamps.size() ) ? stamps[ i + 1 ].startPos : static_cast<int>( trimmed.size() );
+            const QString piece = trimmed.mid( from, to - from );
+            if ( i + 1 < stamps.size() && !piece.trimmed().isEmpty() )
+            {
+                inlineText = true;
+            }
+            joined += piece;
+        }
+        joined.remove( wordTagRegex );
+        joined = joined.trimmed();
+        if ( isNonLyricMetaLine( joined ) )
+        {
+            continue;
+        }
+
+        if ( inlineText )
+        {
+            const qint64 adjustedTime = qMax<qint64>( 0, stamps.first().timeMs + globalOffsetMs );
+            lines.append( { adjustedTime, joined } );
+        }
+        else
+        {
+            for ( const Stamp& stamp : stamps )
+            {
+                const qint64 adjustedTime = qMax<qint64>( 0, stamp.timeMs + globalOffsetMs );
+                lines.append( { adjustedTime, joined } );
+            }
         }
     }
 
@@ -112,18 +177,6 @@ QString stripTitleSuffix( const QString& title )
     static const QRegularExpression parenRegex( QStringLiteral( R"(\s*(\([^\)]*\)|（[^）]*）|\[[^\]]*\]|【[^】]*】)\s*$)" ) );
     stripped.remove( parenRegex );
     return stripped.trimmed();
-}
-
-/**
- * @brief 计算本地持久歌词缓存的文件路径。
- */
-QString cacheFilePathForTrack( const QString& title, const QString& artist )
-{
-    const QString cacheDir = QStandardPaths::writableLocation( QStandardPaths::AppLocalDataLocation ) + QStringLiteral( "/lyrics" );
-    QDir().mkpath( cacheDir );
-    const QByteArray key   = QStringLiteral( "%1_%2" ).arg( title.trimmed().toLower(), artist.trimmed().toLower() ).toUtf8();
-    const QString filename = QString::fromLatin1( QCryptographicHash::hash( key, QCryptographicHash::Md5 ).toHex() ) + QStringLiteral( ".lrc" );
-    return cacheDir + QStringLiteral( "/" ) + filename;
 }
 
 /**
@@ -148,52 +201,65 @@ QString coverCacheFilePathForTrack( const QString& title, const QString& artist 
  * 3. 歌曲总时长吻合（最高 25 分）：误差 < 3.5s 给 25 分，误差 < 7s 给 18 分，相差 > 25s（典型现场版/剪辑版）扣 35 分；
  * 4. 排除/惩罚干扰关键词（避免现场版、伴奏、纯音乐、翻唱）：若非目标版本，候选包含 Live 扣 30 分，包含伴奏/消音扣 40 分，包含翻唱扣 25 分。
  */
-int calculateCandidateScore( const QString& candTitle,
-                             const QString& candArtist,
-                             qint64 candDurationMs,
-                             const QString& targetTitle,
-                             const QString& targetArtist,
-                             qint64 targetDurationMs )
+struct CandidateScore
+{
+    int total { 0 };
+    int title { 0 };
+
+    // 歌名必须接近。只靠同歌手或时长接近不能收下一首别的歌。
+    bool isAcceptable() const
+    {
+        return title >= 30 && total >= 40;
+    }
+};
+
+CandidateScore calculateCandidateScore( const QString& candTitle,
+                                        const QString& candArtist,
+                                        qint64 candDurationMs,
+                                        const QString& targetTitle,
+                                        const QString& targetArtist,
+                                        qint64 targetDurationMs )
 {
     const QString cleanTargetTitle = stripTitleSuffix( targetTitle ).trimmed().toLower();
     const QString cleanCandTitle   = stripTitleSuffix( candTitle ).trimmed().toLower();
     const QString cleanTargetArtist = targetArtist.trimmed().toLower();
     const QString cleanCandArtist   = candArtist.trimmed().toLower();
 
-    int score = 0;
+    CandidateScore score;
 
     // 1. 歌名匹配（最高 40 分）
     if ( !cleanTargetTitle.isEmpty() && !cleanCandTitle.isEmpty() )
     {
         if ( cleanTargetTitle == cleanCandTitle )
         {
-            score += 40;
+            score.title = 40;
         }
         else if ( cleanCandTitle.contains( cleanTargetTitle ) || cleanTargetTitle.contains( cleanCandTitle ) )
         {
             const int lenDiff = qAbs( cleanCandTitle.length() - cleanTargetTitle.length() );
-            score += ( lenDiff <= 4 ) ? 30 : 20;
+            score.title = ( lenDiff <= 4 ) ? 30 : 20;
         }
+        score.total += score.title;
     }
 
     // 2. 歌手匹配（最高 35 分）
     if ( cleanTargetArtist.isEmpty() )
     {
-        score += 15; // 目标未指定歌手，给中立分
+        score.total += 15; // 目标未指定歌手，给中立分
     }
     else
     {
         if ( cleanCandArtist.contains( cleanTargetArtist ) || cleanTargetArtist.contains( cleanCandArtist ) )
         {
-            score += 35;
+            score.total += 35;
         }
         else if ( cleanCandArtist.isEmpty() )
         {
-            score += 5;
+            score.total += 5;
         }
         else
         {
-            score -= 35; // 目标指定了歌手，但候选是别人翻唱的，大幅扣分
+            score.total -= 35; // 目标指定了歌手，但候选是别人翻唱的，大幅扣分
         }
     }
 
@@ -203,24 +269,24 @@ int calculateCandidateScore( const QString& candTitle,
         const qint64 diff = qAbs( targetDurationMs - candDurationMs );
         if ( diff <= 3500 )
         {
-            score += 25; // 误差 3.5 秒以内：极大概率是相同录音室母带
+            score.total += 25; // 误差 3.5 秒以内：极大概率是相同录音室母带
         }
         else if ( diff <= 7000 )
         {
-            score += 18;
+            score.total += 18;
         }
         else if ( diff <= 15000 )
         {
-            score += 8;
+            score.total += 8;
         }
         else if ( diff >= 25000 )
         {
-            score -= 35; // 相差 25 秒以上（现场版有欢呼/独白或伴奏剪辑），严重惩罚
+            score.total -= 35; // 相差 25 秒以上（现场版有欢呼/独白或伴奏剪辑），严重惩罚
         }
     }
     else
     {
-        score += 10; // 无时长信息时给中立分
+        score.total += 10; // 无时长信息时给中立分
     }
 
     // 4. 惩罚干扰关键词
@@ -241,7 +307,7 @@ int calculateCandidateScore( const QString& candTitle,
                             || lowerCandTitle.contains( QStringLiteral( "演唱会" ) )
                             || lowerCandTitle.contains( QStringLiteral( "音乐节" ) ) ) )
     {
-        score -= 30;
+        score.total -= 30;
     }
 
     if ( !targetWantsInst && ( lowerCandTitle.contains( QStringLiteral( "伴奏" ) )
@@ -250,14 +316,14 @@ int calculateCandidateScore( const QString& candTitle,
                             || lowerCandTitle.contains( QStringLiteral( "消音" ) )
                             || lowerCandTitle.contains( QStringLiteral( "纯音" ) ) ) )
     {
-        score -= 40;
+        score.total -= 40;
     }
 
     if ( !targetWantsCover && ( lowerCandTitle.contains( QStringLiteral( "翻唱" ) )
                              || lowerCandTitle.contains( QStringLiteral( "cover" ) )
                              || lowerCandArtist.contains( QStringLiteral( "翻唱" ) ) ) )
     {
-        score -= 25;
+        score.total -= 25;
     }
 
     return score;
@@ -472,10 +538,14 @@ private:
                 const QString candArtistStr = candArtists.join( QStringLiteral( " / " ) );
                 const qint64 candDurationMs = songObj.value( QStringLiteral( "dt" ) ).toVariant().toLongLong();
 
-                const int score = calculateCandidateScore( candTitle, candArtistStr, candDurationMs, title, artist, durationMs );
-                if ( score > bestScore )
+                const CandidateScore score = calculateCandidateScore( candTitle, candArtistStr, candDurationMs, title, artist, durationMs );
+                if ( !score.isAcceptable() )
                 {
-                    bestScore = score;
+                    continue;
+                }
+                if ( score.total > bestScore )
+                {
+                    bestScore = score.total;
                     bestSongId = songId;
 
                     const QJsonObject alObj = songObj.value( QStringLiteral( "al" ) ).toObject();
@@ -547,13 +617,6 @@ private:
             if ( root.value( QStringLiteral( "nolyric" ) ).toBool() )
             {
                 const QString pureMusicLrc = QStringLiteral( "[00:00.00]纯音乐，请欣赏\n" );
-                const QString cachePath = cacheFilePathForTrack( title, artist );
-                QFile cacheFile( cachePath );
-                if ( cacheFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-                {
-                    cacheFile.write( pureMusicLrc.toUtf8() );
-                    cacheFile.close();
-                }
                 processLoadedLrc( title, artist, pureMusicLrc );
                 return;
             }
@@ -570,15 +633,6 @@ private:
             {
                 searchKugou( taskId, title, artist, queryStr, retryStage, durationMs );
                 return;
-            }
-
-            // 成功获得网易云精准歌词！写入本地持久缓存
-            const QString cachePath = cacheFilePathForTrack( title, artist );
-            QFile cacheFile( cachePath );
-            if ( cacheFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-            {
-                cacheFile.write( lyricText.toUtf8() );
-                cacheFile.close();
             }
 
             processLoadedLrc( title, artist, lyricText );
@@ -651,10 +705,14 @@ private:
                 const QString candArtist = cand.value( QStringLiteral( "singer" ) ).toString();
                 const qint64 candDurationMs = cand.value( QStringLiteral( "duration" ) ).toVariant().toLongLong() * 1000;
 
-                const int score = calculateCandidateScore( candTitle, candArtist, candDurationMs, title, artist, durationMs );
-                if ( score > bestScore )
+                const CandidateScore score = calculateCandidateScore( candTitle, candArtist, candDurationMs, title, artist, durationMs );
+                if ( !score.isAcceptable() )
                 {
-                    bestScore = score;
+                    continue;
+                }
+                if ( score.total > bestScore )
+                {
+                    bestScore = score.total;
                     bestCid = cid;
                     bestCkey = ckey;
                 }
@@ -723,15 +781,6 @@ private:
             {
                 advanceRetry( taskId, title, artist, retryStage, durationMs );
                 return;
-            }
-
-            // 酷狗歌词成功！写入本地持久缓存
-            const QString cachePath = cacheFilePathForTrack( title, artist );
-            QFile cacheFile( cachePath );
-            if ( cacheFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-            {
-                cacheFile.write( decodedLrc.toUtf8() );
-                cacheFile.close();
             }
 
             processLoadedLrc( title, artist, decodedLrc );
@@ -811,26 +860,6 @@ void LyricsManager::fetchLyrics( const QString& title, const QString& artist, qi
         }
     }
 
-    // 1. 优先检查本地磁盘持久歌词缓存
-    const QString cachePath = cacheFilePathForTrack( cleanTitle, artist );
-    QFile cacheFile( cachePath );
-    if ( cacheFile.exists() && cacheFile.open( QIODevice::ReadOnly | QIODevice::Text ) )
-    {
-        const QString cachedLrc = QString::fromUtf8( cacheFile.readAll() );
-        cacheFile.close();
-        if ( !cachedLrc.trimmed().isEmpty() )
-        {
-            const auto cachedLines = parseLrcContent( cachedLrc );
-            if ( !cachedLines.isEmpty() )
-            {
-                d->cancelCurrentRequest();
-                d->processLoadedLrc( cleanTitle, artist, cachedLrc );
-                return;
-            }
-        }
-    }
-
-    // 2. 本地无缓存或脏缓存已废除，发起多源网络异步精准检索
     d->searchAndDownload( cleanTitle, artist, durationMs );
 }
 
@@ -844,9 +873,7 @@ void LyricsManager::refetchLyrics( const QString& title, const QString& artist, 
         return;
     }
 
-    // 强制清理本地历史缓存文件（歌词与封面）
-    const QString cachePath = cacheFilePathForTrack( cleanTitle, artist );
-    QFile::remove( cachePath );
+    // 重新检索时丢掉已缓存的封面，歌词本身不再落盘。
     const QString coverPath = coverCacheFilePathForTrack( cleanTitle, artist );
     QFile::remove( coverPath );
 

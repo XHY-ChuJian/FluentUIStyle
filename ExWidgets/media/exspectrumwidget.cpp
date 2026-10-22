@@ -2,7 +2,6 @@
 
 #include <QDateTime>
 #include <QEvent>
-#include <QGuiApplication>
 #include <QLinearGradient>
 #include <QMutex>
 #include <QMutexLocker>
@@ -99,10 +98,18 @@ struct ExSpectrumWidget::Private
         int   peakHoldFrames  { 0 };
     };
 
+    struct PcmPacket
+    {
+        QByteArray data;
+        int channels { 0 };
+    };
+
     kiss_fftr_cfg fftCfg { nullptr };
 
     QMutex pcmMutex;
-    QByteArray pendingPcm;
+    QVector<PcmPacket> pendingPackets;
+    int emptyChunkCount { 0 };
+    QColor explicitAccent;
 
     QVector<float> pcmSamples;
     QVector<float> fftInput;
@@ -198,16 +205,18 @@ void ExSpectrumWidget::pushAudioData( const QByteArray& pcmData )
     }
 
     QMutexLocker locker( &d->pcmMutex );
-    d->pendingPcm.append( pcmData );
+    d->pendingPackets.append( Private::PcmPacket { pcmData, 0 } );
 }
 
 void ExSpectrumWidget::pushAudioData( const QByteArray& pcmData, int channels )
 {
-    if ( channels > 0 && channels != d->channelCount )
+    if ( pcmData.isEmpty() && channels <= 0 )
     {
-        setChannelCount( channels );
+        return;
     }
-    pushAudioData( pcmData );
+
+    QMutexLocker locker( &d->pcmMutex );
+    d->pendingPackets.append( Private::PcmPacket { pcmData, channels } );
 }
 
 void ExSpectrumWidget::setAudioData( const QByteArray& pcmData )
@@ -327,7 +336,8 @@ int ExSpectrumWidget::barRadius() const
 
 void ExSpectrumWidget::setMinFrequency( float minFreq )
 {
-    const float clamped = qBound( 10.0f, minFreq, d->maxFrequency - 100.0f );
+    const float upper = qMax( 10.0f, d->maxFrequency - 100.0f );
+    const float clamped = qBound( 10.0f, minFreq, upper );
     if ( qFuzzyCompare( d->minFrequency, clamped ) )
     {
         return;
@@ -497,8 +507,9 @@ void ExSpectrumWidget::clear()
 {
     {
         QMutexLocker locker( &d->pcmMutex );
-        d->pendingPcm.clear();
+        d->pendingPackets.clear();
     }
+    d->emptyChunkCount = 0;
     d->pcmSamples.clear();
     d->targets.fill( kMinDisplayLevel, d->barCount );
     d->bars.fill( kMinDisplayLevel, d->barCount );
@@ -514,24 +525,17 @@ void ExSpectrumWidget::clear()
 
 void ExSpectrumWidget::setAccentColor( QColor color )
 {
+    if ( !color.isValid() )
+    {
+        color = QColor();
+    }
+    if ( d->explicitAccent == color )
+    {
+        return;
+    }
+
     const QColor oldColor = accentColor();
-    QPalette pal          = palette();
-    if ( color.isValid() )
-    {
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-        pal.setColor( QPalette::Accent, color );
-#endif
-        pal.setColor( QPalette::Highlight, color );
-    }
-    else
-    {
-        const QPalette appPal = QGuiApplication::palette();
-#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-        pal.setColor( QPalette::Accent, appPal.color( QPalette::Accent ) );
-#endif
-        pal.setColor( QPalette::Highlight, appPal.color( QPalette::Highlight ) );
-    }
-    setPalette( pal );
+    d->explicitAccent     = color;
     const QColor newColor = accentColor();
     if ( oldColor != newColor )
     {
@@ -542,6 +546,10 @@ void ExSpectrumWidget::setAccentColor( QColor color )
 
 QColor ExSpectrumWidget::accentColor() const
 {
+    if ( d->explicitAccent.isValid() )
+    {
+        return d->explicitAccent;
+    }
     return resolveAccentColor( palette() );
 }
 
@@ -662,6 +670,16 @@ void ExSpectrumWidget::resizeEvent( QResizeEvent* event )
     update();
 }
 
+void ExSpectrumWidget::changeEvent( QEvent* event )
+{
+    QWidget::changeEvent( event );
+    if ( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange
+         || event->type() == QEvent::StyleChange || event->type() == QEvent::ThemeChange )
+    {
+        update();
+    }
+}
+
 // ============================================================================
 // 定时刷新与物理驱动
 // ============================================================================
@@ -690,9 +708,13 @@ void ExSpectrumWidget::rebuildLogBinMap()
 {
     d->bands.resize( d->barCount );
 
-    const float nyquist = float( d->sampleRate ) * 0.5f;
-    const float maxFreq = qMin( d->maxFrequency, nyquist * 0.95f );
-    const float minFreq = qBound( 10.0f, d->minFrequency, maxFreq - 100.0f );
+    const float nyquist    = float( d->sampleRate ) * 0.5f;
+    float maxFreq          = qMin( d->maxFrequency, nyquist * 0.95f );
+    const float minFreq    = qBound( 10.0f, d->minFrequency, qMax( 10.0f, maxFreq - 100.0f ) );
+    if ( maxFreq <= minFreq )
+    {
+        maxFreq = minFreq + 100.0f;
+    }
     const float logMin  = qLn( minFreq );
     const float logMax  = qLn( qMax( logMin + 0.1f, maxFreq ) );
 
@@ -727,41 +749,71 @@ void ExSpectrumWidget::updateSpectrum()
         return;
     }
 
-    QByteArray pcmChunk;
+    QVector<Private::PcmPacket> packets;
     {
         QMutexLocker locker( &d->pcmMutex );
-        if ( !d->pendingPcm.isEmpty() )
+        if ( !d->pendingPackets.isEmpty() )
         {
-            pcmChunk.swap( d->pendingPcm );
+            packets.swap( d->pendingPackets );
         }
     }
 
-    if ( !pcmChunk.isEmpty() )
+    if ( packets.isEmpty() )
     {
-        const int totalSamples = pcmChunk.size() / int( sizeof( qint16 ) );
-        const int channels     = qMax( 1, d->channelCount );
-        const int frameCount   = totalSamples / channels;
-        const auto* samples    = reinterpret_cast<const qint16*>( pcmChunk.constData() );
-        d->pcmSamples.reserve( d->pcmSamples.size() + frameCount );
-
-        if ( channels == 1 )
+        ++d->emptyChunkCount;
+        // 跨线程推送偶发空一拍时保留当前窗口，连续约 64ms 没有新数据才视为停止。
+        if ( d->emptyChunkCount >= 4 )
         {
-            for ( int i = 0; i < frameCount; ++i )
+            if ( d->emptyChunkCount == 4 )
             {
-                d->pcmSamples.append( float( samples[ i ] ) / 32768.0f );
+                d->pcmSamples.clear();
             }
-        }
-        else
-        {
-            for ( int i = 0; i < frameCount; ++i )
+            for ( int i = 0; i < d->barCount; ++i )
             {
-                qint32 sum     = 0;
-                const int base = i * channels;
-                for ( int ch = 0; ch < channels; ++ch )
+                d->targets[ i ] = kMinDisplayLevel;
+            }
+            return;
+        }
+    }
+    else
+    {
+        d->emptyChunkCount = 0;
+        for ( const Private::PcmPacket& packet : packets )
+        {
+            if ( packet.channels > 0 && packet.channels != d->channelCount )
+            {
+                setChannelCount( packet.channels );
+            }
+            if ( packet.data.isEmpty() )
+            {
+                continue;
+            }
+
+            const int channels     = qMax( 1, d->channelCount );
+            const int totalSamples = packet.data.size() / int( sizeof( qint16 ) );
+            const int frameCount   = totalSamples / channels;
+            const auto* samples    = reinterpret_cast<const qint16*>( packet.data.constData() );
+            d->pcmSamples.reserve( d->pcmSamples.size() + frameCount );
+
+            if ( channels == 1 )
+            {
+                for ( int i = 0; i < frameCount; ++i )
                 {
-                    sum += samples[ base + ch ];
+                    d->pcmSamples.append( float( samples[ i ] ) / 32768.0f );
                 }
-                d->pcmSamples.append( float( sum / channels ) / 32768.0f );
+            }
+            else
+            {
+                for ( int i = 0; i < frameCount; ++i )
+                {
+                    qint32 sum     = 0;
+                    const int base = i * channels;
+                    for ( int ch = 0; ch < channels; ++ch )
+                    {
+                        sum += samples[ base + ch ];
+                    }
+                    d->pcmSamples.append( ( float( sum ) / float( channels ) ) / 32768.0f );
+                }
             }
         }
 

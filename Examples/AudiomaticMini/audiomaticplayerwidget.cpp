@@ -2633,8 +2633,11 @@ void AudiomaticPlayerWidget::setupLyricsManager()
 
     connect( m_lyricsManager, &LyricsManager::lyricsLoaded, this,
              [ this ]( const QString& title, const QString& artist, const QList<LyricLine>& lines ) {
-        Q_UNUSED( title );
-        Q_UNUSED( artist );
+        if ( title.trimmed() != m_currentLyricsQueryTitle.trimmed()
+             || artist.trimmed() != m_currentLyricsQueryArtist.trimmed() )
+        {
+            return;
+        }
         m_currentLyricLineIndex = -1;
 
         QList<ExLyricLine> exLines;
