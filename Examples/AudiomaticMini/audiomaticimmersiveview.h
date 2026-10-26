@@ -36,6 +36,7 @@ public:
     void setSampleRate( int sampleRate );
     void clearAudio();
     void setAccentColor( const QColor& color );
+    void setRainbowEnabled( bool enabled );
     void setReflectionOpacity( float opacity );
     void syncSpectrumParameters( ExSpectrumWidget* source );
 

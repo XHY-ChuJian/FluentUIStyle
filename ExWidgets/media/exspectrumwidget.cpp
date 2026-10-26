@@ -110,6 +110,7 @@ struct ExSpectrumWidget::Private
     QVector<PcmPacket> pendingPackets;
     int emptyChunkCount { 0 };
     QColor explicitAccent;
+    bool rainbowEnabled { ExSpectrumWidget::DefaultRainbowEnabled };
 
     QVector<float> pcmSamples;
     QVector<float> fftInput;
@@ -553,6 +554,35 @@ QColor ExSpectrumWidget::accentColor() const
     return resolveAccentColor( palette() );
 }
 
+void ExSpectrumWidget::setRainbowEnabled( bool enabled )
+{
+    if ( d->rainbowEnabled == enabled )
+    {
+        return;
+    }
+
+    d->rainbowEnabled = enabled;
+    emit rainbowEnabledChanged( d->rainbowEnabled );
+    update();
+}
+
+bool ExSpectrumWidget::isRainbowEnabled() const
+{
+    return d->rainbowEnabled;
+}
+
+namespace {
+
+QColor rainbowBarColor( int index, int count )
+{
+    const float span = ( count <= 1 ) ? 0.0f : float( index ) / float( count - 1 );
+    // 左红，经橙黄绿青，到右紫。色相停在 285，避免右端绕回红色。
+    const int hue = qBound( 0, qRound( span * 285.0f ), 285 );
+    return QColor::fromHsv( hue, 220, 250 );
+}
+
+} // namespace
+
 QSize ExSpectrumWidget::sizeHint() const
 {
     return { 640, 160 };
@@ -596,8 +626,7 @@ void ExSpectrumWidget::paintEvent( QPaintEvent* event )
                                    palette().color( QPalette::Text ).blue(),
                                    dark ? 20 : 30 );
 
-    const QColor barColor    = accentColor();
-    const QColor peakColor   = dark ? barColor.lighter( 135 ) : barColor.darker( 115 );
+    const QColor solidColor = accentColor();
     const int capH           = qBound( 1, d->peakCapHeight, 4 );
 
     painter.setPen( Qt::NoPen );
@@ -606,6 +635,10 @@ void ExSpectrumWidget::paintEvent( QPaintEvent* event )
     {
         const int x         = xOffset + i * ( barWidth + d->barGap );
         const int barHeight = qMax( 2, int( d->bars[ i ] * maxBarHeight ) );
+        const QColor barColor = d->rainbowEnabled ? rainbowBarColor( i, d->barCount ) : solidColor;
+        const QColor peakColor = d->rainbowEnabled
+            ? QColor::fromHsv( barColor.hue(), 130, 255 )
+            : ( dark ? barColor.lighter( 135 ) : barColor.darker( 115 ) );
 
         // 1. 柱体绘制
         const QRectF upperRect( x, waterY - barHeight, barWidth, barHeight );

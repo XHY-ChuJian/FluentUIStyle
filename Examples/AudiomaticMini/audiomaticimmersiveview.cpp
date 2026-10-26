@@ -126,6 +126,14 @@ void AudiomaticImmersiveView::setAccentColor( const QColor& color )
     update();
 }
 
+void AudiomaticImmersiveView::setRainbowEnabled( bool enabled )
+{
+    if ( m_visualizer )
+    {
+        m_visualizer->setRainbowEnabled( enabled );
+    }
+}
+
 void AudiomaticImmersiveView::setReflectionOpacity( float opacity )
 {
     if ( m_visualizer )
@@ -140,6 +148,7 @@ void AudiomaticImmersiveView::syncSpectrumParameters( ExSpectrumWidget* source )
     {
         return;
     }
+    m_visualizer->setRainbowEnabled( source->isRainbowEnabled() );
     m_visualizer->setAccentColor( source->accentColor() );
     m_visualizer->setReflectionEnabled( source->isReflectionEnabled() );
     m_visualizer->setReflectionOpacity( source->reflectionOpacity() );

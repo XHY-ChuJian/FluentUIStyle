@@ -23,6 +23,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
+#include <QSignalBlocker>
 #include <QPainterPath>
 #include <QPixmap>
 #include <QRandomGenerator>
@@ -1840,6 +1841,22 @@ void AudiomaticPlayerWidget::updateOverlayButtonsState()
     {
         m_actTranslucent->setChecked( m_translucentEnabled );
     }
+    if ( m_menuOpacity )
+    {
+        m_menuOpacity->setEnabled( m_translucentEnabled );
+    }
+    if ( m_opacityGroup )
+    {
+        for ( auto* act : m_opacityGroup->actions() )
+        {
+            const bool match = qAbs( act->data().toInt() - m_translucentOpacity ) <= 5;
+            if ( act->isChecked() != match )
+            {
+                const QSignalBlocker blocker( act );
+                act->setChecked( match );
+            }
+        }
+    }
     updateIcons();
 }
 
@@ -1863,6 +1880,25 @@ void AudiomaticPlayerWidget::showVisualizerColorDialog()
     {
         setVisualizerAccentColor( oldCol );
     }
+}
+
+void AudiomaticPlayerWidget::setVisualizerRainbow( bool enabled )
+{
+    m_visualizerRainbow = enabled;
+    if ( ui->visualizer )
+    {
+        ui->visualizer->setRainbowEnabled( enabled );
+    }
+    if ( m_immersiveView )
+    {
+        m_immersiveView->setRainbowEnabled( enabled );
+    }
+    if ( m_actRainbow && m_actRainbow->isChecked() != enabled )
+    {
+        const QSignalBlocker blocker( m_actRainbow );
+        m_actRainbow->setChecked( enabled );
+    }
+    saveSettings();
 }
 
 void AudiomaticPlayerWidget::setVisualizerAccentColor( const QColor& color )
@@ -2028,11 +2064,6 @@ void AudiomaticPlayerWidget::setupSettingsMenu()
     m_actAlwaysOnTop->setChecked( m_alwaysOnTop );
     connect( m_actAlwaysOnTop, &QAction::toggled, this, &AudiomaticPlayerWidget::setAlwaysOnTop );
 
-    m_actTranslucent = menuWindow->addAction( tr( "半透明模式 (Translucent)" ) );
-    m_actTranslucent->setCheckable( true );
-    m_actTranslucent->setChecked( m_translucentEnabled );
-    connect( m_actTranslucent, &QAction::toggled, this, &AudiomaticPlayerWidget::setTranslucentEnabled );
-
     m_actImmersive = menuWindow->addAction( tr( "沉浸视图 (波形主视图)" ) );
     m_actImmersive->setCheckable( true );
     m_actImmersive->setChecked( m_immersiveMode );
@@ -2040,7 +2071,40 @@ void AudiomaticPlayerWidget::setupSettingsMenu()
 
     m_settingsMenu->addSeparator();
 
-    // 3. 波形颜色 (Accent)
+    // 3. 半透明。沉浸视图会挡住底栏滑块，所以开关和档位直接放在这个菜单里。
+    m_actTranslucent = m_settingsMenu->addAction( tr( "半透明模式" ) );
+    m_actTranslucent->setCheckable( true );
+    m_actTranslucent->setChecked( m_translucentEnabled );
+    connect( m_actTranslucent, &QAction::toggled, this, &AudiomaticPlayerWidget::setTranslucentEnabled );
+
+    m_menuOpacity = m_settingsMenu->addMenu( tr( "透明度" ) );
+    m_opacityGroup = new QActionGroup( this );
+    m_opacityGroup->setExclusive( true );
+    const int opacityPercents[] = { 100, 90, 80, 70, 60, 50, 40, 30 };
+    for ( int percent : opacityPercents )
+    {
+        auto* act = m_menuOpacity->addAction( tr( "%1%" ).arg( percent ) );
+        act->setCheckable( true );
+        act->setData( percent );
+        act->setChecked( qAbs( m_translucentOpacity - percent ) <= 5 );
+        m_opacityGroup->addAction( act );
+        connect( act, &QAction::triggered, this, [ this, percent ]() {
+            if ( ui->sliderOpacity )
+            {
+                ui->sliderOpacity->setValue( percent );
+            }
+            setTranslucentOpacity( percent );
+            setTranslucentEnabled( true );
+        } );
+    }
+    m_menuOpacity->setEnabled( m_translucentEnabled );
+
+    // 4. 波形颜色 (Accent)
+    m_actRainbow = m_settingsMenu->addAction( tr( "五颜六色 (从左至右)" ) );
+    m_actRainbow->setCheckable( true );
+    m_actRainbow->setChecked( m_visualizerRainbow );
+    connect( m_actRainbow, &QAction::toggled, this, &AudiomaticPlayerWidget::setVisualizerRainbow );
+
     m_actVisualizerColor = m_settingsMenu->addAction( tr( "波形颜色 (Accent)..." ) );
     connect( m_actVisualizerColor, &QAction::triggered, this, &AudiomaticPlayerWidget::showVisualizerColorDialog );
 
@@ -2484,6 +2548,7 @@ void AudiomaticPlayerWidget::loadSettings()
     {
         setVisualizerAccentColor( QColor( accentName ) );
     }
+    setVisualizerRainbow( settings.value( QStringLiteral( "Spectrum/Rainbow" ), true ).toBool() );
 
     m_visualizerReflectionOpacity = settings.value( QStringLiteral( "Spectrum/ReflectionOpacity" ), 0.58f ).toFloat();
     setVisualizerReflectionOpacity( m_visualizerReflectionOpacity );
@@ -2614,6 +2679,7 @@ void AudiomaticPlayerWidget::saveSettings()
     settings.setValue( QStringLiteral( "Window/ImmersiveMode" ), m_immersiveMode );
 
     settings.setValue( QStringLiteral( "Spectrum/AccentColor" ), m_visualizerAccentColor.isValid() ? m_visualizerAccentColor.name() : QString() );
+    settings.setValue( QStringLiteral( "Spectrum/Rainbow" ), m_visualizerRainbow );
     settings.setValue( QStringLiteral( "Spectrum/ReflectionOpacity" ), m_visualizerReflectionOpacity );
     settings.setValue( QStringLiteral( "Spectrum/BarCount" ), ui->visualizer ? ui->visualizer->barCount() : 64 );
     settings.setValue( QStringLiteral( "Spectrum/Reflection" ), ui->visualizer ? ui->visualizer->isReflectionEnabled() : true );

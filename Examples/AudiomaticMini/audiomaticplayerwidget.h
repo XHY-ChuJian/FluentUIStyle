@@ -151,6 +151,7 @@ private:
 
     void setVisualizerAccentColor(const QColor &color);
     QColor visualizerAccentColor() const { return m_visualizerAccentColor; }
+    void setVisualizerRainbow(bool enabled);
     void showVisualizerColorDialog();
 
     void setVisualizerReflectionOpacity(float opacity);
@@ -200,12 +201,15 @@ private:
     QAction *m_actTranslucent{nullptr};
     QAction *m_actImmersive{nullptr};
     QAction *m_actVisualizerColor{nullptr};
+    QAction *m_actRainbow{nullptr};
     QAction *m_actReflection{nullptr};
     QAction *m_actPeakCap{nullptr};
     QActionGroup *m_barCountGroup{nullptr};
     QActionGroup *m_gapGroup{nullptr};
     QActionGroup *m_radiusGroup{nullptr};
     QActionGroup *m_freqGroup{nullptr};
+    QMenu *m_menuOpacity{nullptr};
+    QActionGroup *m_opacityGroup{nullptr};
     QMenu *m_menuReflectionOpacity{nullptr};
     QActionGroup *m_reflectionOpacityGroup{nullptr};
     QActionGroup *m_lyricFontSizeGroup{nullptr};
@@ -235,6 +239,7 @@ private:
     bool m_hasLastCpuSample{false};
 
     QColor m_visualizerAccentColor;
+    bool m_visualizerRainbow{true};
     float m_visualizerReflectionOpacity{0.58f};
 
     bool m_loadingSettings{true};

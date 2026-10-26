@@ -2,6 +2,7 @@
 
 #include "audiomaticplayerwidget.h"
 
+#include <QEvent>
 #include <QShowEvent>
 #include <QTimer>
 
@@ -63,27 +64,36 @@ void PlayerWindow::showEvent( QShowEvent* event )
     QTimer::singleShot( 0, this, [ this ]() { applyWindowChrome(); } );
 }
 
+void PlayerWindow::changeEvent( QEvent* event )
+{
+    QMainWindow::changeEvent( event );
+    if ( event->type() == QEvent::WinIdChange )
+    {
+        applyWindowChrome();
+    }
+}
+
 void PlayerWindow::applyWindowChrome()
 {
-    if ( !m_playerWidget )
+    if ( !m_playerWidget || m_applyingChrome )
     {
         return;
     }
 
-    const double opacity = m_playerWidget->isTranslucentEnabled()
-        ? ( qBound( 30, m_playerWidget->translucentOpacity(), 100 ) / 100.0 )
-        : 1.0;
-    setWindowOpacity( opacity );
+    m_applyingChrome = true;
 
     const bool top = m_playerWidget->isAlwaysOnTop();
 #ifdef Q_OS_WIN
-    HWND hwnd = reinterpret_cast<HWND>( winId() );
-    if ( hwnd )
+    if ( testAttribute( Qt::WA_WState_Created ) )
     {
-        SetWindowPos( hwnd,
-                      top ? HWND_TOPMOST : HWND_NOTOPMOST,
-                      0, 0, 0, 0,
-                      SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+        HWND hwnd = reinterpret_cast<HWND>( winId() );
+        if ( hwnd )
+        {
+            SetWindowPos( hwnd,
+                          top ? HWND_TOPMOST : HWND_NOTOPMOST,
+                          0, 0, 0, 0,
+                          SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+        }
     }
 #else
     const bool stayedOnTop = windowFlags().testFlag( Qt::WindowStaysOnTopHint );
@@ -93,6 +103,14 @@ void PlayerWindow::applyWindowChrome()
         show();
     }
 #endif
+
+    // 置顶会动到原生窗口。透明度放在后面设，避免被这次窗口重建清掉。
+    const double opacity = m_playerWidget->isTranslucentEnabled()
+        ? ( qBound( 30, m_playerWidget->translucentOpacity(), 100 ) / 100.0 )
+        : 1.0;
+    setWindowOpacity( opacity );
+
+    m_applyingChrome = false;
 }
 
 PlayerWindow::~PlayerWindow() = default;

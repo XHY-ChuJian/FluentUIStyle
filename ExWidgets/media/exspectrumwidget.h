@@ -57,6 +57,7 @@
  * 1. Fluent 现代化抗锯齿圆角柱体绘制；
  * 2. 支持水波倒影（reflectionEnabled 与 reflectionOpacity 动态透明度渐变）及峰值帽镜像；
  * 3. 强调色系统（accentColor）：支持直接定制，或默认动态跟随系统的 Accent / Highlight 配色；
+ *    rainbowEnabled 打开时，柱子从左到右按色相铺开，不再使用单一强调色；
  * 4. 基于真实时间间隔 dt 自适应动力学步长，完美支持 60Hz 到 144Hz 高刷屏。
  */
 class EXWIDGETS_EXPORT ExSpectrumWidget : public QWidget
@@ -75,6 +76,7 @@ public:
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(float, minFrequency, minFrequency, setMinFrequency, minFrequencyChanged)
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(float, maxFrequency, maxFrequency, setMaxFrequency, maxFrequencyChanged)
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(QColor, accentColor, accentColor, setAccentColor, accentColorChanged)
+    EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(bool, rainbowEnabled, isRainbowEnabled, setRainbowEnabled, rainbowEnabledChanged)
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(bool, peakCapEnabled, isPeakCapEnabled, setPeakCapEnabled, peakCapEnabledChanged)
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(int, peakCapHoldMs, peakCapHoldMs, setPeakCapHoldMs, peakCapHoldMsChanged)
     EXWIDGETS_DECLARE_PROPERTY_D_NOTIFY(int, peakCapHeight, peakCapHeight, setPeakCapHeight, peakCapHeightChanged)
@@ -92,6 +94,7 @@ public:
     static constexpr int DefaultPeakCapHoldMs = 200;
     static constexpr int DefaultPeakCapHeight = 2;
     static constexpr float DefaultGravity = 4.2f;
+    static constexpr bool DefaultRainbowEnabled = true;
 
     explicit ExSpectrumWidget(QWidget *parent = nullptr);
     ~ExSpectrumWidget() override;

@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 
+class QEvent;
 class QShowEvent;
 
 class AudiomaticPlayerWidget;
@@ -19,6 +20,7 @@ public:
 
 protected:
     void showEvent(QShowEvent *event) override;
+    void changeEvent(QEvent *event) override;
 
 private:
     void applyWindowChrome();
@@ -28,4 +30,5 @@ private:
     FluentWindowFrame *m_windowFrame{nullptr};
 #endif
     AudiomaticPlayerWidget *m_playerWidget{nullptr};
+    bool m_applyingChrome{false};
 };

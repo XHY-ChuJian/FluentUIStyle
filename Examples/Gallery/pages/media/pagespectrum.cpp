@@ -134,7 +134,7 @@ PageSpectrum::PageSpectrum(QWidget *parent)
     // 7. 波形颜色 (Accent)
     auto *lblColorTitle = new QLabel(tr("波形主题色 (Accent):"), controlCard);
     auto *comboColor = new QComboBox(controlCard);
-    comboColor->addItem(tr("默认 (跟随系统主题)"), QColor());
+    comboColor->addItem(tr("五颜六色 (从左至右)"), QColor());
     comboColor->addItem(tr("微软蓝 (Fluent Blue)"), QColor(QStringLiteral("#0078D4")));
     comboColor->addItem(tr("青空翠 (Teal Cyan)"), QColor(QStringLiteral("#00B7C3")));
     comboColor->addItem(tr("薄荷绿 (Mint Green)"), QColor(QStringLiteral("#107C41")));
@@ -145,6 +145,7 @@ PageSpectrum::PageSpectrum(QWidget *parent)
     comboColor->addItem(tr("暖金黄 (Amber Gold)"), QColor(QStringLiteral("#FFB900")));
     connect(comboColor, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, comboColor](int idx) {
         const QColor c = comboColor->itemData(idx).value<QColor>();
+        m_spectrum->setRainbowEnabled(!c.isValid());
         m_spectrum->setAccentColor(c);
     });
     cardLayout->addWidget(lblColorTitle, 6, 0);
