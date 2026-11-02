@@ -83,6 +83,9 @@ private:
   void drawSpecialButton(QPainter *painter, const QStyleOption *option,
                          const QWidget *widget, bool &isReturn) const;
 
+  void drawSplitter(const QStyleOption *option, QPainter *painter,
+                    const QWidget *widget) const;
+
   void drawTabBarTabLabel(const QStyleOption *option, QPainter *painter,
                           const QWidget *widget) const;
 

@@ -36,6 +36,7 @@
 #include <QSettings>
 #include <QSlider>
 #include <QSpinBox>
+#include <QSplitter>
 #include <QString>
 #include <QStyleFactory>
 #include <QStyleHints>
@@ -1608,8 +1609,8 @@ FluentUI3Style::FluentUI3Style( QStyle* style )
     {
         PaletteManager::instance().setThemeStyle( (ThemeStyle)themeStyle );
     }
-    qDebug()<< "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
-    qDebug()<< "[FluentUI3Style] version:4.0.2";
+    qDebug() << "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
+    qDebug() << "[FluentUI3Style] version:4.0.3";
 
     // qApp->installEventFilter(this);
 }
@@ -3491,6 +3492,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             painter->setPen( pen );
             return;
         }
+        case PE_IndicatorDockWidgetResizeHandle :
+            drawSplitter( option, painter, widget );
+            break;
         default :
             QProxyStyle::drawPrimitive( element, option, painter, widget );
             break;
@@ -7212,10 +7216,125 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
             break;
         case CE_ToolBar :
             break;
+#if QT_CONFIG( splitter )
+        case CE_Splitter :
+            drawSplitter( option, painter, widget );
+            break;
+#endif
         default :
             QProxyStyle::drawControl( element, option, painter, widget );
             break;
     }
+    painter->restore();
+}
+
+void FluentUI3Style::drawSplitter( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
+{
+    Q_UNUSED( widget );
+    if ( !option || !painter )
+    {
+        return;
+    }
+
+    const QRect rect = option->rect;
+    if ( rect.width() <= 0 || rect.height() <= 0 )
+    {
+        return;
+    }
+
+    // 1. 判断手柄方向：
+    // 物理尺寸优先：宽大于高必然为横向手柄（上下分栏，如底部DockWidget或水平QSplitter，画短横条）；
+    // 高大于宽必然为纵向手柄（左右分栏，如左右DockWidget或垂直QSplitter，画短竖条）；
+    // 仅当宽高相等（如极端方块）时参考 State_Horizontal 标志。
+    bool isVerticalHandle = false;
+    if ( rect.height() > rect.width() )
+    {
+        isVerticalHandle = true;
+    }
+    else if ( rect.width() > rect.height() )
+    {
+        isVerticalHandle = false;
+    }
+    else
+    {
+        isVerticalHandle = option->state.testFlag( State_Horizontal );
+    }
+
+    const bool isHovered     = option->state.testFlag( State_MouseOver );
+    const bool isSunken      = option->state.testFlag( State_Sunken ) || ( isHovered && ( QApplication::mouseButtons() & Qt::LeftButton ) );
+    const bool isInteractive = isHovered || isSunken;
+
+    // 2. 计算短条（圆角胶囊把手 Grip Pill）几何参数：
+    // 整体背景完全透明，仅在正中绘制胶囊短条。
+    // 胶囊主轴长约 32px（小尺寸自适应缩短），副轴厚度约 3px（悬停或按下时放大至 4px，增强微交互手感）
+    QRectF pillRect;
+    qreal radius = 0;
+
+    if ( isVerticalHandle )
+    {
+        // 竖直方向手柄（左右切分，画短竖条）
+        qreal barWidth = isInteractive ? 4.0 : 3.0;
+        if ( rect.width() > 4 )
+        {
+            barWidth = qBound( 1.0, barWidth, static_cast<qreal>( rect.width() - 2 ) );
+        }
+        else
+        {
+            barWidth = qBound( 1.0, barWidth, static_cast<qreal>( rect.width() ) );
+        }
+
+        const qreal barHeight = qBound( 6.0, 32.0, static_cast<qreal>( qMax( 6, rect.height() - 4 ) ) );
+        pillRect =
+            QRectF( rect.x() + ( rect.width() - barWidth ) / 2.0, rect.y() + ( rect.height() - barHeight ) / 2.0, barWidth, barHeight );
+        radius = barWidth / 2.0;
+    }
+    else
+    {
+        // 水平方向手柄（上下切分，短横条）
+        qreal barHeight = isInteractive ? 4.0 : 3.0;
+        if ( rect.height() > 4 )
+        {
+            barHeight = qBound( 1.0, barHeight, static_cast<qreal>( rect.height() - 2 ) );
+        }
+        else
+        {
+            barHeight = qBound( 1.0, barHeight, static_cast<qreal>( rect.height() ) );
+        }
+
+        const qreal barWidth = qBound( 6.0, 32.0, static_cast<qreal>( qMax( 6, rect.width() - 4 ) ) );
+        pillRect =
+            QRectF( rect.x() + ( rect.width() - barWidth ) / 2.0, rect.y() + ( rect.height() - barHeight ) / 2.0, barWidth, barHeight );
+        radius = barHeight / 2.0;
+    }
+
+    // 4. 计算短条颜色：
+    // 常规状态：WinUI 3 风格中性填充色 controlStrongFill
+    // 悬停/按下：激活主题 Accent 强调色高亮
+    // 禁用状态：半透明弱化色
+    QColor barColor;
+    if ( !option->state.testFlag( State_Enabled ) )
+    {
+        barColor = winUI3Color( textDisabled );
+    }
+    else if ( isSunken )
+    {
+        barColor = accentColor( option ).darker( colorSchemeIndex == 1 ? 110 : 120 );
+    }
+    else if ( isHovered )
+    {
+        barColor = accentColor( option );
+    }
+    else
+    {
+        barColor = winUI3Color( controlStrongFill );
+    }
+
+    // 5. 抗锯齿绘制圆角胶囊短条
+    painter->save();
+    painter->setRenderHint( QPainter::Antialiasing );
+    painter->setPen( Qt::NoPen );
+    painter->setBrush( barColor );
+    painter->drawRoundedRect( pillRect, radius, radius );
     painter->restore();
 }
 
@@ -7804,6 +7923,14 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
         case PM_ToolTipLabelFrameWidth :
             res = toolTipShadowBorderWidth + toolTipContentPadding;
             break;
+#if QT_CONFIG( dockwidget )
+        case PM_DockWidgetSeparatorExtent :
+#endif
+#if QT_CONFIG( splitter )
+        case PM_SplitterWidth :
+#endif
+            res = 6;
+            break;
         default :
             res = QProxyStyle::pixelMetric( metric, option, widget );
     }
@@ -7827,6 +7954,11 @@ void FluentUI3Style::polish( QWidget* widget )
     if ( !qobject_cast<QCommandLinkButton*>( widget ) )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::polish( widget );
+
+    if ( widget && ( widget->inherits( "QSplitterHandle" ) || widget->inherits( "QMainWindowLayoutSeparator" ) ) )
+    {
+        widget->setAttribute( Qt::WA_Hover, true );
+    }
 
 #if QT_CONFIG( progressbar )
     if ( auto* progressBar = qobject_cast<QProgressBar*>( widget );
@@ -8108,6 +8240,11 @@ void FluentUI3Style::unpolish( QWidget* widget )
     if ( !qobject_cast<QCommandLinkButton*>( widget ) )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::unpolish( widget );
+
+    if ( widget && ( widget->inherits( "QSplitterHandle" ) || widget->inherits( "QMainWindowLayoutSeparator" ) ) )
+    {
+        widget->setAttribute( Qt::WA_Hover, false );
+    }
 
     if ( qobject_cast<QDial*>( widget ) )
     {
