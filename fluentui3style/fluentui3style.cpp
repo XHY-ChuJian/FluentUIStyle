@@ -3492,9 +3492,6 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             painter->setPen( pen );
             return;
         }
-        case PE_IndicatorDockWidgetResizeHandle :
-            drawSplitter( option, painter, widget );
-            break;
         default :
             QProxyStyle::drawPrimitive( element, option, painter, widget );
             break;
@@ -7260,30 +7257,41 @@ void FluentUI3Style::drawSplitter( const QStyleOption* option, QPainter* painter
         isVerticalHandle = option->state.testFlag( State_Horizontal );
     }
 
-    const bool isHovered     = option->state.testFlag( State_MouseOver );
-    const bool isSunken      = option->state.testFlag( State_Sunken ) || ( isHovered && ( QApplication::mouseButtons() & Qt::LeftButton ) );
-    const bool isInteractive = isHovered || isSunken;
+    const bool isHovered = option->state.testFlag( State_MouseOver );
 
-    // 2. 计算短条（圆角胶囊把手 Grip Pill）几何参数：
+    // 2. 自适应可用尺寸检查：
+    // 若主轴长度不够（小于胶囊标准长度 32px）或副轴厚度不足 3px，则不绘制手柄，保持全透明无痕状态
+    constexpr int minGripLength    = 64;
+    constexpr int minGripThickness = 2;
+
+    if ( isVerticalHandle )
+    {
+        if ( rect.height() < minGripLength || rect.width() < minGripThickness )
+        {
+            return;
+        }
+    }
+    else
+    {
+        if ( rect.width() < minGripLength || rect.height() < minGripThickness )
+        {
+            return;
+        }
+    }
+
+    // 3. 计算短条（圆角胶囊把手 Grip Pill）几何参数：
     // 整体背景完全透明，仅在正中绘制胶囊短条。
-    // 胶囊主轴长约 32px（小尺寸自适应缩短），副轴厚度约 3px（悬停或按下时放大至 4px，增强微交互手感）
+    // 胶囊主轴标准长 32px，副轴常态厚度 3px，悬停时放大至 4px
     QRectF pillRect;
     qreal radius = 0;
 
     if ( isVerticalHandle )
     {
         // 竖直方向手柄（左右切分，画短竖条）
-        qreal barWidth = isInteractive ? 4.0 : 3.0;
-        if ( rect.width() > 4 )
-        {
-            barWidth = qBound( 1.0, barWidth, static_cast<qreal>( rect.width() - 2 ) );
-        }
-        else
-        {
-            barWidth = qBound( 1.0, barWidth, static_cast<qreal>( rect.width() ) );
-        }
+        qreal barWidth = isHovered ? 2.0 : 2.0;
+        barWidth       = qBound( 1.0, barWidth, static_cast<qreal>( rect.width() ) );
 
-        const qreal barHeight = qBound( 6.0, 32.0, static_cast<qreal>( qMax( 6, rect.height() - 4 ) ) );
+        constexpr qreal barHeight = 64.0;
         pillRect =
             QRectF( rect.x() + ( rect.width() - barWidth ) / 2.0, rect.y() + ( rect.height() - barHeight ) / 2.0, barWidth, barHeight );
         radius = barWidth / 2.0;
@@ -7291,45 +7299,30 @@ void FluentUI3Style::drawSplitter( const QStyleOption* option, QPainter* painter
     else
     {
         // 水平方向手柄（上下切分，短横条）
-        qreal barHeight = isInteractive ? 4.0 : 3.0;
-        if ( rect.height() > 4 )
-        {
-            barHeight = qBound( 1.0, barHeight, static_cast<qreal>( rect.height() - 2 ) );
-        }
-        else
-        {
-            barHeight = qBound( 1.0, barHeight, static_cast<qreal>( rect.height() ) );
-        }
+        qreal barHeight = isHovered ? 2.0 : 2.0;
+        barHeight       = qBound( 1.0, barHeight, static_cast<qreal>( rect.height() ) );
 
-        const qreal barWidth = qBound( 6.0, 32.0, static_cast<qreal>( qMax( 6, rect.width() - 4 ) ) );
+        constexpr qreal barWidth = 64.0;
         pillRect =
             QRectF( rect.x() + ( rect.width() - barWidth ) / 2.0, rect.y() + ( rect.height() - barHeight ) / 2.0, barWidth, barHeight );
         radius = barHeight / 2.0;
     }
 
-    // 4. 计算短条颜色：
-    // 常规状态：WinUI 3 风格中性填充色 controlStrongFill
-    // 悬停/按下：激活主题 Accent 强调色高亮
-    // 禁用状态：半透明弱化色
+
     QColor barColor;
     if ( !option->state.testFlag( State_Enabled ) )
     {
         barColor = winUI3Color( textDisabled );
     }
-    else if ( isSunken )
-    {
-        barColor = accentColor( option ).darker( colorSchemeIndex == 1 ? 110 : 120 );
-    }
     else if ( isHovered )
     {
-        barColor = accentColor( option );
+        barColor = winUI3Color( textSecondary );
     }
     else
     {
         barColor = winUI3Color( controlStrongFill );
     }
 
-    // 5. 抗锯齿绘制圆角胶囊短条
     painter->save();
     painter->setRenderHint( QPainter::Antialiasing );
     painter->setPen( Qt::NoPen );
@@ -7923,14 +7916,11 @@ int FluentUI3Style::pixelMetric( PixelMetric metric, const QStyleOption* option,
         case PM_ToolTipLabelFrameWidth :
             res = toolTipShadowBorderWidth + toolTipContentPadding;
             break;
-#if QT_CONFIG( dockwidget )
-        case PM_DockWidgetSeparatorExtent :
-#endif
-#if QT_CONFIG( splitter )
-        case PM_SplitterWidth :
-#endif
-            res = 6;
-            break;
+// #if QT_CONFIG( splitter )
+//         case PM_SplitterWidth :
+//             res = 6;
+//             break;
+// #endif
         default :
             res = QProxyStyle::pixelMetric( metric, option, widget );
     }
@@ -7955,7 +7945,7 @@ void FluentUI3Style::polish( QWidget* widget )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::polish( widget );
 
-    if ( widget && ( widget->inherits( "QSplitterHandle" ) || widget->inherits( "QMainWindowLayoutSeparator" ) ) )
+    if ( widget && widget->inherits( "QSplitterHandle" ) )
     {
         widget->setAttribute( Qt::WA_Hover, true );
     }
@@ -8241,7 +8231,7 @@ void FluentUI3Style::unpolish( QWidget* widget )
 #endif  // QT_CONFIG(commandlinkbutton)
         QProxyStyle::unpolish( widget );
 
-    if ( widget && ( widget->inherits( "QSplitterHandle" ) || widget->inherits( "QMainWindowLayoutSeparator" ) ) )
+    if ( widget && widget->inherits( "QSplitterHandle" ) )
     {
         widget->setAttribute( Qt::WA_Hover, false );
     }
