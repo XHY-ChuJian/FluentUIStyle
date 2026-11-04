@@ -10,6 +10,8 @@
 #include <QPointF>
 #include <QString>
 
+class QByteArray;
+class QEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QPaintEvent;
@@ -90,6 +92,12 @@ public:
 
     // 刻度环与控件外边缘之间的间距
     EXWIDGETS_DECLARE_PROPERTY( qreal, scalePadding, scalePadding, setScalePadding, 12.0 )
+
+    // 是否绘制 Track。
+    EXWIDGETS_DECLARE_PROPERTY( bool, trackVisible, isTrackVisible, setTrackVisible, true )
+
+    // Track 颜色，无效颜色表示使用 QPalette::Mid。
+    EXWIDGETS_DECLARE_PROPERTY( QColor, trackColor, trackColor, setTrackColor, QColor() )
 
     // Track 圆弧的端点样式；Progress 模式默认使用圆头，其他模式默认使用平头。
     EXWIDGETS_DECLARE_PROPERTY( Qt::PenCapStyle, trackCapStyle, trackCapStyle, setTrackCapStyle, Qt::RoundCap )
@@ -196,6 +204,7 @@ public:
 
 protected:
     void paintEvent( QPaintEvent* event ) override;
+    bool event( QEvent* event ) override;
     void mousePressEvent( QMouseEvent* event ) override;
     void mouseMoveEvent( QMouseEvent* event ) override;
     void mouseReleaseEvent( QMouseEvent* event ) override;
@@ -203,6 +212,11 @@ protected:
     void keyPressEvent( QKeyEvent* event ) override;
 
 private:
+    // 区间不是 QWidget。动态属性 rangeNFrom、rangeNTo、rangeNColor
+    // （N 从 1 开始，最多 16）创建或修改第 N 个区间，供属性浏览器和 .ui 使用。
+    void applyRangeDynamicProperty( const QByteArray& name );
+    [[nodiscard]] ExRadialGaugeRange* rangeForPropertyIndex( int index );
+
     [[nodiscard]] qreal sweepAngle() const;
     [[nodiscard]] qreal valueFraction( qreal value ) const;
     [[nodiscard]] qreal positionFraction() const;
@@ -212,4 +226,5 @@ private:
     QList<ExRadialGaugeRange*> m_ranges;
     QVariantAnimation* m_valueAnimation = nullptr;
     Qt::FocusPolicy m_interactiveFocusPolicy = Qt::StrongFocus;
+    bool m_applyingRangeProperty = false;
 };

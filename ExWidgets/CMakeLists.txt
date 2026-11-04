@@ -14,6 +14,8 @@ file(GLOB_RECURSE EXWIDGETS_SOURCES CONFIGURE_DEPENDS
     "*.cpp"
     "*.h"
 )
+# designer/ 是独立的 Qt Designer 插件，不能编进 ExWidgets 库。
+list(FILTER EXWIDGETS_SOURCES EXCLUDE REGEX "[/\\\\]designer[/\\\\]")
 
 add_library(ExWidgets SHARED
     ${EXWIDGETS_SOURCES}
@@ -51,3 +53,14 @@ target_link_libraries(ExWidgets PRIVATE kissfft)
 set_target_properties(ExWidgets PROPERTIES
     DEBUG_POSTFIX d
 )
+
+option(EXWIDGETS_BUILD_DESIGNER_PLUGIN
+    "Build the Qt Designer plugin for ExWidgets"
+    ON)
+if(ANDROID OR IOS)
+    set(EXWIDGETS_BUILD_DESIGNER_PLUGIN OFF CACHE BOOL
+        "Build the Qt Designer plugin for ExWidgets" FORCE)
+endif()
+if(EXWIDGETS_BUILD_DESIGNER_PLUGIN)
+    add_subdirectory(designer)
+endif()

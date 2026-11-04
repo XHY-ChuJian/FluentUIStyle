@@ -10,6 +10,8 @@
 #include <QString>
 #include <QWidget>
 
+class QByteArray;
+class QEvent;
 class QPaintEvent;
 class QVariantAnimation;
 
@@ -116,8 +118,14 @@ public:
 
 protected:
     void paintEvent( QPaintEvent* event ) override;
+    bool event( QEvent* event ) override;
 
 private:
+    // 数据项不是 QWidget。动态属性 itemNLabel、itemNValue、itemNColor
+    // （N 从 1 开始，最多 16）创建或修改第 N 个环，供属性浏览器和 .ui 使用。
+    void applyItemDynamicProperty( const QByteArray& name );
+    [[nodiscard]] ExMultiProgressRingItem* itemForPropertyIndex( int index );
+
     [[nodiscard]] qreal itemFraction( qreal value ) const;
     [[nodiscard]] qreal displayedValue( const ExMultiProgressRingItem* item ) const;
     void connectItem( ExMultiProgressRingItem* item );
@@ -128,4 +136,5 @@ private:
     QHash<const ExMultiProgressRingItem*, qreal> m_displayedValues;
     QHash<const ExMultiProgressRingItem*, qreal> m_animationStartValues;
     QVariantAnimation* m_valueAnimation = nullptr;
+    bool m_applyingItemProperty = false;
 };

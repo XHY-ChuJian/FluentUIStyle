@@ -101,6 +101,7 @@ message(STATUS "Install runtime binaries: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTAL
 message(STATUS "Install libraries       : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "Install headers         : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
 message(STATUS "Qt style plugin install : ${CMAKE_INSTALL_PREFIX}/${_qt_plugins_install_dir}/styles")
+message(STATUS "Qt designer plugin      : ${CMAKE_INSTALL_PREFIX}/${_qt_plugins_install_dir}/designer")
 
 # Qt 6.10+ private CMake packages are required when using <private/...> headers.
 # Older Qt 6.x installs (e.g. 6.6) often omit them; do not require globally.
@@ -328,5 +329,12 @@ if(BUILD_PLUGIN)
     install(TARGETS FluentUI3StylePlugin
         RUNTIME DESTINATION ${_qt_plugins_install_dir}/styles
         LIBRARY DESTINATION ${_qt_plugins_install_dir}/styles
+    )
+endif()
+
+if(TARGET ExWidgetsDesignerPlugin)
+    install(TARGETS ExWidgetsDesignerPlugin
+        RUNTIME DESTINATION ${_qt_plugins_install_dir}/designer
+        LIBRARY DESTINATION ${_qt_plugins_install_dir}/designer
     )
 endif()

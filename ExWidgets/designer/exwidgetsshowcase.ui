@@ -1,0 +1,3259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ExWidgetsShowcase</class>
+ <widget class="QWidget" name="ExWidgetsShowcase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1260</width>
+    <height>920</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ExWidgets 外观</string>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin">
+    <number>12</number>
+   </property>
+   <property name="topMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>12</number>
+   </property>
+   <property name="bottomMargin">
+    <number>12</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="introLabel">
+     <property name="text">
+      <string>径向仪表按 Gallery PageRadialGauge 的配置。区间用 rangeNFrom/To/Color，多指针和得分环用 itemN* 动态属性，都会写进这个文件。电平表柱子仍由插件创建时填入。</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1224</width>
+        <height>2501</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="scrollLayout">
+       <property name="spacing">
+        <number>16</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="beamGroup">
+         <property name="title">
+          <string>边框光束</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <widget class="QLabel" name="beamClockwiseCaption">
+            <property name="text">
+             <string>顺时针 · 单束 · 深色</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="beamCounterCaption">
+            <property name="text">
+             <string>逆时针 · 三束 · 深色</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="beamAmberCaption">
+            <property name="text">
+             <string>直角 · 粗光束 · 琥珀</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExBorderBeam" name="beamClockwise">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="beamLength">
+             <double>80.000000000000000</double>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>39</red>
+              <green>39</green>
+              <blue>39</blue>
+             </color>
+            </property>
+            <property name="borderColor">
+             <color>
+              <red>69</red>
+              <green>69</green>
+              <blue>69</blue>
+             </color>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>165</red>
+              <green>229</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeam::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExBorderBeam" name="beamCounter">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="beamLength">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="beamWidth">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="cornerRadius">
+             <double>16.000000000000000</double>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>39</red>
+              <green>39</green>
+              <blue>39</blue>
+             </color>
+            </property>
+            <property name="borderColor">
+             <color>
+              <red>69</red>
+              <green>69</green>
+              <blue>69</blue>
+             </color>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>165</red>
+              <green>229</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="direction">
+             <enum>ExBorderBeam::CounterClockwise</enum>
+            </property>
+            <property name="beamCount">
+             <number>3</number>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeam::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExBorderBeam" name="beamAmber">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="beamLength">
+             <double>150.000000000000000</double>
+            </property>
+            <property name="beamWidth">
+             <double>5.000000000000000</double>
+            </property>
+            <property name="cornerRadius">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>39</red>
+              <green>36</green>
+              <blue>24</blue>
+             </color>
+            </property>
+            <property name="borderColor">
+             <color>
+              <red>138</red>
+              <green>110</green>
+              <blue>48</blue>
+             </color>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>255</red>
+              <green>185</green>
+              <blue>0</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>216</red>
+              <green>59</green>
+              <blue>1</blue>
+             </color>
+            </property>
+            <property name="animationDuration">
+             <number>3000</number>
+            </property>
+            <property name="direction">
+             <enum>ExBorderBeam::Clockwise</enum>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeam::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="buttonGroup">
+         <property name="title">
+          <string>边框按钮</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="buttonStartCaption">
+            <property name="text">
+             <string>深色 · 单束</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="buttonStopCaption">
+            <property name="text">
+             <string>逆时针 · 双束 · 红色</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="buttonDarkCaption">
+            <property name="text">
+             <string>深色 · 三束</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExBorderBeamButton" name="buttonStart">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>44</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>开始</string>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>165</red>
+              <green>229</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeamButton::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExBorderBeamButton" name="buttonStop">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>44</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>停止</string>
+            </property>
+            <property name="cornerRadius">
+             <double>22.000000000000000</double>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>216</red>
+              <green>59</green>
+              <blue>1</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>255</red>
+              <green>140</green>
+              <blue>90</blue>
+             </color>
+            </property>
+            <property name="direction">
+             <enum>ExBorderBeamButton::CounterClockwise</enum>
+            </property>
+            <property name="beamCount">
+             <number>2</number>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeamButton::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExBorderBeamButton" name="buttonDark">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>44</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>深色</string>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>32</red>
+              <green>32</green>
+              <blue>32</blue>
+             </color>
+            </property>
+            <property name="borderColor">
+             <color>
+              <red>70</red>
+              <green>70</green>
+              <blue>70</blue>
+             </color>
+            </property>
+            <property name="startColor">
+             <color>
+              <red>0</red>
+              <green>183</green>
+              <blue>195</blue>
+             </color>
+            </property>
+            <property name="endColor">
+             <color>
+              <red>180</red>
+              <green>240</green>
+              <blue>245</blue>
+             </color>
+            </property>
+            <property name="beamCount">
+             <number>3</number>
+            </property>
+            <property name="themeMode">
+             <enum>ExBorderBeamButton::DarkTheme</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="sliderGroup">
+         <property name="title">
+          <string>范围滑块</string>
+         </property>
+         <layout class="QHBoxLayout" name="sliderGroupLayout">
+          <item>
+           <layout class="QVBoxLayout" name="sliderPlainColumn">
+            <item>
+             <widget class="QLabel" name="sliderPlainCaption">
+              <property name="text">
+               <string>30 – 70</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ExRangeSlider" name="sliderPlain">
+              <property name="minimumSize">
+               <size>
+                <width>220</width>
+                <height>36</height>
+               </size>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="lowerValue">
+               <number>30</number>
+              </property>
+              <property name="upperValue">
+               <number>70</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="sliderTicksColumn">
+            <item>
+             <widget class="QLabel" name="sliderTicksCaption">
+              <property name="text">
+               <string>刻度 · 10 – 90</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ExRangeSlider" name="sliderTicks">
+              <property name="minimumSize">
+               <size>
+                <width>220</width>
+                <height>48</height>
+               </size>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="lowerValue">
+               <number>10</number>
+              </property>
+              <property name="upperValue">
+               <number>90</number>
+              </property>
+              <property name="tickPosition">
+               <bool>true</bool>
+              </property>
+              <property name="tickInterval">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="sliderVerticalColumn">
+            <item>
+             <widget class="QLabel" name="sliderVerticalCaption">
+              <property name="text">
+               <string>纵向 · 20 – 80</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ExRangeSlider" name="sliderVertical">
+              <property name="minimumSize">
+               <size>
+                <width>48</width>
+                <height>180</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>64</width>
+                <height>220</height>
+               </size>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="lowerValue">
+               <number>20</number>
+              </property>
+              <property name="upperValue">
+               <number>80</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="ringGroup">
+         <property name="title">
+          <string>环形进度</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="ringProgressCaption">
+            <property name="text">
+             <string>68% · 进度</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="ringDownloadCaption">
+            <property name="text">
+             <string>24% · 下载</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="ringDoneCaption">
+            <property name="text">
+             <string>100% · 完成</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExProgressRing" name="ringProgress">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>160</width>
+              <height>160</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>68</number>
+            </property>
+            <property name="title">
+             <string>进度</string>
+            </property>
+            <property name="titleColor">
+             <color alpha="184">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExProgressRing" name="ringDownload">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>160</width>
+              <height>160</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>24</number>
+            </property>
+            <property name="title">
+             <string>下载</string>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>216</red>
+              <green>59</green>
+              <blue>1</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExProgressRing" name="ringDone">
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>160</width>
+              <height>160</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="title">
+             <string>完成</string>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>108</red>
+              <green>203</green>
+              <blue>95</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="liquidGroup">
+         <property name="title">
+          <string>水波进度</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="liquidCircleCaption">
+            <property name="text">
+             <string>圆形 · 62%</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="liquidRectCaption">
+            <property name="text">
+             <string>矩形 · 40% · 大波浪</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="liquidPinCaption">
+            <property name="text">
+             <string>水滴 · 78%</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="liquidTriangleCaption">
+            <property name="text">
+             <string>三角 · 28%</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExLiquidGauge" name="liquidCircle">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>170</width>
+              <height>170</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>62</number>
+            </property>
+            <property name="shape">
+             <enum>ExLiquidGauge::CircleShape</enum>
+            </property>
+            <property name="waveColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExLiquidGauge" name="liquidRect">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>170</width>
+              <height>170</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>40</number>
+            </property>
+            <property name="shape">
+             <enum>ExLiquidGauge::RectShape</enum>
+            </property>
+            <property name="waveAmplitude">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="waveCount">
+             <number>2</number>
+            </property>
+            <property name="waveColor">
+             <color>
+              <red>0</red>
+              <green>183</green>
+              <blue>195</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExLiquidGauge" name="liquidPin">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>170</width>
+              <height>170</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>78</number>
+            </property>
+            <property name="shape">
+             <enum>ExLiquidGauge::PinShape</enum>
+            </property>
+            <property name="waveColor">
+             <color>
+              <red>108</red>
+              <green>203</green>
+              <blue>95</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="ExLiquidGauge" name="liquidTriangle">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>170</width>
+              <height>170</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>28</number>
+            </property>
+            <property name="shape">
+             <enum>ExLiquidGauge::TriangleShape</enum>
+            </property>
+            <property name="waveColor">
+             <color>
+              <red>216</red>
+              <green>59</green>
+              <blue>1</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="radialStructureGroup">
+         <property name="title">
+          <string>同一控件的三种配置</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="0">
+           <widget class="ExRadialGauge" name="radialClassic">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::TrackScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="trackColor">
+             <color alpha="220">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>11.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.620000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.600000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>9.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>22.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>10</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="title">
+             <string>SCORE</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>15</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>236</red>
+              <green>20</green>
+              <blue>96</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="ExRadialGauge" name="radialProgress">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::ProgressScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-135.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>135.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="trackColor">
+             <color alpha="210">
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="progressGradientEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="sweepAreaVisible">
+             <bool>true</bool>
+            </property>
+            <property name="progressGradientStartColor">
+             <color>
+              <red>56</red>
+              <green>216</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="progressGradientEndColor">
+             <color>
+              <red>128</red>
+              <green>103</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>11.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.660000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.500000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>23.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>10</number>
+            </property>
+            <property name="hubVisible">
+             <bool>true</bool>
+            </property>
+            <property name="hubRadius">
+             <double>9.000000000000000</double>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::BottomValue</enum>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>21</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>128</red>
+              <green>103</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>128</red>
+              <green>103</green>
+              <blue>255</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="ExRadialGauge" name="radialRange">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::RangeScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-135.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>135.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="needleWidth">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.600000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>10.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>27.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>10</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::BottomValue</enum>
+            </property>
+            <property name="unit">
+             <string>km/h</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>23</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>33</red>
+              <green>188</green>
+              <blue>226</blue>
+             </color>
+            </property>
+            <property name="tickColor">
+             <color alpha="220">
+              <red>245</red>
+              <green>247</green>
+              <blue>250</blue>
+             </color>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>33</red>
+              <green>188</green>
+              <blue>226</blue>
+             </color>
+            </property>
+            <property name="range1From" stdset="0">
+             <number>0</number>
+            </property>
+            <property name="range1To" stdset="0">
+             <number>60</number>
+            </property>
+            <property name="range1Color" stdset="0">
+             <color>
+              <red>33</red>
+              <green>188</green>
+              <blue>226</blue>
+             </color>
+            </property>
+            <property name="range2From" stdset="0">
+             <number>60</number>
+            </property>
+            <property name="range2To" stdset="0">
+             <number>80</number>
+            </property>
+            <property name="range2Color" stdset="0">
+             <color>
+              <red>255</red>
+              <green>185</green>
+              <blue>0</blue>
+             </color>
+            </property>
+            <property name="range3From" stdset="0">
+             <number>80</number>
+            </property>
+            <property name="range3To" stdset="0">
+             <number>100</number>
+            </property>
+            <property name="range3Color" stdset="0">
+             <color>
+              <red>255</red>
+              <green>100</green>
+              <blue>117</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="radialClassicCaption">
+            <property name="text">
+             <string>经典指针</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="radialProgressCaption">
+            <property name="text">
+             <string>进度指针</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="radialRangeCaption">
+            <property name="text">
+             <string>彩色区间</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="echartsGroup">
+         <property name="title">
+          <string>ECharts 仪表盘配置</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="ExRadialGauge" name="echartsBasic">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::TrackScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>5.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="needleWidth">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="title">
+             <string>SCORE</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>20</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="ExRadialGauge" name="echartsSimple">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::ProgressScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="progressGradientEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="progressGradientStartColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="progressGradientEndColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="title">
+             <string>SCORE</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>20</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="ExRadialGauge" name="echartsSpeed">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="interactive">
+             <bool>true</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::ProgressScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>10.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="progressGradientEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="progressGradientStartColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="progressGradientEndColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::LineNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>true</bool>
+            </property>
+            <property name="hubRadius">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::BottomValue</enum>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>18</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="ExRadialGauge" name="echartsProgress">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>240</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::ProgressScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-110.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>110.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>13</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>9.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="progressGradientEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="progressGradientStartColor">
+             <color>
+              <red>69</red>
+              <green>209</green>
+              <blue>245</blue>
+             </color>
+            </property>
+            <property name="progressGradientEndColor">
+             <color>
+              <red>69</red>
+              <green>209</green>
+              <blue>245</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>5.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::LineNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.640000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::BottomValue</enum>
+            </property>
+            <property name="unit">
+             <string>km/h</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>18</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>69</red>
+              <green>209</green>
+              <blue>245</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <widget class="ExRadialGauge" name="echartsStage">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::RangeScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>13.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="needleWidth">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::LineNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="unit">
+             <string>km/h</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>17</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>66</red>
+              <green>208</green>
+              <blue>208</blue>
+             </color>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>66</red>
+              <green>208</green>
+              <blue>208</blue>
+             </color>
+            </property>
+            <property name="range1From" stdset="0">
+             <number>0</number>
+            </property>
+            <property name="range1To" stdset="0">
+             <number>70</number>
+            </property>
+            <property name="range1Color" stdset="0">
+             <color>
+              <red>66</red>
+              <green>208</green>
+              <blue>208</blue>
+             </color>
+            </property>
+            <property name="range2From" stdset="0">
+             <number>70</number>
+            </property>
+            <property name="range2To" stdset="0">
+             <number>80</number>
+            </property>
+            <property name="range2Color" stdset="0">
+             <color>
+              <red>58</red>
+              <green>167</green>
+              <blue>216</blue>
+             </color>
+            </property>
+            <property name="range3From" stdset="0">
+             <number>80</number>
+            </property>
+            <property name="range3To" stdset="0">
+             <number>100</number>
+            </property>
+            <property name="range3Color" stdset="0">
+             <color>
+              <red>255</red>
+              <green>107</green>
+              <blue>117</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="echartsBasicCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>基础仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="echartsSimpleCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>简单仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="echartsSpeedCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>速度仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLabel" name="echartsProgressCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>进度仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QLabel" name="echartsStageCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>阶段速度仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="echartsBasicSubtitle">
+            <property name="text">
+             <string>Gauge Basic chart</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="echartsSimpleSubtitle">
+            <property name="text">
+             <string>Simple Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="echartsSpeedSubtitle">
+            <property name="text">
+             <string>Speed Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLabel" name="echartsProgressSubtitle">
+            <property name="text">
+             <string>Progress Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QLabel" name="echartsStageSubtitle">
+            <property name="text">
+             <string>Stage Speed Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="ExRadialGauge" name="echartsGrade">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::RangeScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-90.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>90.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>9</number>
+            </property>
+            <property name="minorTickCount">
+             <number>3</number>
+            </property>
+            <property name="scaleWidth">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="needleWidth">
+             <double>10.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::TriangleNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.600000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>false</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="title">
+             <string>Grade Rating</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>18</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>69</red>
+              <green>210</green>
+              <blue>231</blue>
+             </color>
+            </property>
+            <property name="range1From" stdset="0">
+             <number>0</number>
+            </property>
+            <property name="range1To" stdset="0">
+             <number>25</number>
+            </property>
+            <property name="range1Color" stdset="0">
+             <color>
+              <red>255</red>
+              <green>100</green>
+              <blue>117</blue>
+             </color>
+            </property>
+            <property name="range2From" stdset="0">
+             <number>25</number>
+            </property>
+            <property name="range2To" stdset="0">
+             <number>50</number>
+            </property>
+            <property name="range2Color" stdset="0">
+             <color>
+              <red>243</red>
+              <green>199</green>
+              <blue>79</blue>
+             </color>
+            </property>
+            <property name="range3From" stdset="0">
+             <number>50</number>
+            </property>
+            <property name="range3To" stdset="0">
+             <number>75</number>
+            </property>
+            <property name="range3Color" stdset="0">
+             <color>
+              <red>69</red>
+              <green>210</green>
+              <blue>231</blue>
+             </color>
+            </property>
+            <property name="range4From" stdset="0">
+             <number>75</number>
+            </property>
+            <property name="range4To" stdset="0">
+             <number>100</number>
+            </property>
+            <property name="range4Color" stdset="0">
+             <color>
+              <red>97</red>
+              <green>221</green>
+              <blue>170</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="ExMultiRadialGauge" name="echartsMulti">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="minimumAngle">
+             <double>-140.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>140.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="trackWidth">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="trackCapStyle">
+             <enum>Qt::RoundCap</enum>
+            </property>
+            <property name="progressOverlap">
+             <bool>true</bool>
+            </property>
+            <property name="progressWidth">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="progressCapStyle">
+             <enum>Qt::RoundCap</enum>
+            </property>
+            <property name="scalePadding">
+             <double>13.000000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelPadding">
+             <double>17.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>8</number>
+            </property>
+            <property name="needleStyle">
+             <enum>ExMultiRadialGauge::LineNeedle</enum>
+            </property>
+            <property name="needleWidth">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="needleLength">
+             <double>0.680000000000000</double>
+            </property>
+            <property name="needleOffset">
+             <pointf>
+              <x>0.000000000000000</x>
+              <y>0.080000000000000</y>
+             </pointf>
+            </property>
+            <property name="hubVisible">
+             <bool>true</bool>
+            </property>
+            <property name="hubRadius">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="hubColor">
+             <color>
+              <red>250</red>
+              <green>200</green>
+              <blue>88</blue>
+             </color>
+            </property>
+            <property name="detailBadgeVisible">
+             <bool>true</bool>
+            </property>
+            <property name="titleFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="detailFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="detailBadgePadding">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="valueSuffix">
+             <string>%</string>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="item1Label" stdset="0">
+             <string>Good</string>
+            </property>
+            <property name="item1Value" stdset="0">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="item1Color" stdset="0">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="item1Visible" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="item1TitleOffset" stdset="0">
+             <pointf>
+              <x>-0.400000000000000</x>
+              <y>0.800000000000000</y>
+             </pointf>
+            </property>
+            <property name="item1DetailOffset" stdset="0">
+             <pointf>
+              <x>-0.400000000000000</x>
+              <y>0.950000000000000</y>
+             </pointf>
+            </property>
+            <property name="item2Label" stdset="0">
+             <string>Better</string>
+            </property>
+            <property name="item2Value" stdset="0">
+             <double>40.000000000000000</double>
+            </property>
+            <property name="item2Color" stdset="0">
+             <color>
+              <red>184</red>
+              <green>222</green>
+              <blue>41</blue>
+             </color>
+            </property>
+            <property name="item2Visible" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="item2TitleOffset" stdset="0">
+             <pointf>
+              <x>0.000000000000000</x>
+              <y>0.800000000000000</y>
+             </pointf>
+            </property>
+            <property name="item2DetailOffset" stdset="0">
+             <pointf>
+              <x>0.000000000000000</x>
+              <y>0.950000000000000</y>
+             </pointf>
+            </property>
+            <property name="item3Label" stdset="0">
+             <string>Perfect</string>
+            </property>
+            <property name="item3Value" stdset="0">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="item3Color" stdset="0">
+             <color>
+              <red>85</red>
+              <green>86</green>
+              <blue>114</blue>
+             </color>
+            </property>
+            <property name="item3Visible" stdset="0">
+             <bool>true</bool>
+            </property>
+            <property name="item3TitleOffset" stdset="0">
+             <pointf>
+              <x>0.400000000000000</x>
+              <y>0.800000000000000</y>
+             </pointf>
+            </property>
+            <property name="item3DetailOffset" stdset="0">
+             <pointf>
+              <x>0.400000000000000</x>
+              <y>0.950000000000000</y>
+             </pointf>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="ExRadialGauge" name="echartsTemp">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::ProgressScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-110.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>110.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>13</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="progressGradientEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="progressGradientStartColor">
+             <color>
+              <red>255</red>
+              <green>150</green>
+              <blue>120</blue>
+             </color>
+            </property>
+            <property name="progressGradientEndColor">
+             <color>
+              <red>255</red>
+              <green>150</green>
+              <blue>120</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::NoNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.580000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="unit">
+             <string>°C</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>28</number>
+            </property>
+            <property name="valueColor">
+             <color>
+              <red>255</red>
+              <green>150</green>
+              <blue>120</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="ExMultiProgressRing" name="echartsRing">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="ringWidth">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="ringSpacing">
+             <double>6.000000000000000</double>
+            </property>
+            <property name="ringPadding">
+             <double>13.000000000000000</double>
+            </property>
+            <property name="capStyle">
+             <enum>Qt::RoundCap</enum>
+            </property>
+            <property name="trackVisible">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="item1Label" stdset="0">
+             <string>Perfect</string>
+            </property>
+            <property name="item1Value" stdset="0">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="item1Color" stdset="0">
+             <color>
+              <red>84</red>
+              <green>112</green>
+              <blue>198</blue>
+             </color>
+            </property>
+            <property name="item2Label" stdset="0">
+             <string>Good</string>
+            </property>
+            <property name="item2Value" stdset="0">
+             <double>40.000000000000000</double>
+            </property>
+            <property name="item2Color" stdset="0">
+             <color>
+              <red>184</red>
+              <green>222</green>
+              <blue>41</blue>
+             </color>
+            </property>
+            <property name="item3Label" stdset="0">
+             <string>Commonly</string>
+            </property>
+            <property name="item3Value" stdset="0">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="item3Color" stdset="0">
+             <color>
+              <red>92</red>
+              <green>95</green>
+              <blue>122</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="ExRadialGauge" name="echartsBaro">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>40</number>
+            </property>
+            <property name="interactive">
+             <bool>false</bool>
+            </property>
+            <property name="valueAnimationDuration">
+             <number>0</number>
+            </property>
+            <property name="scaleMode">
+             <enum>ExRadialGauge::TrackScale</enum>
+            </property>
+            <property name="minimumAngle">
+             <double>-130.000000000000000</double>
+            </property>
+            <property name="maximumAngle">
+             <double>130.000000000000000</double>
+            </property>
+            <property name="majorTickCount">
+             <number>11</number>
+            </property>
+            <property name="minorTickCount">
+             <number>4</number>
+            </property>
+            <property name="scaleWidth">
+             <double>2.000000000000000</double>
+            </property>
+            <property name="trackVisible">
+             <bool>true</bool>
+            </property>
+            <property name="trackColor">
+             <color>
+              <red>230</red>
+              <green>55</green>
+              <blue>70</blue>
+             </color>
+            </property>
+            <property name="needleWidth">
+             <double>2.000000000000000</double>
+            </property>
+            <property name="needleStyle">
+             <enum>ExRadialGauge::LineNeedle</enum>
+            </property>
+            <property name="needleLength">
+             <double>0.720000000000000</double>
+            </property>
+            <property name="tickLength">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="tickWidth">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="majorTickLength">
+             <double>7.000000000000000</double>
+            </property>
+            <property name="majorTickWidth">
+             <double>1.400000000000000</double>
+            </property>
+            <property name="tickPadding">
+             <double>8.000000000000000</double>
+            </property>
+            <property name="labelsVisible">
+             <bool>true</bool>
+            </property>
+            <property name="labelPadding">
+             <double>20.000000000000000</double>
+            </property>
+            <property name="labelFontPixelSize">
+             <number>9</number>
+            </property>
+            <property name="hubVisible">
+             <bool>true</bool>
+            </property>
+            <property name="hubRadius">
+             <double>3.000000000000000</double>
+            </property>
+            <property name="valuePosition">
+             <enum>ExRadialGauge::CenterValue</enum>
+            </property>
+            <property name="title">
+             <string>PLP</string>
+            </property>
+            <property name="valueFontPixelSize">
+             <number>16</number>
+            </property>
+            <property name="needleColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="tickColor">
+             <color>
+              <red>230</red>
+              <green>55</green>
+              <blue>70</blue>
+             </color>
+            </property>
+            <property name="labelColor">
+             <color>
+              <red>230</red>
+              <green>55</green>
+              <blue>70</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="echartsGradeCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>等级仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="echartsMultiCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>多标题仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="echartsTempCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>气温仪表盘</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QLabel" name="echartsRingCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>得分环</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="4">
+           <widget class="QLabel" name="echartsBaroCaption">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>气压表</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="echartsGradeSubtitle">
+            <property name="text">
+             <string>Grade Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="echartsMultiSubtitle">
+            <property name="text">
+             <string>Multi Title Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="echartsTempSubtitle">
+            <property name="text">
+             <string>Temperature Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3">
+           <widget class="QLabel" name="echartsRingSubtitle">
+            <property name="text">
+             <string>Ring Gauge</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="4">
+           <widget class="QLabel" name="echartsBaroSubtitle">
+            <property name="text">
+             <string>Gauge Barometer chart</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="timerGroup">
+         <property name="title">
+          <string>计时表盘</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="0" column="0">
+           <widget class="QLabel" name="timerHourCaption">
+            <property name="text">
+             <string>剩余 45 分钟 / 60 分钟</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="timerHalfCaption">
+            <property name="text">
+             <string>剩余 10 分钟 / 30 分钟</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="timerShortCaption">
+            <property name="text">
+             <string>剩余 5 秒 / 15 秒</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExTimerDial" name="timerHour">
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>240</width>
+              <height>240</height>
+             </size>
+            </property>
+            <property name="remainingMilliseconds">
+             <longLong>2700000</longLong>
+            </property>
+            <property name="totalMilliseconds">
+             <longLong>3600000</longLong>
+            </property>
+            <property name="running">
+             <bool>false</bool>
+            </property>
+            <property name="finishTimeVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExTimerDial" name="timerHalf">
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>240</width>
+              <height>240</height>
+             </size>
+            </property>
+            <property name="remainingMilliseconds">
+             <longLong>600000</longLong>
+            </property>
+            <property name="totalMilliseconds">
+             <longLong>1800000</longLong>
+            </property>
+            <property name="running">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExTimerDial" name="timerShort">
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>240</width>
+              <height>240</height>
+             </size>
+            </property>
+            <property name="remainingMilliseconds">
+             <longLong>5000</longLong>
+            </property>
+            <property name="totalMilliseconds">
+             <longLong>15000</longLong>
+            </property>
+            <property name="running">
+             <bool>false</bool>
+            </property>
+            <property name="finishTimeVisible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="meterGroup">
+         <property name="title">
+          <string>电平表</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="meterThresholdCaption">
+            <property name="text">
+             <string>阈值色 · 右侧刻度</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="meterGradientCaption">
+            <property name="text">
+             <string>渐变 · 左侧刻度</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="meterPlainCaption">
+            <property name="text">
+             <string>单色 · 无刻度</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="ExAudioLevelMeter" name="meterThreshold">
+            <property name="minimumSize">
+             <size>
+              <width>120</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>160</width>
+              <height>280</height>
+             </size>
+            </property>
+            <property name="segmentCount">
+             <number>24</number>
+            </property>
+            <property name="scalePosition">
+             <enum>ExAudioLevelMeter::RightScale</enum>
+            </property>
+            <property name="scaleTickMarksVisible">
+             <bool>true</bool>
+            </property>
+            <property name="colorMode">
+             <enum>ExAudioLevelMeter::ThresholdColors</enum>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>17</red>
+              <green>17</green>
+              <blue>17</blue>
+             </color>
+            </property>
+            <property name="activeColor">
+             <color>
+              <red>255</red>
+              <green>159</green>
+              <blue>45</blue>
+             </color>
+            </property>
+            <property name="inactiveColor">
+             <color>
+              <red>41</red>
+              <green>41</green>
+              <blue>41</blue>
+             </color>
+            </property>
+            <property name="warningColor">
+             <color>
+              <red>255</red>
+              <green>209</green>
+              <blue>102</blue>
+             </color>
+            </property>
+            <property name="clipColor">
+             <color>
+              <red>255</red>
+              <green>90</green>
+              <blue>95</blue>
+             </color>
+            </property>
+            <property name="peakColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="scaleColor">
+             <color>
+              <red>160</red>
+              <green>160</green>
+              <blue>160</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ExAudioLevelMeter" name="meterGradient">
+            <property name="minimumSize">
+             <size>
+              <width>120</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>160</width>
+              <height>280</height>
+             </size>
+            </property>
+            <property name="scalePosition">
+             <enum>ExAudioLevelMeter::LeftScale</enum>
+            </property>
+            <property name="colorMode">
+             <enum>ExAudioLevelMeter::GradientColors</enum>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>17</red>
+              <green>17</green>
+              <blue>17</blue>
+             </color>
+            </property>
+            <property name="activeColor">
+             <color>
+              <red>108</red>
+              <green>203</green>
+              <blue>95</blue>
+             </color>
+            </property>
+            <property name="inactiveColor">
+             <color>
+              <red>41</red>
+              <green>41</green>
+              <blue>41</blue>
+             </color>
+            </property>
+            <property name="warningColor">
+             <color>
+              <red>255</red>
+              <green>209</green>
+              <blue>102</blue>
+             </color>
+            </property>
+            <property name="clipColor">
+             <color>
+              <red>255</red>
+              <green>90</green>
+              <blue>95</blue>
+             </color>
+            </property>
+            <property name="peakColor">
+             <color>
+              <red>255</red>
+              <green>255</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="scaleColor">
+             <color>
+              <red>160</red>
+              <green>160</green>
+              <blue>160</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="ExAudioLevelMeter" name="meterPlain">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>220</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>280</height>
+             </size>
+            </property>
+            <property name="segmentCount">
+             <number>16</number>
+            </property>
+            <property name="segmentSpacing">
+             <double>2.000000000000000</double>
+            </property>
+            <property name="scalePosition">
+             <enum>ExAudioLevelMeter::NoScale</enum>
+            </property>
+            <property name="channelLabelsVisible">
+             <bool>false</bool>
+            </property>
+            <property name="colorMode">
+             <enum>ExAudioLevelMeter::SingleColor</enum>
+            </property>
+            <property name="backgroundColor">
+             <color>
+              <red>17</red>
+              <green>17</green>
+              <blue>17</blue>
+             </color>
+            </property>
+            <property name="activeColor">
+             <color>
+              <red>96</red>
+              <green>205</green>
+              <blue>255</blue>
+             </color>
+            </property>
+            <property name="inactiveColor">
+             <color>
+              <red>41</red>
+              <green>41</green>
+              <blue>41</blue>
+             </color>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ExBorderBeam</class>
+   <extends>QFrame</extends>
+   <header>exborderbeam.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ExBorderBeamButton</class>
+   <extends>QPushButton</extends>
+   <header>exborderbeambutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExRangeSlider</class>
+   <extends>QWidget</extends>
+   <header>exrangeslider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExProgressRing</class>
+   <extends>QProgressBar</extends>
+   <header>exprogressring.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExLiquidGauge</class>
+   <extends>QProgressBar</extends>
+   <header>exliquidgauge.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExRadialGauge</class>
+   <extends>QDial</extends>
+   <header>exradialgauge.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExTimerDial</class>
+   <extends>QProgressBar</extends>
+   <header>extimerdial.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExMultiRadialGauge</class>
+   <extends>QWidget</extends>
+   <header>exmultiradialgauge.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExMultiProgressRing</class>
+   <extends>QWidget</extends>
+   <header>exmultiprogressring.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExAudioLevelMeter</class>
+   <extends>QWidget</extends>
+   <header>exaudiolevelmeter.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

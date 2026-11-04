@@ -1,6 +1,9 @@
 #include "exmultiradialgauge.h"
 
+#include <QByteArray>
+#include <QDynamicPropertyChangeEvent>
 #include <QEasingCurve>
+#include <QEvent>
 #include <QFontMetricsF>
 #include <QPainter>
 #include <QPalette>
@@ -8,6 +11,7 @@
 #include <QSizePolicy>
 #include <QStyle>
 #include <QStyleOption>
+#include <QVariant>
 #include <QVariantAnimation>
 #include <QtMath>
 
@@ -20,6 +24,111 @@ namespace
 constexpr qreal FullCircle = 360.0;
 constexpr int MaximumTickCount = 720;
 constexpr int MaximumMajorTickCount = 180;
+constexpr int MaximumDynamicItemCount = 16;
+
+bool isAsciiDigit( char character )
+{
+    return character >= '0' && character <= '9';
+}
+
+int parseDynamicItemProperty( const QByteArray& name, QByteArray* fieldName )
+{
+    constexpr int prefixLength = 4;
+    if ( !name.startsWith( "item" ) || name.size() <= prefixLength )
+    {
+        return -1;
+    }
+
+    int position = prefixLength;
+    if ( !isAsciiDigit( name.at( position ) ) )
+    {
+        return -1;
+    }
+
+    int itemNumber = 0;
+    while ( position < name.size() && isAsciiDigit( name.at( position ) ) )
+    {
+        itemNumber = itemNumber * 10 + ( name.at( position ) - '0' );
+        ++position;
+        if ( itemNumber > MaximumDynamicItemCount )
+        {
+            return -1;
+        }
+    }
+    if ( itemNumber < 1 || position >= name.size() )
+    {
+        return -1;
+    }
+
+    *fieldName = name.mid( position );
+    return itemNumber - 1;
+}
+
+bool isItemField( const QByteArray& fieldName )
+{
+    return fieldName == "Label"
+           || fieldName == "Value"
+           || fieldName == "Color"
+           || fieldName == "Visible"
+           || fieldName == "TitleOffset"
+           || fieldName == "DetailOffset";
+}
+
+bool colorFromItemProperty( const QVariant& value, QColor* color )
+{
+    if ( value.userType() == qMetaTypeId<QColor>() )
+    {
+        *color = value.value<QColor>();
+        return true;
+    }
+    if ( value.userType() == QMetaType::QString || value.userType() == QMetaType::QByteArray )
+    {
+        const QColor parsed( value.toString() );
+        if ( !parsed.isValid() )
+        {
+            return false;
+        }
+        *color = parsed;
+        return true;
+    }
+    return false;
+}
+
+bool pointFromItemProperty( const QVariant& value, QPointF* point )
+{
+    if ( value.userType() == QMetaType::QPointF )
+    {
+        *point = value.toPointF();
+        return true;
+    }
+    if ( value.userType() == QMetaType::QPoint )
+    {
+        *point = QPointF( value.toPoint() );
+        return true;
+    }
+    return false;
+}
+
+class ItemPropertyApplyGuard
+{
+public:
+    explicit ItemPropertyApplyGuard( bool& applying )
+        : m_applying( applying )
+    {
+        m_applying = true;
+    }
+
+    ~ItemPropertyApplyGuard()
+    {
+        m_applying = false;
+    }
+
+    ItemPropertyApplyGuard( const ItemPropertyApplyGuard& ) = delete;
+    ItemPropertyApplyGuard& operator=( const ItemPropertyApplyGuard& ) = delete;
+
+private:
+    bool& m_applying;
+};
 
 QPointF pointAtAngle( const QPointF& center, qreal radius, qreal angle )
 {
@@ -502,6 +611,102 @@ QSize ExMultiRadialGauge::sizeHint() const
 QSize ExMultiRadialGauge::minimumSizeHint() const
 {
     return QSize( 120, 100 );
+}
+
+bool ExMultiRadialGauge::event( QEvent* event )
+{
+    if ( event->type() == QEvent::DynamicPropertyChange && !m_applyingItemProperty )
+    {
+        const auto* propertyEvent = static_cast<QDynamicPropertyChangeEvent*>( event );
+        applyItemDynamicProperty( propertyEvent->propertyName() );
+    }
+    return QWidget::event( event );
+}
+
+void ExMultiRadialGauge::applyItemDynamicProperty( const QByteArray& name )
+{
+    if ( m_applyingItemProperty )
+    {
+        return;
+    }
+
+    QByteArray fieldName;
+    const int index = parseDynamicItemProperty( name, &fieldName );
+    if ( index < 0 || !isItemField( fieldName ) )
+    {
+        return;
+    }
+
+    const QVariant value = property( name.constData() );
+    if ( !value.isValid() )
+    {
+        return;
+    }
+
+    const ItemPropertyApplyGuard guard( m_applyingItemProperty );
+    ExMultiRadialGaugeItem* item = itemForPropertyIndex( index );
+    if ( !item )
+    {
+        return;
+    }
+
+    if ( fieldName == "Label" )
+    {
+        item->setLabel( value.toString() );
+    }
+    else if ( fieldName == "Value" )
+    {
+        bool ok = false;
+        const double number = value.toDouble( &ok );
+        if ( ok )
+        {
+            item->setValue( number );
+        }
+    }
+    else if ( fieldName == "Color" )
+    {
+        QColor color;
+        if ( colorFromItemProperty( value, &color ) )
+        {
+            item->setColor( color );
+        }
+    }
+    else if ( fieldName == "Visible" )
+    {
+        if ( value.userType() == QMetaType::Bool )
+        {
+            item->setVisible( value.toBool() );
+        }
+    }
+    else if ( fieldName == "TitleOffset" )
+    {
+        QPointF offset;
+        if ( pointFromItemProperty( value, &offset ) )
+        {
+            item->setTitleOffset( offset );
+        }
+    }
+    else if ( fieldName == "DetailOffset" )
+    {
+        QPointF offset;
+        if ( pointFromItemProperty( value, &offset ) )
+        {
+            item->setDetailOffset( offset );
+        }
+    }
+}
+
+ExMultiRadialGaugeItem* ExMultiRadialGauge::itemForPropertyIndex( int index )
+{
+    if ( index < 0 || index >= MaximumDynamicItemCount )
+    {
+        return nullptr;
+    }
+    while ( m_items.size() <= index )
+    {
+        addItem( new ExMultiRadialGaugeItem( this ) );
+    }
+    return m_items.at( index );
 }
 
 void ExMultiRadialGauge::paintEvent( QPaintEvent* event )

@@ -11,6 +11,8 @@
 #include <QString>
 #include <QWidget>
 
+class QByteArray;
+class QEvent;
 class QPaintEvent;
 class QVariantAnimation;
 
@@ -210,8 +212,16 @@ public:
 
 protected:
     void paintEvent( QPaintEvent* event ) override;
+    bool event( QEvent* event ) override;
 
 private:
+    // 数据项不是 QWidget，设计器对象树选不中。
+    // 动态属性 itemNLabel、itemNValue、itemNColor、itemNVisible、
+    // itemNTitleOffset、itemNDetailOffset（N 从 1 开始，最多 16 项）
+    // 会创建或修改第 N 个数据项，属性浏览器和 uic 都走这里。
+    void applyItemDynamicProperty( const QByteArray& name );
+    [[nodiscard]] ExMultiRadialGaugeItem* itemForPropertyIndex( int index );
+
     [[nodiscard]] qreal sweepAngle() const;
     [[nodiscard]] qreal valueFraction( qreal value ) const;
     [[nodiscard]] qreal displayedValue( const ExMultiRadialGaugeItem* item ) const;
@@ -223,4 +233,5 @@ private:
     QHash<const ExMultiRadialGaugeItem*, qreal> m_displayedValues;
     QHash<const ExMultiRadialGaugeItem*, qreal> m_animationStartValues;
     QVariantAnimation* m_valueAnimation = nullptr;
+    bool m_applyingItemProperty = false;
 };

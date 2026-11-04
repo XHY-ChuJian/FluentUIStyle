@@ -2,8 +2,11 @@
 
 #include <QAbstractAnimation>
 #include <QBrush>
+#include <QByteArray>
 #include <QConicalGradient>
+#include <QDynamicPropertyChangeEvent>
 #include <QEasingCurve>
+#include <QEvent>
 #include <QFontMetricsF>
 #include <QKeyEvent>
 #include <QMouseEvent>
@@ -12,6 +15,7 @@
 #include <QPolygonF>
 #include <QSizePolicy>
 #include <QStyleOptionSlider>
+#include <QVariant>
 #include <QVariantAnimation>
 #include <QWheelEvent>
 #include <QtMath>
@@ -25,6 +29,91 @@ constexpr qreal FullCircle = 360.0;
 constexpr qreal EndpointExtensionAngle = 1.0;
 constexpr int MaximumTickCount = 720;
 constexpr int MaximumMajorTickCount = 180;
+constexpr int MaximumDynamicRangeCount = 16;
+
+bool isAsciiDigit( char character )
+{
+    return character >= '0' && character <= '9';
+}
+
+int parseDynamicRangeProperty( const QByteArray& name, QByteArray* fieldName )
+{
+    constexpr int prefixLength = 5;
+    if ( !name.startsWith( "range" ) || name.size() <= prefixLength )
+    {
+        return -1;
+    }
+
+    int position = prefixLength;
+    if ( !isAsciiDigit( name.at( position ) ) )
+    {
+        return -1;
+    }
+
+    int rangeNumber = 0;
+    while ( position < name.size() && isAsciiDigit( name.at( position ) ) )
+    {
+        rangeNumber = rangeNumber * 10 + ( name.at( position ) - '0' );
+        ++position;
+        if ( rangeNumber > MaximumDynamicRangeCount )
+        {
+            return -1;
+        }
+    }
+    if ( rangeNumber < 1 || position >= name.size() )
+    {
+        return -1;
+    }
+
+    *fieldName = name.mid( position );
+    return rangeNumber - 1;
+}
+
+bool isRangeField( const QByteArray& fieldName )
+{
+    return fieldName == "From" || fieldName == "To" || fieldName == "Color";
+}
+
+bool colorFromRangeProperty( const QVariant& value, QColor* color )
+{
+    if ( value.userType() == qMetaTypeId<QColor>() )
+    {
+        *color = value.value<QColor>();
+        return true;
+    }
+    if ( value.userType() == QMetaType::QString || value.userType() == QMetaType::QByteArray )
+    {
+        const QColor parsed( value.toString() );
+        if ( !parsed.isValid() )
+        {
+            return false;
+        }
+        *color = parsed;
+        return true;
+    }
+    return false;
+}
+
+class RangePropertyApplyGuard
+{
+public:
+    explicit RangePropertyApplyGuard( bool& applying )
+        : m_applying( applying )
+    {
+        m_applying = true;
+    }
+
+    ~RangePropertyApplyGuard()
+    {
+        m_applying = false;
+    }
+
+    RangePropertyApplyGuard( const RangePropertyApplyGuard& ) = delete;
+    RangePropertyApplyGuard& operator=( const RangePropertyApplyGuard& ) = delete;
+
+private:
+    bool& m_applying;
+};
 
 QPointF pointAtAngle( const QPointF& center, qreal radius, qreal angle )
 {
@@ -149,6 +238,7 @@ ExRadialGauge::~ExRadialGauge()
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, labelsVisible, setLabelsVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, hubVisible, setHubVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, valueVisible, setValueVisible )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, trackVisible, setTrackVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, progressGradientEnabled, setProgressGradientEnabled )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( bool, sweepAreaVisible, setSweepAreaVisible )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QString, title, setTitle )
@@ -157,6 +247,7 @@ EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, progressGradientStartColor, setProgressGr
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, progressGradientEndColor, setProgressGradientEndColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, needleColor, setNeedleColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, tickColor, setTickColor )
+EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, trackColor, setTrackColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, labelColor, setLabelColor )
 EX_RADIAL_GAUGE_SIMPLE_SETTER( QColor, valueColor, setValueColor )
 
@@ -604,6 +695,84 @@ QSize ExRadialGauge::minimumSizeHint() const
     return QSize( 100, 100 );
 }
 
+bool ExRadialGauge::event( QEvent* event )
+{
+    if ( event->type() == QEvent::DynamicPropertyChange && !m_applyingRangeProperty )
+    {
+        const auto* propertyEvent = static_cast<QDynamicPropertyChangeEvent*>( event );
+        applyRangeDynamicProperty( propertyEvent->propertyName() );
+    }
+    return QDial::event( event );
+}
+
+void ExRadialGauge::applyRangeDynamicProperty( const QByteArray& name )
+{
+    if ( m_applyingRangeProperty )
+    {
+        return;
+    }
+
+    QByteArray fieldName;
+    const int index = parseDynamicRangeProperty( name, &fieldName );
+    if ( index < 0 || !isRangeField( fieldName ) )
+    {
+        return;
+    }
+
+    const QVariant value = property( name.constData() );
+    if ( !value.isValid() )
+    {
+        return;
+    }
+
+    const RangePropertyApplyGuard guard( m_applyingRangeProperty );
+    ExRadialGaugeRange* range = rangeForPropertyIndex( index );
+    if ( !range )
+    {
+        return;
+    }
+
+    if ( fieldName == "From" )
+    {
+        bool ok = false;
+        const int number = value.toInt( &ok );
+        if ( ok )
+        {
+            range->setFromValue( number );
+        }
+    }
+    else if ( fieldName == "To" )
+    {
+        bool ok = false;
+        const int number = value.toInt( &ok );
+        if ( ok )
+        {
+            range->setToValue( number );
+        }
+    }
+    else if ( fieldName == "Color" )
+    {
+        QColor color;
+        if ( colorFromRangeProperty( value, &color ) )
+        {
+            range->setColor( color );
+        }
+    }
+}
+
+ExRadialGaugeRange* ExRadialGauge::rangeForPropertyIndex( int index )
+{
+    if ( index < 0 || index >= MaximumDynamicRangeCount )
+    {
+        return nullptr;
+    }
+    while ( m_ranges.size() <= index )
+    {
+        addRange( 0, 0, QColor() );
+    }
+    return m_ranges.at( index );
+}
+
 QList<ExRadialGaugeRange*> ExRadialGauge::ranges() const
 {
     return m_ranges;
@@ -677,7 +846,9 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
                                                   ? ( option.state.testFlag( QStyle::State_Active ) ? QPalette::Active : QPalette::Inactive )
                                                   : QPalette::Disabled;
     const QColor paletteAccentColor = option.palette.color( colorGroup, accentRole() );
-    const QColor trackColor = option.palette.color( colorGroup, QPalette::Mid );
+    const QColor trackColor = enabled && m_trackColor.isValid()
+                                  ? m_trackColor
+                                  : option.palette.color( colorGroup, QPalette::Mid );
     const auto resolveColor = [enabled, &option, colorGroup]( const QColor& color, QPalette::ColorRole fallbackRole )
     {
         return enabled && color.isValid() ? color : option.palette.color( colorGroup, fallbackRole );
@@ -760,9 +931,12 @@ void ExRadialGauge::paintEvent( QPaintEvent* event )
                                                areaEndColor ) );
     }
 
-    QPen trackPen( trackColor, m_scaleWidth, Qt::SolidLine, m_trackCapStyle );
-    painter.setPen( trackPen );
-    painter.drawArc( scaleRect, qRound( trackStartAngle * 16.0 ), qRound( trackSpan * 16.0 ) );
+    if ( m_trackVisible )
+    {
+        QPen trackPen( trackColor, m_scaleWidth, Qt::SolidLine, m_trackCapStyle );
+        painter.setPen( trackPen );
+        painter.drawArc( scaleRect, qRound( trackStartAngle * 16.0 ), qRound( trackSpan * 16.0 ) );
+    }
 
     const auto drawScaleSection = [&]( qreal firstFraction,
                                        qreal secondFraction,
