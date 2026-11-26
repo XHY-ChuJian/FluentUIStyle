@@ -29,9 +29,6 @@ public:
     explicit AudiomaticPlayerWidget(QWidget *parent = nullptr);
     ~AudiomaticPlayerWidget() override;
 
-protected:
-    void changeEvent(QEvent *event) override;
-
 private:
     enum class RepeatMode
     {
@@ -70,8 +67,6 @@ private:
     void updateTrackCountLabel();
     void updatePlaylistView();
     void updateOnlineResultsView();
-    QColor iconForegroundColor(bool onAccent) const;
-    QIcon transportIcon(const QChar &glyph, int pixelSize, bool onAccent = false) const;
 
     Ui::AudiomaticPlayerWidget *ui{nullptr};
     QMediaPlayer *m_player{nullptr};

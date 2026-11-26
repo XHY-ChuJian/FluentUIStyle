@@ -9,7 +9,6 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QDirIterator>
-#include <QEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
@@ -18,8 +17,6 @@
 #include <QMediaPlayer>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPainter>
-#include <QPixmap>
 #include <QRandomGenerator>
 #include <QStandardPaths>
 #include <QToolButton>
@@ -134,55 +131,37 @@ void AudiomaticPlayerWidget::setupChrome()
     ui->btnPlayPause->setProperty(ButtonAccentStyleProperty, true);
     ui->btnPlayPause->setIconSize(QSize(18, 18));
 
+    const auto setupTransport = [](QToolButton *button, const QChar &glyph, int size)
+    {
+        button->setProperty(IconGlyphProperty, glyph);
+        button->setIconSize(QSize(16, 16));
+        button->setFixedSize(size, size);
+    };
+
+    setupTransport(ui->btnShuffle, kGlyphShuffle, 32);
+    setupTransport(ui->btnPrevious, kGlyphPrevious, 32);
+    setupTransport(ui->btnNext, kGlyphNext, 32);
+    setupTransport(ui->btnRepeat, kGlyphRepeat, 32);
+    setupTransport(ui->btnSettings, kGlyphSettings, 32);
+
+    ui->btnChooseFolder->setProperty(IconGlyphProperty, kGlyphFolder);
+    ui->btnChooseFolder->setIconSize(QSize(14, 14));
+
     ui->labelVolumeIcon->setFont(fluentIconFont(14));
     ui->labelVolumeIcon->setText(QString(kGlyphVolume));
 
     updateIcons();
 }
 
-void AudiomaticPlayerWidget::changeEvent(QEvent *event)
-{
-    QWidget::changeEvent(event);
-    if (event->type() == QEvent::PaletteChange)
-    {
-        updateIcons();
-    }
-}
-
 void AudiomaticPlayerWidget::updateIcons()
 {
-    const auto setTransport = [this](QToolButton *button, const QChar &glyph, int size)
-    {
-        button->setIcon(transportIcon(glyph, 16));
-        button->setIconSize(QSize(16, 16));
-        button->setFixedSize(size, size);
-    };
-
-    setTransport(ui->btnShuffle, kGlyphShuffle, 32);
-    setTransport(ui->btnPrevious, kGlyphPrevious, 32);
-    setTransport(ui->btnNext, kGlyphNext, 32);
-    setTransport(ui->btnSettings, kGlyphSettings, 32);
-
     const bool playing = m_player && m_player->playbackState() == QMediaPlayer::PlayingState;
-    ui->btnPlayPause->setIcon(transportIcon(playing ? kGlyphPause : kGlyphPlay, 18, true));
+    ui->btnPlayPause->setProperty(IconGlyphProperty, playing ? kGlyphPause : kGlyphPlay);
+    ui->btnPlayPause->update();
 
     const QChar repeatGlyph = m_repeat == RepeatMode::One ? kGlyphRepeatOne : kGlyphRepeat;
-    setTransport(ui->btnRepeat, repeatGlyph, 32);
-
-    ui->btnChooseFolder->setIcon(transportIcon(kGlyphFolder, 14));
-}
-
-QColor AudiomaticPlayerWidget::iconForegroundColor(bool onAccent) const
-{
-    if (onAccent)
-    {
-        return QColor(255, 255, 255);
-    }
-
-    const QVariant scheme = qApp->property("_q_colorscheme");
-    const bool dark = scheme.isValid() ? scheme.toInt() == 1
-                                       : qApp->palette().color(QPalette::Window).lightness() < 128;
-    return dark ? QColor(255, 255, 255) : QColor(0, 0, 0);
+    ui->btnRepeat->setProperty(IconGlyphProperty, repeatGlyph);
+    ui->btnRepeat->update();
 }
 
 void AudiomaticPlayerWidget::setupPlayer()
@@ -687,19 +666,6 @@ void AudiomaticPlayerWidget::showSettingsMenu()
     const QSize menuSize = m_settingsMenu->sizeHint();
     const QPoint topRight = ui->btnSettings->mapToGlobal(ui->btnSettings->rect().topRight());
     m_settingsMenu->popup(QPoint(topRight.x() - menuSize.width(), topRight.y() - menuSize.height()));
-}
-
-QIcon AudiomaticPlayerWidget::transportIcon(const QChar &glyph, int pixelSize, bool onAccent) const
-{
-    QPixmap pixmap(pixelSize, pixelSize);
-    pixmap.fill(Qt::transparent);
-
-    QPainter painter(&pixmap);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-    painter.setFont(fluentIconFont(pixelSize));
-    painter.setPen(palette().color(QPalette::Text));
-    painter.drawText(pixmap.rect(), Qt::AlignCenter, QString(glyph));
-    return QIcon(pixmap);
 }
 
 void AudiomaticPlayerWidget::scanFolder(const QString &folder)

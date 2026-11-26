@@ -148,6 +148,14 @@ private:
   QColor winUI3Color(WINUI3Color col) const;
   QColor accentColor(const QStyleOption *option) const;
 
+  QChar buttonIconGlyph(const QWidget *widget) const;
+  QSize buttonGlyphIconSize(const QStyleOption *option, const QWidget *widget,
+                            const QSize &optionIconSize) const;
+  QColor buttonForegroundColor(const QStyleOption *option,
+                               const QWidget *widget) const;
+  void drawGlyphIcon(QPainter *painter, const QRect &rect, const QChar &glyph,
+                     const QSize &iconSize, const QColor &color) const;
+
 private:
   struct SwitchDragState {
     enum Phase { Idle, Pressed, Dragging };

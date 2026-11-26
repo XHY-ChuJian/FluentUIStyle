@@ -958,6 +958,28 @@ static void drawArrow( const QStyle* style,
     style->drawPrimitive( pe, &arrowOpt, painter, widget );
 }
 
+// QToolButton::initStyleOption 在 icon 为空且 text 非空时会将 toolButtonStyle 覆盖为 ToolButtonTextOnly，
+// 使用字体图标时需从 QToolButton 读取真实的 toolButtonStyle。
+static Qt::ToolButtonStyle resolveToolButtonStyle( const QStyleOptionToolButton* toolbutton,
+                                                   const QWidget* widget,
+                                                   const QStyle* proxyStyle,
+                                                   bool hasGlyph )
+{
+    if ( hasGlyph && toolbutton->icon.isNull() )
+    {
+        if ( const auto* tb = qobject_cast<const QToolButton*>( widget ) )
+        {
+            Qt::ToolButtonStyle s = tb->toolButtonStyle();
+            if ( s == Qt::ToolButtonFollowStyle )
+            {
+                s = static_cast<Qt::ToolButtonStyle>( proxyStyle->styleHint( QStyle::SH_ToolButtonStyle, toolbutton, widget ) );
+            }
+            return s;
+        }
+    }
+    return toolbutton->toolButtonStyle;
+}
+
 #endif  // QT_CONFIG(toolbutton)
 
 QColor blend( const QColor& fg, const QColor& bg, double alpha );
@@ -5791,12 +5813,17 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     shiftX = proxy()->pixelMetric( PM_ButtonShiftHorizontal, toolbutton, widget );
                     shiftY = proxy()->pixelMetric( PM_ButtonShiftVertical, toolbutton, widget );
                 }
+                const QChar glyph    = toolbutton->icon.isNull() ? buttonIconGlyph( widget ) : QChar();
+                const bool hasGlyph  = !glyph.isNull();
+                const QColor fgColor = buttonForegroundColor( option, widget );
+                const Qt::ToolButtonStyle effectiveStyle =
+                    resolveToolButtonStyle( toolbutton, widget, proxy(), hasGlyph );
                 // Arrow type always overrules and is always shown
                 // FluentUI don't have arrow type
                 bool hasArrow =
                     /*toolbutton->features & QStyleOptionToolButton::Arrow*/ false;
-                if ( ( ( !hasArrow && toolbutton->icon.isNull() ) && !toolbutton->text.isEmpty() )
-                     || toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly )
+                if ( ( ( !hasArrow && toolbutton->icon.isNull() && !hasGlyph ) && !toolbutton->text.isEmpty() )
+                     || effectiveStyle == Qt::ToolButtonTextOnly )
                 {
                     int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
                     if ( !proxy()->styleHint( SH_UnderlineShortcut, toolbutton, widget ) )
@@ -5812,34 +5839,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                     painter->setFont( toolbutton->font );
                     const QString text = toolButtonElideText( toolbutton, rect, alignment );
-                    // option->state has no State_Sunken here,
-                    // windowsvistastyle/CC_ToolButton removes it
-                    if ( widget && widget->objectName() == QLatin1String( "win_caption_close" )
-                         && ( widget->underMouse() || ( toolbutton->state & State_Sunken ) ) )
-                    {
-                        painter->setPen( ( toolbutton->state & State_Sunken ) ? shellCaptionCloseTextFillColorSecondary
-                                                                              : shellCaptionCloseTextFillColorPrimary );
-                    }
-                    else
-                    {
-                        bool checkable = false, checked = false;
-                        if ( const auto* button = qobject_cast<const QAbstractButton*>( widget ) )
-                        {
-                            checkable = button->isCheckable();
-                            checked   = button->isChecked();
-                        }
-                        bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
-                        if ( accent || ( checkable && checked ) )
-                        {
-                            QColor penCol = option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary )
-                                                                                            : winUI3Color( textOnAccentDisabled );
-                            painter->setPen( penCol );
-                        }
-                        else
-                        {
-                            painter->setPen( controlTextColor( option ) );
-                        }
-                    }
+                    painter->setPen( fgColor );
                     proxy()->drawItemText( painter, rect, alignment, toolbutton->palette, toolbutton->state & State_Enabled, text );
                 }
                 else
@@ -5883,8 +5883,24 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                         pmSize = pm.size() / pm.devicePixelRatio();
                     }
+                    else if ( hasGlyph )
+                    {
+                        pmSize = toolbutton->rect.size().boundedTo( buttonGlyphIconSize( option, widget, toolbutton->iconSize ) );
+                    }
 
-                    if ( toolbutton->toolButtonStyle != Qt::ToolButtonIconOnly )
+                    auto drawToolButtonIcon = [ & ]( const QRect& targetRect )
+                    {
+                        if ( !toolbutton->icon.isNull() )
+                        {
+                            proxy()->drawItemPixmap( painter, targetRect, Qt::AlignCenter, pm );
+                        }
+                        else
+                        {
+                            drawGlyphIcon( painter, targetRect, glyph, pmSize, fgColor );
+                        }
+                    };
+
+                    if ( effectiveStyle != Qt::ToolButtonIconOnly )
                     {
                         painter->setFont( toolbutton->font );
                         QRect pr = rect, tr = rect;
@@ -5894,7 +5910,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             alignment |= Qt::TextHideMnemonic;
                         }
 
-                        if ( toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon )
+                        if ( effectiveStyle == Qt::ToolButtonTextUnderIcon )
                         {
                             pr.setHeight( pmSize.height() + 4 );  // ### 4 is currently hardcoded
                                                                   // in QToolButton::sizeHint()
@@ -5909,7 +5925,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                             if ( !hasArrow )
                             {
-                                proxy()->drawItemPixmap( painter, pr, Qt::AlignCenter, pm );
+                                drawToolButtonIcon( pr );
                             }
                             else
                             {
@@ -5925,8 +5941,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                             pr.translate( shiftX + leftMargin, shiftY );
                             if ( !hasArrow )
                             {
-                                proxy()->drawItemPixmap(
-                                    painter, QStyle::visualRect( toolbutton->direction, rect, pr ), Qt::AlignCenter, pm );
+                                drawToolButtonIcon( QStyle::visualRect( toolbutton->direction, rect, pr ) );
                             }
                             else
                             {
@@ -5936,17 +5951,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         }
                         tr.translate( shiftX + leftMargin, shiftY );
                         const QString text = toolButtonElideText( toolbutton, tr, alignment );
-                        bool accent        = widget && widget->property( ButtonAccentStyleProperty ).toBool();
-                        if ( accent )
-                        {
-                            QColor penCol = option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary )
-                                                                                            : winUI3Color( textOnAccentDisabled );
-                            painter->setPen( penCol );
-                        }
-                        else
-                        {
-                            painter->setPen( controlTextColor( option ) );
-                        }
+                        painter->setPen( fgColor );
                         proxy()->drawItemText( painter,
                                                QStyle::visualRect( toolbutton->direction, rect, tr ),
                                                alignment,
@@ -5963,7 +5968,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         }
                         else
                         {
-                            proxy()->drawItemPixmap( painter, rect, Qt::AlignCenter, pm );
+                            drawToolButtonIcon( rect );
                         }
                     }
                 }
@@ -6256,20 +6261,17 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                     tf |= Qt::TextHideMnemonic;
                 }
 
-                if ( !btn->icon.isNull() )
+                const QChar glyph    = btn->icon.isNull() ? buttonIconGlyph( widget ) : QChar();
+                const bool hasGlyph  = !glyph.isNull();
+                const QColor fgColor = buttonForegroundColor( option, widget );
+
+                if ( !btn->icon.isNull() || hasGlyph )
                 {
-                    // Center both icon and text
-                    QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
-                    if ( mode == QIcon::Normal && btn->state & State_HasFocus )
-                    {
-                        mode = QIcon::Active;
-                    }
-                    QIcon::State state = isChecked( btn ) ? QIcon::On : QIcon::Off;
+                    const QSize iconSize = hasGlyph ? buttonGlyphIconSize( option, widget, btn->iconSize ) : btn->iconSize;
+                    int iconSpacing      = 4;  // ### 4 is currently hardcoded in
+                                               // QPushButton::sizeHint()
 
-                    int iconSpacing = 4;  // ### 4 is currently hardcoded in
-                                          // QPushButton::sizeHint()
-
-                    QRect iconRect  = QRect( textRect.x(), textRect.y(), btn->iconSize.width(), textRect.height() );
+                    QRect iconRect  = QRect( textRect.x(), textRect.y(), iconSize.width(), textRect.height() );
                     QRect vIconRect = visualRect( btn->direction, btn->rect, iconRect );
                     textRect.setLeft( textRect.left() + iconRect.width() + iconSpacing );
 
@@ -6285,31 +6287,25 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
                         vIconRect.moveCenter( btn->rect.center() );
                     }
 
-                    btn->icon.paint( painter, vIconRect, Qt::AlignCenter, mode, state );
+                    if ( !btn->icon.isNull() )
+                    {
+                        // Center both icon and text
+                        QIcon::Mode mode = isEnabled ? QIcon::Normal : QIcon::Disabled;
+                        if ( mode == QIcon::Normal && btn->state & State_HasFocus )
+                        {
+                            mode = QIcon::Active;
+                        }
+                        QIcon::State state = isChecked( btn ) ? QIcon::On : QIcon::Off;
+                        btn->icon.paint( painter, vIconRect, Qt::AlignCenter, mode, state );
+                    }
+                    else
+                    {
+                        drawGlyphIcon( painter, vIconRect, glyph, iconSize, fgColor );
+                    }
                 }
 
                 auto vTextRect = visualRect( btn->direction, btn->rect, textRect );
-                bool accent    = widget && widget->property( ButtonAccentStyleProperty ).toBool();
-
-                bool checkable = false, checked = false;
-                if ( const auto* button = qobject_cast<const QPushButton*>( widget ) )
-                {
-                    checkable = button->isCheckable();
-                    checked   = button->isChecked();
-                }
-
-                if ( accent || ( checkable && checked ) )
-                {
-                    QStyleOption opt = *option;
-                    opt.state |= QStyle::State_On;
-                    QColor penCol = option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary )
-                                                                                    : winUI3Color( textOnAccentDisabled );
-                    painter->setPen( penCol );
-                }
-                else
-                {
-                    painter->setPen( controlTextColor( option ) );
-                }
+                painter->setPen( fgColor );
                 proxy()->drawItemText( painter, vTextRect, tf, option->palette, isEnabled, btn->text );
             }
             break;
@@ -7544,6 +7540,26 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             // we want our own horizontal spacing
             const int oldMargin = proxy()->pixelMetric( PM_ButtonMargin, option, widget );
             contentSize.rwidth() += 2 * contentHMargin - oldMargin;
+
+            if ( const auto* btn = qstyleoption_cast<const QStyleOptionButton*>( option ) )
+            {
+                const QChar glyph = buttonIconGlyph( widget );
+                if ( !glyph.isNull() && btn->icon.isNull() )
+                {
+                    const QSize glyphSize = buttonGlyphIconSize( option, widget, btn->iconSize );
+                    const int border      = proxy()->pixelMetric( PM_DefaultFrameWidth, option, widget );
+                    if ( btn->text.isEmpty() )
+                    {
+                        contentSize.setWidth( qMax( contentSize.width(), glyphSize.width() + 2 * contentHMargin + 2 * border ) );
+                    }
+                    else
+                    {
+                        constexpr int iconSpacing = 4;
+                        contentSize.rwidth() += glyphSize.width() + iconSpacing;
+                    }
+                    contentSize.setHeight( qMax( contentSize.height(), glyphSize.height() + 2 * border ) );
+                }
+            }
             break;
         }
             // or ui setHeight
@@ -7552,22 +7568,52 @@ QSize FluentUI3Style::sizeFromContents( ContentsType type, const QStyleOption* o
             contentSize = QProxyStyle::sizeFromContents( type, option, size, widget );
             if ( auto optionTbtn = qstyleoption_cast<const QStyleOptionToolButton*>( option ) )
             {
-                if ( optionTbtn->toolButtonStyle == Qt::ToolButtonIconOnly )
+                const QChar glyph = buttonIconGlyph( widget );
+                const bool hasGlyph = !glyph.isNull() && optionTbtn->icon.isNull();
+                const Qt::ToolButtonStyle effectiveStyle =
+                    resolveToolButtonStyle( optionTbtn, widget, proxy(), hasGlyph );
+                if ( hasGlyph && effectiveStyle != Qt::ToolButtonTextOnly )
+                {
+                    const QSize glyphSize = buttonGlyphIconSize( option, widget, optionTbtn->iconSize );
+                    if ( effectiveStyle == Qt::ToolButtonIconOnly )
+                    {
+                        contentSize.setWidth( qMax( contentSize.width(), glyphSize.width() + 8 ) );
+                        contentSize.setHeight( qMax( contentSize.height(), glyphSize.height() + 8 ) );
+                    }
+                    else if ( effectiveStyle == Qt::ToolButtonTextUnderIcon )
+                    {
+                        if ( !optionTbtn->text.isEmpty() )
+                        {
+                            contentSize.rheight() += glyphSize.height() + 4;
+                        }
+                        contentSize.setWidth( qMax( contentSize.width(), glyphSize.width() + 8 ) );
+                    }
+                    else if ( effectiveStyle == Qt::ToolButtonTextBesideIcon )
+                    {
+                        if ( !optionTbtn->text.isEmpty() )
+                        {
+                            contentSize.rwidth() += glyphSize.width() + 6;
+                        }
+                        contentSize.setHeight( qMax( contentSize.height(), glyphSize.height() + 8 ) );
+                    }
+                }
+
+                if ( effectiveStyle == Qt::ToolButtonIconOnly )
                 {
                     contentSize += QSize( 4, 4 );
                 }
-                if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && optionTbtn->toolButtonStyle == Qt::ToolButtonTextBesideIcon )
+                if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && effectiveStyle == Qt::ToolButtonTextBesideIcon )
                 {
                     const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
                     contentSize.rwidth() += mbi + 4;
                 }
                 else if ( optionTbtn->features & QStyleOptionToolButton::HasMenu
-                          && optionTbtn->toolButtonStyle == Qt::ToolButtonTextUnderIcon )
+                          && effectiveStyle == Qt::ToolButtonTextUnderIcon )
                 {
                     const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
                     contentSize.rwidth() += mbi + 4;
                 }
-                else if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && optionTbtn->toolButtonStyle == Qt::ToolButtonTextOnly )
+                else if ( optionTbtn->features & QStyleOptionToolButton::HasMenu && effectiveStyle == Qt::ToolButtonTextOnly )
                 {
                     const int mbi = proxy()->pixelMetric( PM_MenuButtonIndicator, option, widget );
                     contentSize.rwidth() += mbi + 4;
@@ -8869,6 +8915,73 @@ QIcon FluentUI3Style::fluentIcon( const QChar& ch, const QColor& color ) const
     p.drawText( pix.rect(), Qt::AlignCenter, ch );
 
     return QIcon( pix );
+}
+
+QChar FluentUI3Style::buttonIconGlyph( const QWidget* widget ) const
+{
+    if ( !widget )
+    {
+        return QChar();
+    }
+
+    const QVariant v = widget->property( IconGlyphProperty );
+    return v.isValid() ? v.toChar() : QChar();
+}
+
+QSize FluentUI3Style::buttonGlyphIconSize( const QStyleOption* option, const QWidget* widget, const QSize& optionIconSize ) const
+{
+    if ( optionIconSize.isValid() && !optionIconSize.isEmpty() )
+    {
+        return optionIconSize;
+    }
+
+    const int extent = qMax( 16, proxy()->pixelMetric( PM_SmallIconSize, option, widget ) );
+    return QSize( extent, extent );
+}
+
+QColor FluentUI3Style::buttonForegroundColor( const QStyleOption* option, const QWidget* widget ) const
+{
+    if ( widget && widget->objectName() == QLatin1String( "win_caption_close" )
+         && ( widget->underMouse() || ( option->state & State_Sunken ) ) )
+    {
+        return ( option->state & State_Sunken ) ? shellCaptionCloseTextFillColorSecondary : shellCaptionCloseTextFillColorPrimary;
+    }
+
+    bool checkable = false;
+    bool checked   = false;
+    if ( const auto* button = qobject_cast<const QAbstractButton*>( widget ) )
+    {
+        checkable = button->isCheckable();
+        checked   = button->isChecked();
+    }
+
+    const bool accent      = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+    const bool isAutoRaise = option->state.testFlag( QStyle::State_AutoRaise );
+    if ( accent || ( !isAutoRaise && checkable && checked ) )
+    {
+        return option->state.testFlag( QStyle::State_Enabled ) ? winUI3Color( textOnAccentPrimary ) : winUI3Color( textOnAccentDisabled );
+    }
+
+    return controlTextColor( option );
+}
+
+void FluentUI3Style::drawGlyphIcon( QPainter* painter, const QRect& rect, const QChar& glyph, const QSize& iconSize, const QColor& color ) const
+{
+    if ( glyph.isNull() || !rect.isValid() )
+    {
+        return;
+    }
+
+    PainterStateGuard psg( painter );
+    QFont f( assetFont );
+    // 使用目标 iconSize 计算像素字号，避免受容器矩形高宽比影响
+    const int pixelSize = qMax( 12, qMin( iconSize.width(), iconSize.height() ) );
+    f.setPixelSize( pixelSize );
+    f.setHintingPreference( QFont::PreferNoHinting );
+    painter->setFont( f );
+    painter->setPen( color );
+    painter->setRenderHint( QPainter::TextAntialiasing, true );
+    painter->drawText( rect, Qt::AlignCenter, glyph );
 }
 
 void FluentUI3Style::drawPopupShadow( QPainter* painter, const QRectF& panelRect, int radius, int extent ) const

@@ -693,10 +693,8 @@ void MainWindow::setupSettingsPage()
 
     auto* aboutTitle  = makeSectionTitle( tr( "关于" ) );
     auto* aboutButton = new QToolButton( ui->scrollAreaWidgetContents );
-    QFont chevronFont( QString::fromLatin1( SegoeIcon::SegoeFontName ) );
-    chevronFont.setPixelSize( 16 );
-    aboutButton->setFont( chevronFont );
-    aboutButton->setText( QString( QChar( static_cast<ushort>( SegoeIcon::ChevronRight ) ) ) );
+    aboutButton->setProperty( IconGlyphProperty, QChar( static_cast<ushort>( SegoeIcon::ChevronRight ) ) );
+    aboutButton->setIconSize( QSize( 16, 16 ) );
     aboutButton->setToolTip( tr( "查看项目信息" ) );
     aboutButton->setAutoRaise( true );
     aboutButton->setFixedSize( 36, 36 );
@@ -1570,13 +1568,13 @@ void MainWindow::setupTabs()
 void MainWindow::setupButtonsAndIcons()
 {
     // 追加胶囊和圆形按钮演示 (从UI文件读取)
-    ui->circleBtn->setIcon( createFluentIcon( "\ue713" ) );
-    ui->circleBtn2->setIcon( createFluentIcon( "\ue8c3" ) );
+    ui->circleBtn->setProperty( IconGlyphProperty, QChar( 0xE713 ) );
+    ui->circleBtn2->setProperty( IconGlyphProperty, QChar( 0xE8C3 ) );
 
     // Setup tool button
-    ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
+    ui->toolButton->setProperty( IconGlyphProperty, QChar( 0xE8C3 ) );
     ui->pushButton_10->setText( tr( "工具按钮" ) );
-    ui->pushButton_10->setIcon( createFluentIcon( "\ue713" ) );
+    ui->pushButton_10->setProperty( IconGlyphProperty, QChar( 0xE713 ) );
 
     // Setup tool button 3 with menu
     setupToolButtonWithMenu();
@@ -1584,10 +1582,10 @@ void MainWindow::setupButtonsAndIcons()
     // Setup tool button 4 with icon and text
     ui->toolButton_4->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
     ui->toolButton_4->setText( tr( "上下按钮" ) );
-    ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
+    ui->toolButton_4->setProperty( IconGlyphProperty, QChar( 0xE804 ) );
 
     // Setup auto-raise button
-    ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
+    ui->tBtnAutoRaise->setProperty( IconGlyphProperty, QChar( 0xE804 ) );
 }
 
 void MainWindow::setupToolButtonWithMenu()
@@ -1930,9 +1928,6 @@ void MainWindow::updateActionIcons()
         m_tabShowcaseWidget->updateTabIcons();
     }
 
-    // Update button icons
-    updateButtonIcons();
-
     // Update action icons
     updateMenuActionIcons();
 
@@ -1941,16 +1936,6 @@ void MainWindow::updateActionIcons()
 
     // Update navigation item icons
     updateNavigationItemIcons();
-}
-
-void MainWindow::updateButtonIcons()
-{
-    ui->toolButton->setIcon( createFluentIcon( "\ue8c3" ) );
-    ui->pushButton_10->setIcon( createFluentIcon( "\ue713" ) );
-    ui->toolButton_4->setIcon( createFluentIcon( "\uE804" ) );
-    ui->tBtnAutoRaise->setIcon( createFluentIcon( "\ue804" ) );
-    ui->circleBtn->setIcon( createFluentIcon( "\ue713" ) );
-    ui->circleBtn2->setIcon( createFluentIcon( "\ue8c3" ) );
 }
 
 void MainWindow::updateMenuActionIcons()

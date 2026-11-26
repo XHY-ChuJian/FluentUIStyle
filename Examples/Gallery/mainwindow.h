@@ -122,7 +122,6 @@ private:
     void setupToolButtonWithMenu();
 
     // Icon update helpers
-    void updateButtonIcons();
     void updateMenuActionIcons();
     void updateMenuIcons();
     void updateNavigationItemIcons();
