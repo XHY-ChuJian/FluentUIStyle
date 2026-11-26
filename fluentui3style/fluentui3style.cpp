@@ -28,6 +28,7 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QObject>
+#include <QPlainTextEdit>
 #include <QPointer>
 #include <QProgressBar>
 #include <QRadialGradient>
@@ -1632,7 +1633,7 @@ FluentUI3Style::FluentUI3Style( QStyle* style )
         PaletteManager::instance().setThemeStyle( (ThemeStyle)themeStyle );
     }
     qDebug() << "[FluentUI3Style] color scheme index:" << colorSchemeIndex;
-    qDebug() << "[FluentUI3Style] version:4.0.3";
+    qDebug() << "[FluentUI3Style] version:4.0.4";
 
     // qApp->installEventFilter(this);
 }
@@ -1908,9 +1909,7 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 if ( sb->frame && ( sub & SC_SpinBoxFrame ) && isEditable )
                 {
                     const bool hasFocus     = state & State_HasFocus;
-                    const auto underlineCol = hasFocus
-                                                  ? accentColor( option )
-                                                  : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
+                    const auto underlineCol = hasFocus ? accentColor( option ) : winUI3Color( inputStrokeBottomDefault );
                     drawRoundedUnderline(
                         painter, frameRect, frameRect, secondLevelRoundingRadius, QPen( underlineCol, hasFocus ? 2 : 1 ) );
                 }
@@ -2102,33 +2101,15 @@ void FluentUI3Style::drawComplexControl( ComplexControl control,
                 if ( combobox->frame )
                 {
                     drawRoundedRect( painter, frameRect, Qt::NoPen, opaqueBg );
-                }
 
-                if ( combobox->frame )
-                {
-                    const bool isHovered = option->state & State_MouseOver;
-                    const auto frameCol  = highContrastTheme ?
-#    if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
-                                                            option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
-#    else
-                                                            option->palette.color( isHovered ? QPalette::Highlight
-                                                                                             : QPalette::ButtonText )  // Qt5/Qt6.5 fallback
-#    endif
-                                                            : winUI3Color( frameColorLight );
-
-                    painter->setPen( frameCol );
-                    painter->setBrush( Qt::NoBrush );
-                    painter->drawRoundedRect( frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius );
-
+                    const QRectF borderRect = frameRect.adjusted( 0.5, 0.5, -0.5, -0.5 );
                     if ( combobox->editable )
                     {
-                        const bool hasFocus     = option->state & State_HasFocus;
-                        const auto underlineCol = hasFocus
-                                                      ? accentColor( option )
-                                                      : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
-
-                        drawRoundedUnderline(
-                            painter, frameRect, frameRect, secondLevelRoundingRadius, QPen( underlineCol, hasFocus ? 2 : 1 ) );
+                        drawLineEditFrame( painter, borderRect, option, true, secondLevelRoundingRadius );
+                    }
+                    else
+                    {
+                        drawControlBorder( painter, borderRect, secondLevelRoundingRadius, option, true, false );
                     }
                 }
 
@@ -2959,17 +2940,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 return;
             }
 
-            if ( ( !isMouseOver && !isRaised ) || !isEnabled )
-            {
-                painter->setPen( Qt::NoPen );
-            }
-            else
-            {
-                painter->setPen( winUI3Color( controlStrokePrimary ) );
-            }
-
             drawEffectShadow( painter, option->rect, 2, secondLevelRoundingRadius );
             bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+            painter->setPen( Qt::NoPen );
             if ( accent )
             {
                 painter->setBrush( calculateAccentColor( option ) );
@@ -2980,26 +2953,21 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
 
-            if ( isRaised )
+            if ( ( isMouseOver || isRaised ) && isEnabled )
             {
-                const qreal sublineOffset = secondLevelRoundingRadius - 0.5;
-                painter->setPen( winUI3Color( controlStrokeSecondary ) );
-                painter->drawLine( rect.bottomLeft() + QPointF( sublineOffset, 0.5 ), rect.bottomRight() + QPointF( -sublineOffset, 0.5 ) );
+                const QRectF borderRect = rect.adjusted( 0.5, 0.5, -0.5, -0.5 );
+                drawControlBorder( painter, borderRect, secondLevelRoundingRadius, option, isRaised, false );
             }
         }
         break;
         case PE_PanelButtonBevel :
         {
-            const bool isEnabled   = state & QStyle::State_Enabled;
-            const bool isMouseOver = state & QStyle::State_MouseOver;
-            const bool isRaised    = state & QStyle::State_Raised;
-
             qreal radius      = secondLevelRoundingRadius;
             QRectF shadowRect = option->rect;
             QRectF rect       = option->rect.marginsRemoved(
                 QMargins( cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth, cBShadowBorderWidth ) );
 
-            QString shape = widget->property( ButtonShapeProperty ).toString();
+            const QString shape = widget ? widget->property( ButtonShapeProperty ).toString() : QString();
             if ( shape == ButtonShapeCapsule )
             {
                 radius = option->rect.height() / 2.0;
@@ -3019,18 +2987,10 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 shadowRect = centeredShadow;
             }
 
-            if ( element == PE_PanelButtonTool && ( ( !isMouseOver && !isRaised ) || !isEnabled ) )
-            {
-                painter->setPen( Qt::NoPen );
-            }
-            else
-            {
-                painter->setPen( winUI3Color( controlStrokePrimary ) );
-            }
-
             // drawEffectShadow( painter, shadowRect.toRect(), cBShadowBorderWidth,
             // radius );
             bool accent = widget && widget->property( ButtonAccentStyleProperty ).toBool();
+            painter->setPen( Qt::NoPen );
             if ( accent )
             {
                 painter->setBrush( calculateAccentColor( option ) );
@@ -3041,16 +3001,9 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
             }
             painter->drawRoundedRect( rect, radius, radius );
 
-            if ( shape != ButtonShapeCircle )
-            {
-                PainterStateGuard bottomStrokeGuard( painter );
-                const QColor bottomStroke = winUI3Color( controlStrokeSecondary );
-                const QRectF bottomClip( rect.left(), rect.bottom() - 1.0, rect.width(), 1.5 );
-                painter->setClipRect( bottomClip );
-                painter->setPen( QPen( bottomStroke, 1.0 ) );
-                painter->setBrush( Qt::NoBrush );
-                painter->drawRoundedRect( rect, radius, radius );
-            }
+            const QRectF borderRect = rect.adjusted( 0.5, 0.5, -0.5, -0.5 );
+            const qreal borderRadius = qMin( radius, qMin( borderRect.width(), borderRect.height() ) / 2.0 );
+            drawControlBorder( painter, borderRect, borderRadius, option, shape != ButtonShapeCircle, false );
         }
         break;
         case PE_FrameDefaultButton :
@@ -3154,7 +3107,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                     }
                     else
                     {
-                        painter->drawRoundedRect( rect, 6, 6 );
+                        painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
                     }
                 }
 
@@ -3174,7 +3127,7 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
 #else
                                                             option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )
 #endif
-                                                            : winUI3Color( frameColorLight );
+                                                            : winUI3Color( controlStrokePrimary );
 
                     painter->setPen( frameCol );
                     painter->setBrush( Qt::NoBrush );
@@ -3182,8 +3135,16 @@ void FluentUI3Style::drawPrimitive( PrimitiveElement element, const QStyleOption
                 }
                 else
                 {
-                    drawLineEditFrame(
-                        painter, borderRect, option, qobject_cast<const QTextEdit*>( widget ) != nullptr, secondLevelRoundingRadius );
+                    bool isEditableTextWidget = false;
+                    if ( const auto* textEdit = qobject_cast<const QTextEdit*>( widget ) )
+                    {
+                        isEditableTextWidget = !textEdit->isReadOnly();
+                    }
+                    else if ( const auto* plainTextEdit = qobject_cast<const QPlainTextEdit*>( widget ) )
+                    {
+                        isEditableTextWidget = !plainTextEdit->isReadOnly();
+                    }
+                    drawLineEditFrame( painter, borderRect, option, isEditableTextWidget, secondLevelRoundingRadius );
                 }
             }
             break;
@@ -6423,23 +6384,7 @@ void FluentUI3Style::drawControl( ControlElement element, const QStyleOption* op
 
                     rect.adjust( 0.5, 0.5, -0.5, -0.5 );
                     const bool defaultButton = btn->features.testFlag( QStyleOptionButton::DefaultButton );
-                    painter->setBrush( Qt::NoBrush );
-                    painter->setPen( defaultButton ? accentColor( option ) : winUI3Color( controlStrokePrimary ) );
-                    painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
-
-                    // WinUI control borders use a stronger lower edge.  Keep
-                    // the original QPen-based button drawing and repaint only
-                    // the bottom part of the same rounded outline.
-                    {
-                        PainterStateGuard bottomStrokeGuard( painter );
-                        const QColor bottomStroke = defaultButton ? winUI3Color( controlStrokeOnAccentSecondary )
-                                                                  : winUI3Color( controlStrokeSecondary );
-                        const QRectF bottomClip( rect.left(), rect.bottom() - 1.0, rect.width(), 1.5 );
-                        painter->setClipRect( bottomClip );
-                        painter->setPen( QPen( bottomStroke, 1.0 ) );
-                        painter->setBrush( Qt::NoBrush );
-                        painter->drawRoundedRect( rect, secondLevelRoundingRadius, secondLevelRoundingRadius );
-                    }
+                    drawControlBorder( painter, rect, secondLevelRoundingRadius, option, true, defaultButton );
                 }
 
                 if ( btn->features.testFlag( QStyleOptionButton::HasMenu ) )
@@ -8798,12 +8743,49 @@ QColor FluentUI3Style::controlTextColor( const QStyleOption* option, QPalette::C
     return col;
 }
 
+void FluentUI3Style::drawControlBorder( QPainter* painter,
+                                        const QRectF& rect,
+                                        qreal radius,
+                                        const QStyleOption* option,
+                                        bool drawBottomStroke,
+                                        bool isAccentBorder ) const
+{
+    PainterStateGuard psg( painter );
+    const bool isHovered = option->state & State_MouseOver;
+    const QColor borderCol =
+        highContrastTheme ?
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
+                          option->palette.color( isHovered ? QPalette::Accent : QPalette::ButtonText )
+#else
+                          option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )
+#endif
+                          : ( isAccentBorder ? accentColor( option ) : winUI3Color( controlStrokePrimary ) );
+
+    painter->setBrush( Qt::NoBrush );
+    painter->setPen( QPen( borderCol, 1.0 ) );
+    painter->drawRoundedRect( rect, radius, radius );
+
+    if ( drawBottomStroke && !highContrastTheme )
+    {
+        // WinUI 3 点击类控件底边使用更明显的立体加强描边，仅裁剪重绘圆角轮廓底部
+        PainterStateGuard bottomStrokeGuard( painter );
+        const QColor bottomStroke =
+            isAccentBorder ? winUI3Color( controlStrokeOnAccentSecondary ) : winUI3Color( controlStrokeSecondary );
+        const QRectF bottomClip( rect.left(), rect.bottom() - 1.0, rect.width(), 1.5 );
+        painter->setClipRect( bottomClip, Qt::IntersectClip );
+        painter->setPen( QPen( bottomStroke, 1.0 ) );
+        painter->setBrush( Qt::NoBrush );
+        painter->drawRoundedRect( rect, radius, radius );
+    }
+}
+
 void FluentUI3Style::drawLineEditFrame( QPainter* painter,
                                         const QRectF& rect,
                                         const QStyleOption* option,
                                         bool isEditable,
-                                        int roundingRadius ) const
+                                        qreal roundingRadius ) const
 {
+    PainterStateGuard psg( painter );
     const bool isHovered = option->state & State_MouseOver;
     const auto frameCol  = highContrastTheme ?
 #if QT_VERSION >= QT_VERSION_CHECK( 6, 6, 0 )
@@ -8811,9 +8793,9 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 #else
                                             option->palette.color( isHovered ? QPalette::Highlight : QPalette::ButtonText )
 #endif
-                                            : winUI3Color( frameColorLight );
+                                            : winUI3Color( controlStrokePrimary );
 
-    painter->setPen( frameCol );
+    painter->setPen( QPen( frameCol, 1.0 ) );
     painter->setBrush( Qt::NoBrush );
     painter->drawRoundedRect( rect, roundingRadius, roundingRadius );
 
@@ -8826,8 +8808,7 @@ void FluentUI3Style::drawLineEditFrame( QPainter* painter,
 
     const QColor focusColor = accentColor( option );
 
-    const auto underlineCol = hasFocus ? accentColor( option )
-                                       : ( colorSchemeIndex == 0 ? QColor( 0x80, 0x80, 0x80 ) : QColor( 0xa0, 0xa0, 0xa0 ) );
+    const auto underlineCol = hasFocus ? focusColor : winUI3Color( inputStrokeBottomDefault );
     const auto penUnderline = QPen( underlineCol, hasFocus ? 2 : 1 );
     if ( qobject_cast<QLineEdit*>( option->styleObject ) )
     {

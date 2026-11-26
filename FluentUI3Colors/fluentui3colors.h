@@ -52,6 +52,7 @@ enum WINUI3Color
     cardBackgroundFillColorDefault,
     cardStrokeColorDefault,
     cardStrokeColorBalanced,
+    inputStrokeBottomDefault,  // 输入类控件非聚焦态底边指示线
     count
 };
 
@@ -104,7 +105,8 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsLight{
     QColor(0, 0, 0, 18),                              // tabBarHoverBackground
     QColor(255, 255, 255, 179),                       // cardBackgroundFillColorDefault
     QColor(0, 0, 0, 15),                              // cardStrokeColorDefault
-    QColor(0xE9, 0xE9, 0xE9)                          // cardStrokeColorBalanced
+    QColor(0xE9, 0xE9, 0xE9),                         // cardStrokeColorBalanced
+    QColor(0x80, 0x80, 0x80)                          // inputStrokeBottomDefault
 };
 
 inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
@@ -151,7 +153,8 @@ inline const std::array<QColor, WINUI3Color::count> WINUI3ColorsDark{
     QColor(0xFF, 0xFF, 0xFF, percentToAlpha(12.0)),  // tabBarHoverBackground
     QColor(255, 255, 255, 13),                        // cardBackgroundFillColorDefault
     QColor(0, 0, 0, 25),                              // cardStrokeColorDefault
-    QColor(0x25, 0x25, 0x25)                          // cardStrokeColorBalanced
+    QColor(0x25, 0x25, 0x25),                         // cardStrokeColorBalanced
+    QColor(0xA0, 0xA0, 0xA0)                          // inputStrokeBottomDefault
 };
 
 inline const QColor shellCaptionCloseFillColorPrimary(0xC4, 0x2B, 0x1C, 0xFF);

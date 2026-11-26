@@ -125,9 +125,13 @@ private:
   void drawTreeViewIndicator(const QStyleOptionViewItem *option,
                              QPainter *painter, const QWidget *widget) const;
 
+  void drawControlBorder(QPainter *painter, const QRectF &rect, qreal radius,
+                         const QStyleOption *option,
+                         bool drawBottomStroke = true,
+                         bool isAccentBorder = false) const;
   void drawLineEditFrame(QPainter *painter, const QRectF &rect,
                          const QStyleOption *option, bool isEditable = true,
-                         int roundingRadius = 4) const;
+                         qreal roundingRadius = 4) const;
 
   void drawPopupShadow(QPainter *painter, const QRectF &panelRect, int radius,
                        int extent) const;
