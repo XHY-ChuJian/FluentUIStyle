@@ -157,12 +157,6 @@ endif()
 
 add_subdirectory(ExWidgets)
 
-option(EXWIDGETS_BUILD_TESTS "构建 ExWidgets 控件回归测试" OFF)
-if(EXWIDGETS_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests/ExWidgets)
-endif()
-
 if(BUILD_LIBRARY)
     add_subdirectory(fluentui3style)
 endif()

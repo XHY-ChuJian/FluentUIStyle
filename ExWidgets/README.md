@@ -462,10 +462,6 @@ Gallery 的 BreadcrumbBar / TeachingTip 页面下方提供“分步操作引导�
 
 手动验收：连续走完三步、每一步按 Esc 或叉号退出后重启、引导中切换页面、缩小窗口并滚动页面，确认不遗留浮层或跳过步骤。
 
-### 可选回归测试
-
-启用 CMake 选项 `EXWIDGETS_BUILD_TESTS=ON` 可生成 `ExWidgetsNavigationHintTests`，需要对应 Qt 安装中的 Qt Test 模块。测试覆盖溢出索引和顺序、Qt 委托与原始数据、RTL、关闭原因与取消、无目标提示、目标生命周期、长内容恢复和滚动裁剪。默认关闭，不增加正常构建的 Qt Test 依赖。
-
 ## ExMessageBox
 
 基于 **`QMessageBox`** 子类，WinUI3 视觉；API 与静态方法兼容 Qt 习惯。

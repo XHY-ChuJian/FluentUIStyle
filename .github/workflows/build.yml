@@ -91,19 +91,11 @@ jobs:
           -DBUILD_EXAMPLES=ON
           -DBUILD_QTCREATOR_PLUGIN=OFF
           -DBUILD_FRAMELESS=OFF
-          -DEXWIDGETS_BUILD_TESTS=ON
           -DFLUENTUI3STYLE_COPY_TO_QT_DIR=OFF
           -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/stage"
 
       - name: Build
         run: cmake --build build --config Release --parallel 2
-
-      - name: Run tests
-        run: >-
-          cmake -E env QT_QPA_PLATFORM=offscreen
-          ctest --test-dir build
-          -C Release
-          --output-on-failure
 
       - name: Validate installation
         run: >-

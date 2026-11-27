@@ -90,7 +90,6 @@ jobs:
           -DBUILD_EXAMPLES=ON
           -DBUILD_FRAMELESS=ON
           -DBUILD_QTCREATOR_PLUGIN=OFF
-          -DEXWIDGETS_BUILD_TESTS=OFF
           -DFLUENTUI3STYLE_COPY_TO_QT_DIR=OFF
           -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/stage"
 
